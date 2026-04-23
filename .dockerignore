@@ -1,4 +1,1 @@
 .git
-.dockerignore
-Dockerfile
-nginx.conf
