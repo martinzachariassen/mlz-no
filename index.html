@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Martin Zachariassen</title>
+  <meta name="description" content="Martin Zachariassen — Developer and Architect. Personal homepage with projects and contact information." />
+  <link rel="canonical" href="https://mlz.no/" />
+
+  <!-- Favicon & touch icon -->
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <meta name="theme-color" content="#303446" />
+
+  <!-- Open Graph -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:url"         content="https://mlz.no/" />
+  <meta property="og:title"       content="Martin Zachariassen" />
+  <meta property="og:description" content="Developer and Architect. Personal homepage with projects and contact information." />
+  <meta property="og:locale"      content="en_US" />
+  <meta property="og:image"       content="https://mlz.no/og.png" />
+  <meta property="og:image:width"  content="1200" />
+  <meta property="og:image:height" content="630" />
+
+  <!-- Twitter / X card -->
+  <meta name="twitter:card"        content="summary" />
+  <meta name="twitter:title"       content="Martin Zachariassen" />
+  <meta name="twitter:description" content="Developer and Architect. Personal homepage with projects and contact information." />
+  <meta name="twitter:image"       content="https://mlz.no/og.png" />
+
+  <!-- JSON-LD Person schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Martin Zachariassen",
+    "url": "https://mlz.no",
+    "jobTitle": "Developer & Architect",
+    "email": "apps@zachariassen.me",
+    "sameAs": [
+      "https://github.com/martinzachariassen",
+      "https://linkedin.com/in/martinzachariassen"
+    ]
+  }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script defer src="https://cloud.umami.is/script.js" data-website-id="e73d093f-ea9e-4839-8c5f-3dd4888a3c36"></script>
+  <style>
+    :root {
+      --base:     #303446;
+      --mantle:   #292c3c;
+      --crust:    #232634;
+      --surface0: #414559;
+      --surface1: #51576d;
+      --surface2: #626880;
+      --overlay0: #737994;
+      --overlay1: #838ba7;
+      --subtext0: #a5adce;
+      --subtext1: #b5bfe2;
+      --text:     #c6d0f5;
+      --lavender: #babbf1;
+      --blue:     #8caaee;
+      --sapphire: #85c1dc;
+      --teal:     #81c8be;
+      --green:    #a6d189;
+      --yellow:   #e5c890;
+      --peach:    #ef9f76;
+      --mauve:    #ca9ee6;
+      --pink:     #f4b8e4;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--base);
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 96px 24px 72px;
+      text-align: center;
+    }
+
+    .hero-name {
+      font-size: clamp(2.8rem, 8vw, 5.5rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+      color: var(--text);
+    }
+
+    .hero-name em {
+      font-style: normal;
+      color: var(--mauve);
+    }
+
+    .hero-tagline {
+      margin-top: 14px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--subtext0);
+    }
+
+    /* ── Contact buttons ── */
+    .contacts {
+      display: flex;
+      gap: 10px;
+      margin-top: 36px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 18px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--subtext1);
+      background: var(--mantle);
+      border: 1px solid var(--surface1);
+      transition: color 0.18s, border-color 0.18s, transform 0.18s;
+    }
+
+    .btn:hover {
+      color: var(--mauve);
+      border-color: var(--mauve);
+      transform: translateY(-2px);
+    }
+
+    .btn svg { width: 15px; height: 15px; fill: currentColor; flex-shrink: 0; }
+
+    /* ── Divider ── */
+    .rule {
+      width: min(860px, 100% - 48px);
+      height: 1px;
+      background: var(--surface0);
+    }
+
+    /* ── Projects ── */
+    .projects {
+      width: min(900px, 100%);
+      padding: 64px 24px 96px;
+    }
+
+    .section-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      color: var(--overlay1);
+      margin-bottom: 28px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(255px, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      background: var(--mantle);
+      border: 1px solid var(--surface0);
+      border-radius: 12px;
+      padding: 22px 24px 20px;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: border-color 0.18s, transform 0.18s, box-shadow 0.18s;
+    }
+
+    .card:hover {
+      border-color: var(--surface2);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 28px rgba(0,0,0,0.25);
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .tag {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+
+    .tag-blue   { background: color-mix(in srgb, var(--blue)   20%, transparent); color: var(--blue); }
+    .tag-green  { background: color-mix(in srgb, var(--green)  20%, transparent); color: var(--green); }
+    .tag-mauve  { background: color-mix(in srgb, var(--mauve)  20%, transparent); color: var(--mauve); }
+    .tag-peach  { background: color-mix(in srgb, var(--peach)  20%, transparent); color: var(--peach); }
+    .tag-teal   { background: color-mix(in srgb, var(--teal)   20%, transparent); color: var(--teal); }
+    .tag-yellow   { background: color-mix(in srgb, var(--yellow)   20%, transparent); color: var(--yellow); }
+    .tag-sapphire { background: color-mix(in srgb, var(--sapphire) 20%, transparent); color: var(--sapphire); }
+
+    .card-link-icon { color: var(--overlay0); transition: color 0.18s; }
+    .card:hover .card-link-icon { color: var(--subtext1); }
+    .card-link-icon svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .card-desc {
+      font-size: 0.84rem;
+      color: var(--subtext0);
+      line-height: 1.55;
+      flex-grow: 1;
+    }
+
+    .card-soon {
+      background: var(--mantle);
+      border: 1px dashed var(--surface1);
+      border-radius: 12px;
+      padding: 22px 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      opacity: 0.5;
+      cursor: default;
+      user-select: none;
+    }
+
+    .tag-soon { background: color-mix(in srgb, var(--overlay0) 15%, transparent); color: var(--overlay1); }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: auto;
+      padding: 28px 24px;
+      font-size: 0.78rem;
+      color: var(--overlay0);
+    }
+
+    /* ── Focus styles ── */
+    .btn:focus-visible,
+    .card:focus-visible {
+      outline: 2px solid var(--mauve);
+      outline-offset: 3px;
+      border-radius: 8px;
+    }
+
+    /* ── Page load animation ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero     { animation: fadeUp 0.55s ease both; }
+    .rule     { animation: fadeUp 0.55s ease 0.12s both; }
+    .projects { animation: fadeUp 0.55s ease 0.22s both; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .hero, .rule, .projects { animation: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <section class="hero">
+    <h1 class="hero-name">Martin <em>Zachariassen</em></h1>
+    <p class="hero-tagline">Developer &amp; Architect</p>
+
+    <nav class="contacts">
+      <a class="btn" href="https://github.com/martinzachariassen" target="_blank" rel="noopener noreferrer me" data-umami-event="contact-github">
+        <!-- GitHub mark -->
+        <svg viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+        GitHub
+      </a>
+      <a class="btn" href="https://linkedin.com/in/martinzachariassen" target="_blank" rel="noopener noreferrer me" data-umami-event="contact-linkedin">
+        <!-- LinkedIn mark -->
+        <svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+        LinkedIn
+      </a>
+      <a class="btn" href="mailto:apps@zachariassen.me" data-umami-event="contact-email">
+        <!-- Envelope -->
+        <svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 2-8 5-8-5h16zm0 12H4V8.236l8 5 8-5V18z"/></svg>
+        Email
+      </a>
+    </nav>
+  </section>
+
+  <hr class="rule" />
+
+  <section class="projects">
+    <p class="section-label">Projects</p>
+    <div class="grid">
+
+      <a class="card" href="https://ip.mlz.no" target="_blank" rel="noopener noreferrer" data-umami-event="project-ip-speil">
+        <div class="card-top">
+          <span class="tag tag-sapphire">Privacy</span>
+          <span class="card-link-icon"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></span>
+        </div>
+        <p class="card-title">ip-speil</p>
+        <p class="card-desc">Reflects what the internet sees of you — IP, location, ISP, VPN detection, WebRTC leaks, IPv6 exposure, browser fingerprint, and HTTP headers. Nothing stored.</p>
+      </a>
+
+      <div class="card-soon">
+        <div class="card-top">
+          <span class="tag tag-soon">Coming soon</span>
+        </div>
+        <p class="card-title">Untitled project</p>
+        <p class="card-desc">Something is brewing.</p>
+      </div>
+
+      <div class="card-soon">
+        <div class="card-top">
+          <span class="tag tag-soon">Coming soon</span>
+        </div>
+        <p class="card-title">Untitled project</p>
+        <p class="card-desc">Something is brewing.</p>
+      </div>
+
+      <div class="card-soon">
+        <div class="card-top">
+          <span class="tag tag-soon">Coming soon</span>
+        </div>
+        <p class="card-title">Untitled project</p>
+        <p class="card-desc">Something is brewing.</p>
+      </div>
+
+      <div class="card-soon">
+        <div class="card-top">
+          <span class="tag tag-soon">Coming soon</span>
+        </div>
+        <p class="card-title">Untitled project</p>
+        <p class="card-desc">Something is brewing.</p>
+      </div>
+
+      <div class="card-soon">
+        <div class="card-top">
+          <span class="tag tag-soon">Coming soon</span>
+        </div>
+        <p class="card-title">Untitled project</p>
+        <p class="card-desc">Something is brewing.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <footer>© 2026 Martin Zachariassen</footer>
+
+</body>
+</html>

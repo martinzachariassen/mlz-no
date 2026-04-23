@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>404 — Martin Zachariassen</title>
+  <meta name="robots" content="noindex" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <meta name="theme-color" content="#303446" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --base:     #303446;
+      --mantle:   #292c3c;
+      --surface0: #414559;
+      --surface1: #51576d;
+      --subtext0: #a5adce;
+      --subtext1: #b5bfe2;
+      --text:     #c6d0f5;
+      --overlay1: #838ba7;
+      --mauve:    #ca9ee6;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--base);
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+    }
+
+    .code {
+      font-size: clamp(5rem, 20vw, 9rem);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      color: var(--surface1);
+    }
+
+    .code em {
+      font-style: normal;
+      color: var(--mauve);
+    }
+
+    .message {
+      margin-top: 20px;
+      font-size: 1rem;
+      color: var(--subtext0);
+    }
+
+    .home-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-top: 36px;
+      padding: 10px 22px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--subtext1);
+      background: var(--mantle);
+      border: 1px solid var(--surface1);
+      transition: color 0.18s, border-color 0.18s, transform 0.18s;
+    }
+
+    .home-btn:hover {
+      color: var(--mauve);
+      border-color: var(--mauve);
+      transform: translateY(-2px);
+    }
+
+    .home-btn:focus-visible {
+      outline: 2px solid var(--mauve);
+      outline-offset: 3px;
+    }
+
+    .home-btn svg {
+      width: 15px;
+      height: 15px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    body > * { animation: fadeUp 0.5s ease both; }
+
+    @media (prefers-reduced-motion: reduce) {
+      body > * { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <p class="code">4<em>0</em>4</p>
+  <p class="message">This page doesn't exist.</p>
+  <a class="home-btn" href="/">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Back home
+  </a>
+</body>
+</html>
