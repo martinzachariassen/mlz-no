@@ -1,6 +1,6 @@
 # mlz.no
 
-Personal homepage for [Martin Zachariassen](https://mlz.no) — developer and architect.
+Personal homepage for [Martin Zachariassen](https://mlz.no) — senior software engineer.
 
 ## Stack
 
