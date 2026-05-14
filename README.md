@@ -4,7 +4,7 @@ Personal homepage for [Martin Zachariassen](https://mlz.no) — senior software 
 
 ## Stack
 
-- Single-file HTML/CSS, no build step, no dependencies
+- Static HTML/CSS/JS, no build step, no dependencies
 - [Catppuccin Frappé](https://github.com/catppuccin/catppuccin) color theme
 - [Umami](https://umami.is) for privacy-first analytics
 - nginx on [Railway](https://railway.app) for hosting
@@ -20,6 +20,12 @@ devbox run dev
 Then open <http://127.0.0.1:4173>. You can also still open `public/index.html`
 directly in a browser when you do not need a local server.
 
+Run the local static checks with:
+
+```bash
+devbox run check
+```
+
 ## Deployment
 
 The site deploys automatically to Railway on every push to `main`. Railway detects the `Dockerfile`, builds an nginx:alpine image, and serves the static files.
@@ -30,31 +36,37 @@ Set under **Settings → Networking** in the Railway dashboard. SSL is handled a
 
 ### OG image
 
-`public/og.svg` is the source for the social preview image. Before deploying a new version, convert it to `public/og.png` (required — most platforms don't support SVG for `og:image`):
+`assets/og.svg` is the source for the social preview image. Before deploying a new version, convert it to `public/og.png` (required — most platforms don't support SVG for `og:image`):
 
 ```bash
-inkscape public/og.svg --export-filename=public/og.png --export-width=1200
+devbox run render-og
 # or
-magick public/og.svg public/og.png
-# or, on macOS with Chrome installed
-/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --headless --disable-gpu --screenshot=public/og.png --window-size=1200,630 file://$(pwd)/public/og.svg
+inkscape assets/og.svg --export-filename=public/og.png --export-width=1200
+# or
+magick assets/og.svg public/og.png
 ```
 
 ### Apple touch icon
 
-Same deal — `public/apple-touch-icon.svg` is the source, iOS requires a PNG:
+Same deal — `assets/apple-touch-icon.svg` is the source, iOS requires a PNG:
 
 ```bash
-inkscape public/apple-touch-icon.svg --export-filename=public/apple-touch-icon.png --export-width=180
+devbox run render-icons
 # or
-magick public/apple-touch-icon.svg public/apple-touch-icon.png
-# or, on macOS with Chrome installed
-/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --headless --disable-gpu --screenshot=public/apple-touch-icon.png --window-size=180,180 file://$(pwd)/public/apple-touch-icon.svg
+inkscape assets/apple-touch-icon.svg --export-filename=public/apple-touch-icon.png --export-width=180
+# or
+magick assets/apple-touch-icon.svg public/apple-touch-icon.png
+```
+
+To regenerate both committed PNG assets:
+
+```bash
+devbox run render-assets
 ```
 
 ## Adding a project
 
-Replace one of the `card-soon` placeholder blocks in `public/index.html` with a real card:
+Add the card markup in `public/index.html` and the modal content in `public/main.js`:
 
 ```html
 <a class="card" href="https://your-project-url" target="_blank" rel="noopener noreferrer" data-umami-event="project-your-name">

@@ -1,6 +1,13 @@
 .git
 .gitignore
+.devbox
 .DS_Store
+.envrc
 .storecode
+.storecode/
 Dockerfile
 README.md
+assets/
+devbox.json
+devbox.lock
+scripts/
