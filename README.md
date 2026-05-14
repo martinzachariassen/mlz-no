@@ -11,7 +11,14 @@ Personal homepage for [Martin Zachariassen](https://mlz.no) — senior software 
 
 ## Local development
 
-Just open `public/index.html` in a browser — no server needed.
+Use devbox to start a local static preview:
+
+```bash
+devbox run dev
+```
+
+Then open <http://127.0.0.1:4173>. You can also still open `public/index.html`
+directly in a browser when you do not need a local server.
 
 ## Deployment
 

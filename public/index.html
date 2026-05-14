@@ -73,6 +73,10 @@
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    html {
+      overflow-x: hidden;
+    }
+
     body {
       background: var(--base);
       color: var(--text);
@@ -81,12 +85,18 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      overflow-x: hidden;
     }
 
     main {
       align-self: stretch;
       min-width: 0;
       width: 100%;
+      max-width: 100vw;
+    }
+
+    a {
+      color: inherit;
     }
 
     /* ── Hero ── */
@@ -96,14 +106,14 @@
       align-items: center;
       min-width: 0;
       width: 100%;
-      padding: 96px 24px 72px;
+      padding: 104px 24px 76px;
       text-align: center;
     }
 
     .hero-name {
-      font-size: clamp(2.8rem, 8vw, 5.5rem);
+      font-size: 5.25rem;
       font-weight: 700;
-      letter-spacing: -0.03em;
+      letter-spacing: 0;
       line-height: 1.05;
       max-width: 100%;
       color: var(--text);
@@ -115,10 +125,10 @@
     }
 
     .hero-tagline {
-      margin-top: 14px;
+      margin-top: 16px;
       font-size: 0.85rem;
       font-weight: 600;
-      letter-spacing: 0.14em;
+      letter-spacing: 0;
       text-transform: uppercase;
       color: var(--subtext0);
     }
@@ -128,6 +138,7 @@
       display: flex;
       gap: 10px;
       width: 100%;
+      min-width: 0;
       margin-top: 36px;
       flex-wrap: wrap;
       justify-content: center;
@@ -137,7 +148,8 @@
       display: inline-flex;
       align-items: center;
       gap: 7px;
-      padding: 9px 18px;
+      min-height: 38px;
+      padding: 8px 18px;
       border-radius: 8px;
       text-decoration: none;
       font-size: 0.875rem;
@@ -161,21 +173,23 @@
       width: min(860px, 100% - 48px);
       height: 1px;
       margin: 0 auto;
-      background: var(--surface0);
+      background: linear-gradient(90deg, transparent, var(--surface1), transparent);
+      border: 0;
     }
 
     /* ── Projects ── */
     .projects {
-      width: min(900px, 100%);
+      width: min(680px, 100%);
       min-width: 0;
       margin: 0 auto;
-      padding: 64px 24px 96px;
+      padding: 56px 24px 92px;
+      max-width: 100vw;
     }
 
     .section-label {
       font-size: 0.75rem;
       font-weight: 700;
-      letter-spacing: 0.13em;
+      letter-spacing: 0;
       text-transform: uppercase;
       color: var(--overlay1);
       margin-bottom: 28px;
@@ -183,19 +197,21 @@
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(255px, 1fr));
-      gap: 14px;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      min-width: 0;
     }
 
     .card {
       background: var(--mantle);
       border: 1px solid var(--surface0);
-      border-radius: 12px;
-      padding: 22px 24px 20px;
+      border-radius: 8px;
+      padding: 22px 24px;
       text-decoration: none;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 8px;
+      min-width: 0;
       transition: border-color 0.18s, transform 0.18s, box-shadow 0.18s;
     }
 
@@ -208,17 +224,26 @@
     .card-top {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      margin-bottom: 4px;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 2px;
+    }
+
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      min-width: 0;
     }
 
     .tag {
       font-size: 0.68rem;
       font-weight: 700;
-      letter-spacing: 0.09em;
+      letter-spacing: 0;
       text-transform: uppercase;
       padding: 3px 8px;
       border-radius: 4px;
+      line-height: 1.2;
     }
 
     .tag-blue   { background: color-mix(in srgb, var(--blue)   20%, transparent); color: var(--blue); }
@@ -234,7 +259,7 @@
     .card-link-icon svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; }
 
     .card-title {
-      font-size: 1rem;
+      font-size: 1.08rem;
       font-weight: 600;
       color: var(--text);
     }
@@ -244,22 +269,9 @@
       color: var(--subtext0);
       line-height: 1.55;
       flex-grow: 1;
+      max-width: 58ch;
+      overflow-wrap: anywhere;
     }
-
-    .card-soon {
-      background: var(--mantle);
-      border: 1px dashed var(--surface1);
-      border-radius: 12px;
-      padding: 22px 24px 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      opacity: 0.5;
-      cursor: default;
-      user-select: none;
-    }
-
-    .tag-soon { background: color-mix(in srgb, var(--overlay0) 15%, transparent); color: var(--overlay1); }
 
     /* ── Footer ── */
     footer {
@@ -267,6 +279,7 @@
       padding: 28px 24px;
       font-size: 0.78rem;
       color: var(--overlay0);
+      text-align: center;
     }
 
     /* ── Focus styles ── */
@@ -295,6 +308,8 @@
     .modal-backdrop {
       position: fixed;
       inset: 0;
+      width: 100vw;
+      max-width: 100vw;
       background: rgba(35, 38, 52, 0.85);
       backdrop-filter: blur(5px);
       -webkit-backdrop-filter: blur(5px);
@@ -304,6 +319,7 @@
       justify-content: center;
       padding: 24px;
       opacity: 0;
+      overflow-x: hidden;
       pointer-events: none;
       transition: opacity 0.22s ease;
     }
@@ -314,13 +330,15 @@
     }
 
     .modal {
-      background: var(--mantle);
-      border: 1px solid var(--surface0);
-      border-radius: 16px;
-      width: 100%;
-      max-width: 680px;
+      background: var(--crust);
+      border: 1px solid color-mix(in srgb, var(--surface1) 72%, transparent);
+      border-radius: 8px;
+      width: min(100%, 760px);
+      min-width: 0;
+      max-width: calc(100vw - 48px);
       max-height: 88vh;
       overflow-y: auto;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
       transform: translateY(16px) scale(0.98);
       transition: transform 0.22s ease;
       scrollbar-width: thin;
@@ -335,11 +353,12 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 16px;
       padding: 22px 26px 18px;
-      border-bottom: 1px solid var(--surface0);
+      border-bottom: 1px solid color-mix(in srgb, var(--surface1) 58%, transparent);
       position: sticky;
       top: 0;
-      background: var(--mantle);
+      background: color-mix(in srgb, var(--mantle) 82%, var(--crust));
       z-index: 1;
     }
 
@@ -347,6 +366,13 @@
       font-size: 1.05rem;
       font-weight: 600;
       color: var(--text);
+    }
+
+    .modal-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
     }
 
     .modal-close {
@@ -358,7 +384,7 @@
       border-radius: 6px;
       font-size: 0.75rem;
       font-family: inherit;
-      letter-spacing: 0.05em;
+      letter-spacing: 0;
       transition: color 0.18s, border-color 0.18s;
     }
 
@@ -369,49 +395,167 @@
     }
 
     .modal-body {
-      padding: 24px 26px 0;
+      padding: 24px 28px 28px;
+      background:
+        linear-gradient(180deg, color-mix(in srgb, var(--mantle) 44%, transparent), transparent 180px),
+        var(--crust);
     }
 
     .modal-tags {
       display: flex;
+      flex-wrap: wrap;
       gap: 8px;
-      margin-bottom: 22px;
+      margin-bottom: 18px;
     }
 
     .modal-content {
-      font-size: 0.875rem;
-      line-height: 1.8;
+      font-size: 0.9rem;
+      line-height: 1.72;
       color: var(--subtext1);
+      max-width: 100%;
+      overflow-wrap: anywhere;
     }
 
     .modal-content h2 {
       font-size: 0.92rem;
       font-weight: 600;
       color: var(--text);
-      margin: 24px 0 8px;
-      letter-spacing: 0.01em;
+      margin: 26px 0 10px;
+      letter-spacing: 0;
     }
 
-    .modal-content p { margin-bottom: 13px; }
+    .modal-content p {
+      max-width: 70ch;
+      margin-bottom: 14px;
+    }
     .modal-content p:last-child { margin-bottom: 0; }
     .modal-content em { color: var(--lavender); font-style: italic; }
+    .modal-content ul {
+      margin: 0 0 18px;
+      color: var(--subtext1);
+      list-style: none;
+    }
+    .modal-content li {
+      position: relative;
+      margin-bottom: 8px;
+      padding-left: 18px;
+    }
 
-    .modal-footer {
-      padding: 22px 26px 26px;
-      border-top: 1px solid var(--surface0);
+    .modal-content li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0.72em;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--overlay1);
+    }
+
+    .modal-lede {
+      padding: 18px 20px 18px 22px;
+      margin-bottom: 20px;
+      color: var(--text);
+      background:
+        linear-gradient(90deg, color-mix(in srgb, var(--mauve) 18%, transparent), transparent 46%),
+        color-mix(in srgb, var(--mantle) 88%, var(--base));
+      border: 1px solid color-mix(in srgb, var(--mauve) 30%, var(--surface0));
+      border-left: 3px solid var(--mauve);
+      border-radius: 8px;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.14);
+    }
+
+    .modal-lede p {
+      margin: 0;
+      max-width: 62ch;
+      font-size: 0.95rem;
+      line-height: 1.65;
+      font-weight: 500;
+    }
+
+    .modal-story {
+      max-width: 70ch;
+      margin: 20px 0 0;
+    }
+
+    .modal-story h2 {
+      color: var(--mauve);
+      margin-top: 0;
+    }
+
+    .modal-story p {
+      color: var(--subtext1);
+    }
+
+    .modal-section-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
       margin-top: 24px;
-      display: flex;
-      justify-content: flex-end;
+    }
+
+    .modal-section {
+      position: relative;
+      background: color-mix(in srgb, var(--mantle) 72%, var(--crust));
+      border: 1px solid color-mix(in srgb, var(--surface1) 62%, transparent);
+      border-radius: 8px;
+      padding: 18px 20px 16px;
+      box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text) 5%, transparent);
+    }
+
+    .modal-section::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      border-radius: 8px 0 0 8px;
+      background: linear-gradient(
+        180deg,
+        transparent,
+        var(--sapphire) 14%,
+        var(--sapphire) 86%,
+        transparent
+      );
+    }
+
+    .modal-section-tech::before {
+      background: linear-gradient(
+        180deg,
+        transparent,
+        var(--teal) 14%,
+        var(--teal) 86%,
+        transparent
+      );
+    }
+
+    .modal-section h2 {
+      margin-top: 0;
+      margin-bottom: 14px;
+      font-size: 0.95rem;
+    }
+
+    .modal-section ul {
+      margin-bottom: 0;
+    }
+
+    .modal-section li::before {
+      background: var(--sapphire);
+    }
+
+    .modal-section-tech li::before {
+      background: var(--teal);
     }
 
     .modal-visit {
       display: inline-flex;
       align-items: center;
       gap: 7px;
-      padding: 9px 18px;
+      padding: 5px 11px;
       border-radius: 8px;
       text-decoration: none;
-      font-size: 0.875rem;
+      font-size: 0.75rem;
       font-weight: 500;
       color: var(--subtext1);
       background: var(--base);
@@ -435,13 +579,79 @@
     .modal-visit svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; }
 
     @media (max-width: 520px) {
+      body {
+        align-items: stretch;
+      }
+
+      .hero,
+      .projects {
+        width: 100vw;
+        max-width: 100vw;
+      }
+
+      .hero {
+        padding-top: 88px;
+        padding-bottom: 68px;
+      }
+
       .hero-name {
-        font-size: clamp(2.4rem, 11vw, 2.8rem);
+        font-size: 2.35rem;
       }
 
       .hero-name span,
       .hero-name em {
         display: block;
+      }
+
+      .contacts {
+        display: grid;
+        grid-template-columns: repeat(2, max-content);
+      }
+
+      .contacts .btn:last-child {
+        grid-column: 1 / -1;
+        justify-self: center;
+      }
+
+      .grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .card-desc {
+        max-width: 100%;
+      }
+
+      .card-top {
+        align-items: flex-start;
+        flex-wrap: wrap;
+      }
+
+      .modal-backdrop {
+        padding: 16px;
+      }
+
+      .modal {
+        max-width: calc(100vw - 32px);
+      }
+
+      .modal-header,
+      .modal-body {
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+
+      .modal-content {
+        max-width: 100%;
+      }
+
+      .modal-section-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 900px) and (min-width: 521px) {
+      .hero-name {
+        font-size: 4rem;
       }
     }
   </style>
@@ -481,52 +691,15 @@
 
       <a class="card" href="#ip-speil" data-project="ip-speil" data-umami-event="project-ip-speil">
         <div class="card-top">
-          <span class="tag tag-sapphire">Privacy</span>
+          <div class="card-tags" aria-label="Project categories">
+            <span class="tag tag-sapphire">Privacy</span>
+            <span class="tag tag-teal">Network diagnostics</span>
+          </div>
           <span class="card-link-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
         </div>
         <p class="card-title">ip-speil</p>
-        <p class="card-desc">Reflects what the internet sees of you — IP, location, ISP, VPN detection, WebRTC leaks, IPv6 exposure, browser fingerprint, and HTTP headers. Nothing stored.</p>
+        <p class="card-desc">A privacy-focused internet mirror that shows what websites can infer about your connection: IP, location, ISP, VPN/proxy signals, WebRTC leaks, IPv6 routing, browser fingerprint, and request headers. No scan results are stored.</p>
       </a>
-
-      <div class="card-soon">
-        <div class="card-top">
-          <span class="tag tag-soon">Coming soon</span>
-        </div>
-        <p class="card-title">Untitled project</p>
-        <p class="card-desc">Something is brewing.</p>
-      </div>
-
-      <div class="card-soon">
-        <div class="card-top">
-          <span class="tag tag-soon">Coming soon</span>
-        </div>
-        <p class="card-title">Untitled project</p>
-        <p class="card-desc">Something is brewing.</p>
-      </div>
-
-      <div class="card-soon">
-        <div class="card-top">
-          <span class="tag tag-soon">Coming soon</span>
-        </div>
-        <p class="card-title">Untitled project</p>
-        <p class="card-desc">Something is brewing.</p>
-      </div>
-
-      <div class="card-soon">
-        <div class="card-top">
-          <span class="tag tag-soon">Coming soon</span>
-        </div>
-        <p class="card-title">Untitled project</p>
-        <p class="card-desc">Something is brewing.</p>
-      </div>
-
-      <div class="card-soon">
-        <div class="card-top">
-          <span class="tag tag-soon">Coming soon</span>
-        </div>
-        <p class="card-title">Untitled project</p>
-        <p class="card-desc">Something is brewing.</p>
-      </div>
 
     </div>
     </section>
@@ -536,17 +709,17 @@
     <div class="modal" id="modal">
       <div class="modal-header">
         <span class="modal-title" id="modal-title"></span>
-        <button class="modal-close" id="modal-close" aria-label="Close">ESC</button>
+        <div class="modal-actions">
+          <a class="modal-visit" id="modal-visit" href="#" target="_blank" rel="noopener noreferrer">
+            Visit
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
+          <button class="modal-close" id="modal-close" aria-label="Close">ESC</button>
+        </div>
       </div>
       <div class="modal-body">
         <div class="modal-tags" id="modal-tags"></div>
         <div class="modal-content" id="modal-content"></div>
-      </div>
-      <div class="modal-footer">
-        <a class="modal-visit" id="modal-visit" href="#" target="_blank" rel="noopener noreferrer">
-          Visit project
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-        </a>
       </div>
     </div>
   </div>
@@ -558,18 +731,41 @@
     const PROJECTS = {
       'ip-speil': {
         title: 'ip-speil',
-        tags: [{ text: 'Privacy', cls: 'tag-sapphire' }],
+        tags: [{ text: 'Privacy', cls: 'tag-sapphire' }, { text: 'Network diagnostics', cls: 'tag-teal' }],
         href: 'https://ip.mlz.no',
         content: `
-          <p>I built ip-speil because I kept finding myself in the same situation: wondering whether my VPN was actually doing anything, or whether some clever browser API was leaking my real IP address behind it anyway. The tools that existed either showed only your IP, were buried under ads, or were logging everything — which rather defeats the point.</p>
-          <p>The name is Norwegian for <em>mirror</em>. The idea is that simple: it reflects back exactly what it sees when you connect. Nothing more, and critically, nothing stored.</p>
-          <h2>What it reveals</h2>
-          <p>An HTTP request leaks more than most people realize. Your public IP is obvious, but there's also your ISP, your ASN, the geolocation tied to your connection, and every request header your browser sends — including headers that can uniquely identify your browser and OS without touching any cookies. ip-speil surfaces all of it in one place.</p>
-          <p>On top of the server-side data, some JavaScript runs locally in your browser to check for things the server can't see directly: whether WebRTC is leaking your real IP behind a VPN, whether you have IPv6 connectivity that's exposed when your VPN only tunnels IPv4, and a rough fingerprint built from canvas rendering, timezone, screen dimensions, and installed fonts.</p>
-          <h2>VPN detection</h2>
-          <p>This was the most interesting problem to build. There's no single signal that conclusively identifies a VPN — it's a collection of weak signals in combination: Is this IP in a known datacenter range? Does the ASN belong to a hosting provider? Is the geolocated country inconsistent with the browser's timezone? Each signal is unreliable alone, but together they're surprisingly accurate.</p>
-          <h2>The data policy</h2>
-          <p>Nothing is stored. The backend logs only what the server needs to serve responses, and those rotate away. No database, no accounts, no tracking — the whole point is to be the opposite of that.</p>
+          <div class="modal-lede">
+            <p>A small privacy/debugging tool built with care for UX, observability, and data minimization.</p>
+          </div>
+          <div class="modal-story">
+            <h2>Why I built it</h2>
+            <p>I wanted a practical tool for debugging VPNs, browser privacy settings, IPv6 leaks, and what basic metadata websites receive. Most IP-check pages either feel ad-heavy, opaque, or too shallow, so this is my small, transparent version.</p>
+            <p>The project turns "what does the internet see when I visit a page?" into a fast diagnostic view, while keeping browser-local signals separate from server-observed data.</p>
+          </div>
+          <div class="modal-section-grid">
+            <section class="modal-section">
+              <h2>What it does</h2>
+              <ul>
+                <li>Shows HTTP IP, location, ISP, ASN, and reverse DNS.</li>
+                <li>Detects VPN, proxy, hosting, and mobile network signals.</li>
+                <li>Checks WebRTC ICE candidates for public, local, and relay exposure.</li>
+                <li>Compares IPv4 and IPv6 routing.</li>
+                <li>Shows browser fingerprint signals and request headers.</li>
+                <li>Copies a redacted diagnostics report.</li>
+              </ul>
+            </section>
+            <section class="modal-section modal-section-tech">
+              <h2>Technical notes</h2>
+              <ul>
+                <li>Node server with static frontend.</li>
+                <li>Browser-side WebRTC, fingerprint, IPv6, and Cloudflare trace checks.</li>
+                <li>IP metadata via ip-api.</li>
+                <li>No database, no cookies, no stored scan results.</li>
+                <li>Tests and headless browser smoke check.</li>
+                <li>Dev environment pinned with devbox.</li>
+              </ul>
+            </section>
+          </div>
         `
       }
     };
