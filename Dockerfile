@@ -1,7 +1,11 @@
 FROM nginx:alpine
-COPY . /usr/share/nginx/html
+
+RUN rm -rf /usr/share/nginx/html/*
+
+COPY index.html 404.html robots.txt sitemap.xml \
+     favicon.svg apple-touch-icon.svg apple-touch-icon.png \
+     og.svg og.png \
+     /usr/share/nginx/html/
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-RUN rm -f /usr/share/nginx/html/Dockerfile \
-          /usr/share/nginx/html/nginx.conf \
-          /usr/share/nginx/html/.dockerignore
+
 EXPOSE 80

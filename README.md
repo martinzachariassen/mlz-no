@@ -29,6 +29,8 @@ Set under **Settings → Networking** in the Railway dashboard. SSL is handled a
 inkscape og.svg --export-filename=og.png --export-width=1200
 # or
 magick og.svg og.png
+# or, on macOS with Chrome installed
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --headless --disable-gpu --screenshot=og.png --window-size=1200,630 file://$(pwd)/og.svg
 ```
 
 ### Apple touch icon
@@ -39,6 +41,8 @@ Same deal — `apple-touch-icon.svg` is the source, iOS requires a PNG:
 inkscape apple-touch-icon.svg --export-filename=apple-touch-icon.png --export-width=180
 # or
 magick apple-touch-icon.svg apple-touch-icon.png
+# or, on macOS with Chrome installed
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --headless --disable-gpu --screenshot=apple-touch-icon.png --window-size=180,180 file://$(pwd)/apple-touch-icon.svg
 ```
 
 ## Adding a project
