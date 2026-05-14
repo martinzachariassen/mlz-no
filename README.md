@@ -11,7 +11,7 @@ Personal homepage for [Martin Zachariassen](https://mlz.no) — senior software 
 
 ## Local development
 
-Just open `index.html` in a browser — no server needed.
+Just open `public/index.html` in a browser — no server needed.
 
 ## Deployment
 
@@ -23,31 +23,31 @@ Set under **Settings → Networking** in the Railway dashboard. SSL is handled a
 
 ### OG image
 
-`og.svg` is the source for the social preview image. Before deploying a new version, convert it to `og.png` (required — most platforms don't support SVG for `og:image`):
+`public/og.svg` is the source for the social preview image. Before deploying a new version, convert it to `public/og.png` (required — most platforms don't support SVG for `og:image`):
 
 ```bash
-inkscape og.svg --export-filename=og.png --export-width=1200
+inkscape public/og.svg --export-filename=public/og.png --export-width=1200
 # or
-magick og.svg og.png
+magick public/og.svg public/og.png
 # or, on macOS with Chrome installed
-/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --headless --disable-gpu --screenshot=og.png --window-size=1200,630 file://$(pwd)/og.svg
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --headless --disable-gpu --screenshot=public/og.png --window-size=1200,630 file://$(pwd)/public/og.svg
 ```
 
 ### Apple touch icon
 
-Same deal — `apple-touch-icon.svg` is the source, iOS requires a PNG:
+Same deal — `public/apple-touch-icon.svg` is the source, iOS requires a PNG:
 
 ```bash
-inkscape apple-touch-icon.svg --export-filename=apple-touch-icon.png --export-width=180
+inkscape public/apple-touch-icon.svg --export-filename=public/apple-touch-icon.png --export-width=180
 # or
-magick apple-touch-icon.svg apple-touch-icon.png
+magick public/apple-touch-icon.svg public/apple-touch-icon.png
 # or, on macOS with Chrome installed
-/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --headless --disable-gpu --screenshot=apple-touch-icon.png --window-size=180,180 file://$(pwd)/apple-touch-icon.svg
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --headless --disable-gpu --screenshot=public/apple-touch-icon.png --window-size=180,180 file://$(pwd)/public/apple-touch-icon.svg
 ```
 
 ## Adding a project
 
-Replace one of the `card-soon` placeholder blocks in `index.html` with a real card:
+Replace one of the `card-soon` placeholder blocks in `public/index.html` with a real card:
 
 ```html
 <a class="card" href="https://your-project-url" target="_blank" rel="noopener noreferrer" data-umami-event="project-your-name">
