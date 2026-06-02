@@ -1,24 +1,35 @@
 const { existsSync, readFileSync, statSync } = require('node:fs');
-const { extname, join } = require('node:path');
+const { join } = require('node:path');
 
 const root = join(__dirname, '..');
 const publicRoot = join(root, 'public');
 const requiredFiles = [
   'index.html',
   '404.html',
-  'styles.css',
-  '404.css',
-  'main.js',
+  'project-one-mock.svg',
   'favicon.svg',
+  'favicon.ico',
+  'favicon-16.png',
+  'favicon-32.png',
+  'favicon-48.png',
+  'favicon-64.png',
+  'favicon-96.png',
+  'favicon-128.png',
+  'favicon-192.png',
+  'favicon-256.png',
+  'favicon-512.png',
   'apple-touch-icon.png',
   'og.png',
+  'twitter-card.png',
   'robots.txt',
-  'sitemap.xml'
+  'sitemap.xml',
+  'site.webmanifest'
 ];
 
 const requiredAssetSources = [
-  'assets/og.svg',
-  'assets/apple-touch-icon.svg'
+  'assets/mlz-glyph.svg',
+  'assets/mlz-lockup.svg',
+  'assets/mlz-wordmark.svg'
 ];
 
 function fail(message) {
@@ -60,24 +71,6 @@ for (const asset of referencedLocalAssets) {
   const path = join(publicRoot, asset);
   if (!existsSync(path)) {
     fail(`Missing referenced asset: /${asset}`);
-  }
-}
-
-for (const cssFile of ['styles.css', '404.css']) {
-  const css = readFileSync(join(publicRoot, cssFile), 'utf8');
-  if (css.includes('<style>') || css.includes('</style>')) {
-    fail(`Unexpected HTML style tag in public/${cssFile}`);
-  }
-}
-
-const js = readFileSync(join(publicRoot, 'main.js'), 'utf8');
-if (js.includes('<script>') || js.includes('</script>')) {
-  fail('Unexpected HTML script tag in public/main.js');
-}
-
-for (const file of referencedLocalAssets) {
-  if (extname(file) === '.svg' && file !== 'favicon.svg') {
-    fail(`SVG source appears to be served directly: /${file}`);
   }
 }
 

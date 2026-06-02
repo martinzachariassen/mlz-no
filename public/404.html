@@ -1,20 +1,128 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-accent="blue">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>404 — Martin Zachariassen</title>
   <meta name="robots" content="noindex" />
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-  <meta name="theme-color" content="#303446" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="shortcut icon" href="/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <meta name="theme-color" content="#0C0F1A" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#FAFAFA" media="(prefers-color-scheme: light)" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="stylesheet" href="404.css" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@900&amp;family=Space+Mono:wght@400;700&amp;display=swap" rel="stylesheet" />
+  <script>
+    (function() {
+      var saved = null;
+      try { saved = localStorage.getItem('mlz-theme'); } catch(e) {}
+      document.documentElement.setAttribute('data-theme', saved || 'dark');
+    })();
+  </script>
+  <style>
+    :root {
+      --bg:        oklch(0.985 0.004 240);
+      --line:      oklch(0.88 0.008 240);
+      --line-soft: oklch(0.93 0.006 240);
+      --text:      oklch(0.18 0.014 250);
+      --text-dim:  oklch(0.42 0.012 250);
+      --muted:     oklch(0.58 0.012 245);
+      --muted-2:   oklch(0.72 0.008 245);
+      --accent:      oklch(0.58 0.22 250);
+      --accent-glow: oklch(0.58 0.22 250 / 0.35);
+      --mono: "Space Mono", ui-monospace, monospace;
+      --condensed: "Barlow Condensed", "Space Mono", system-ui, sans-serif;
+      --gutter: clamp(24px, 5vw, 56px);
+    }
+    [data-theme="dark"] {
+      --bg:        #0C0F1A;
+      --line:      #1E2433;
+      --line-soft: #161A26;
+      --text:      #E2E8F0;
+      --text-dim:  #94A3B8;
+      --muted:     #6B7280;
+      --muted-2:   #4B5563;
+    }
+    [data-theme="dark"][data-accent="blue"] {
+      --accent: #60A5FA;
+      --accent-glow: rgba(96, 165, 250, 0.45);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: var(--mono);
+      color: var(--text);
+      background: var(--bg);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--gutter);
+      text-align: center;
+      gap: 28px;
+      -webkit-font-smoothing: antialiased;
+    }
+    .code {
+      font-family: var(--condensed);
+      font-weight: 900;
+      font-size: clamp(120px, 22vw, 240px);
+      line-height: 0.9;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin: 0;
+    }
+    .code em {
+      font-style: normal;
+      color: var(--accent);
+      text-shadow: 0 0 24px var(--accent-glow);
+    }
+    .message {
+      font-size: 11px;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin: 0;
+    }
+    .home-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 12px;
+      padding: 12px 20px;
+      text-decoration: none;
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--text);
+      border: 1px solid var(--line);
+      background: transparent;
+      position: relative;
+      transition: color .25s, border-color .25s;
+    }
+    .home-btn::after {
+      content: "";
+      position: absolute;
+      left: -1px; right: -1px; bottom: -1px;
+      height: 1px;
+      background: var(--accent);
+      box-shadow: 0 0 6px var(--accent-glow);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform .35s cubic-bezier(.2,.7,.2,1);
+    }
+    .home-btn:hover { color: var(--accent); border-color: var(--accent); }
+    .home-btn:hover::after { transform: scaleX(1); }
+    .home-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+    .home-btn svg { width: 12px; height: 12px; stroke: currentColor; stroke-width: 2; fill: none; }
+  </style>
 </head>
 <body>
   <p class="code">4<em>0</em>4</p>
-  <p class="message">This page doesn't exist.</p>
+  <p class="message">This page doesn't exist</p>
   <a class="home-btn" href="/">
     <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
     Back home
