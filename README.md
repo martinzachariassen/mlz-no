@@ -35,35 +35,33 @@ The site deploys automatically to Railway on every push to `main`. Railway detec
 
 Set under **Settings → Networking** in the Railway dashboard. SSL is handled automatically.
 
-### OG image
+## Assets
 
-`assets/og.svg` is the source for the social preview image. Before deploying a new version, convert it to `public/og.png` (required — most platforms don't support SVG for `og:image`):
+Final assets served by the site live in `public/`. Authoring sources live in `assets/`.
 
-```bash
-devbox run render-og
-# or
-inkscape assets/og.svg --export-filename=public/og.png --export-width=1200
-# or
-magick assets/og.svg public/og.png
-```
+### `public/` (served by nginx)
 
-### Apple touch icon
+- `favicon.svg`, `favicon.ico`, `favicon-{16,32,48,64,96,128,192,256,512}.png` — full browser favicon set
+- `apple-touch-icon.png` — 180×180 iOS home-screen icon
+- `icon-192.png`, `icon-512.png` — PWA icons referenced by `site.webmanifest`
+- `site.webmanifest` — PWA manifest (name, theme colour, icons)
+- `og.png` — 1200×630 Open Graph card with tagline
+- `twitter-card.png` — 1200×675 Twitter / X card
+- `project-one-mock.svg` — placeholder thumbnail for the ip-speil work row
 
-Same deal — `assets/apple-touch-icon.svg` is the source, iOS requires a PNG:
+### `assets/` (authoring sources, not served)
 
-```bash
-devbox run render-icons
-# or
-inkscape assets/apple-touch-icon.svg --export-filename=public/apple-touch-icon.png --export-width=180
-# or
-magick assets/apple-touch-icon.svg public/apple-touch-icon.png
-```
+- `mlz-glyph.svg` — the fused MLZ glyph used as favicon
+- `mlz-lockup.svg` — glyph + wordmark, for reuse in other surfaces
+- `mlz-wordmark.svg` — wordmark only
+- `social/` — promotional images for off-site profiles:
+  - `github-social-1280x640.png` — GitHub repo social preview (Settings → General → Social preview)
+  - `linkedin-1200x627.png` — LinkedIn banner / share image
+  - `og-image-1200x630.png` — plain OG card (alternative to the tagline version)
+  - `og-image-tagline-1200x630.png` — same as `public/og.png`, kept for re-export
+  - `twitter-card-1200x675.png` — same as `public/twitter-card.png`, kept for re-export
 
-To regenerate both committed PNG assets:
-
-```bash
-devbox run render-assets
-```
+After re-exporting any of these from your design tool, drop the new PNG/SVG into `public/` (and update the source in `assets/`) and run `devbox run check` to confirm nothing is missing.
 
 ## Adding a project
 

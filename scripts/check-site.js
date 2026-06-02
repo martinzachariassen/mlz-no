@@ -9,15 +9,30 @@ const requiredFiles = [
   'image-slot.js',
   'project-one-mock.svg',
   'favicon.svg',
+  'favicon.ico',
+  'favicon-16.png',
+  'favicon-32.png',
+  'favicon-48.png',
+  'favicon-64.png',
+  'favicon-96.png',
+  'favicon-128.png',
+  'favicon-192.png',
+  'favicon-256.png',
+  'favicon-512.png',
   'apple-touch-icon.png',
+  'icon-192.png',
+  'icon-512.png',
   'og.png',
+  'twitter-card.png',
   'robots.txt',
-  'sitemap.xml'
+  'sitemap.xml',
+  'site.webmanifest'
 ];
 
 const requiredAssetSources = [
-  'assets/og.svg',
-  'assets/apple-touch-icon.svg'
+  'assets/mlz-glyph.svg',
+  'assets/mlz-lockup.svg',
+  'assets/mlz-wordmark.svg'
 ];
 
 function fail(message) {

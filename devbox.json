@@ -6,10 +6,7 @@
   "shell": {
     "scripts": {
       "check": "node scripts/check-site.js",
-      "dev": "node dev-server.js",
-      "render-assets": "devbox run render-og && devbox run render-icons",
-      "render-icons": "/Applications/Google\\ Chrome.app/Contents/MacOS/Google\\ Chrome --headless --disable-gpu --screenshot=public/apple-touch-icon.png --window-size=180,180 file://$PWD/assets/apple-touch-icon.svg",
-      "render-og": "/Applications/Google\\ Chrome.app/Contents/MacOS/Google\\ Chrome --headless --disable-gpu --screenshot=public/og.png --window-size=1200,630 file://$PWD/assets/og.svg"
+      "dev": "node dev-server.js"
     }
   }
 }
