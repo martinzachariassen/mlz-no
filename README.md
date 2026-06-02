@@ -5,7 +5,8 @@ Personal homepage for [Martin Zachariassen](https://mlz.no) — senior software 
 ## Stack
 
 - Static HTML/CSS/JS, no build step, no dependencies
-- [Catppuccin Frappé](https://github.com/catppuccin/catppuccin) color theme
+- Inline design system: Space Grotesk + Space Mono + Barlow Condensed, electric-blue accent, light/dark theme with localStorage persistence
+- Ambient flow-field background (canvas, respects `prefers-reduced-motion`)
 - [Umami](https://umami.is) for privacy-first analytics
 - nginx on [Railway](https://railway.app) for hosting
 
@@ -17,8 +18,8 @@ Use devbox to start a local static preview:
 devbox run dev
 ```
 
-Then open <http://127.0.0.1:4173>. You can also still open `public/index.html`
-directly in a browser when you do not need a local server.
+Then open <http://127.0.0.1:4173>. You can also open `public/index.html`
+directly in a browser when you don't need a local server.
 
 Run the local static checks with:
 
@@ -66,17 +67,26 @@ devbox run render-assets
 
 ## Adding a project
 
-Add the card markup in `public/index.html` and the modal content in `public/main.js`:
+Projects live as `<a class="row">` entries inside the `.work-list` in `public/index.html`. Copy an existing row and update the index, thumbnail, title, year, description, and tags:
 
 ```html
-<a class="card" href="https://your-project-url" target="_blank" rel="noopener noreferrer" data-umami-event="project-your-name">
-  <div class="card-top">
-    <span class="tag tag-blue">Web</span>
-    <span class="card-link-icon">...</span>
+<a class="row" href="https://your-project-url" target="_blank" rel="noopener noreferrer" data-umami-event="project-your-name">
+  <span class="idx">02</span>
+  <div class="thumb">
+    <image-slot id="proj-your-name" shape="rect" src="your-mock.svg" fit="cover"></image-slot>
   </div>
-  <p class="card-title">Your Project</p>
-  <p class="card-desc">Short description of what it does.</p>
+  <div class="body">
+    <div class="title-line">
+      <span class="title">Your Project</span>
+      <span class="year">2026</span>
+    </div>
+    <p class="desc">Short description of what it does.</p>
+    <div class="tags">
+      <span class="tag">Tag</span>
+    </div>
+  </div>
+  <span class="go">Visit<span class="a" aria-hidden="true"></span></span>
 </a>
 ```
 
-Available tag colours: `tag-blue` `tag-green` `tag-mauve` `tag-peach` `tag-teal` `tag-yellow` `tag-sapphire`
+The thumbnail uses the bundled `<image-slot>` web component (`public/image-slot.js`); point its `src=` at any image in `public/`. Hovering the row drops the duotone filter and reveals the original colours.

@@ -1,14 +1,13 @@
 const { existsSync, readFileSync, statSync } = require('node:fs');
-const { extname, join } = require('node:path');
+const { join } = require('node:path');
 
 const root = join(__dirname, '..');
 const publicRoot = join(root, 'public');
 const requiredFiles = [
   'index.html',
   '404.html',
-  'styles.css',
-  '404.css',
-  'main.js',
+  'image-slot.js',
+  'project-one-mock.svg',
   'favicon.svg',
   'apple-touch-icon.png',
   'og.png',
@@ -63,22 +62,9 @@ for (const asset of referencedLocalAssets) {
   }
 }
 
-for (const cssFile of ['styles.css', '404.css']) {
-  const css = readFileSync(join(publicRoot, cssFile), 'utf8');
-  if (css.includes('<style>') || css.includes('</style>')) {
-    fail(`Unexpected HTML style tag in public/${cssFile}`);
-  }
-}
-
-const js = readFileSync(join(publicRoot, 'main.js'), 'utf8');
+const js = readFileSync(join(publicRoot, 'image-slot.js'), 'utf8');
 if (js.includes('<script>') || js.includes('</script>')) {
-  fail('Unexpected HTML script tag in public/main.js');
-}
-
-for (const file of referencedLocalAssets) {
-  if (extname(file) === '.svg' && file !== 'favicon.svg') {
-    fail(`SVG source appears to be served directly: /${file}`);
-  }
+  fail('Unexpected HTML script tag in public/image-slot.js');
 }
 
 if (!process.exitCode) {
