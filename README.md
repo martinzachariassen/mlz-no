@@ -41,9 +41,8 @@ Final assets served by the site live in `public/`. Authoring sources live in `as
 
 ### `public/` (served by nginx)
 
-- `favicon.svg`, `favicon.ico`, `favicon-{16,32,48,64,96,128,192,256,512}.png` — full browser favicon set
+- `favicon.svg`, `favicon.ico`, `favicon-{16,32,48,64,96,128,192,256,512}.png` — full browser favicon set, also referenced as PWA icons from `site.webmanifest`
 - `apple-touch-icon.png` — 180×180 iOS home-screen icon
-- `icon-192.png`, `icon-512.png` — PWA icons referenced by `site.webmanifest`
 - `site.webmanifest` — PWA manifest (name, theme colour, icons)
 - `og.png` — 1200×630 Open Graph card with tagline
 - `twitter-card.png` — 1200×675 Twitter / X card
@@ -71,7 +70,7 @@ Projects live as `<a class="row">` entries inside the `.work-list` in `public/in
 <a class="row" href="https://your-project-url" target="_blank" rel="noopener noreferrer" data-umami-event="project-your-name">
   <span class="idx">02</span>
   <div class="thumb">
-    <image-slot id="proj-your-name" shape="rect" src="your-mock.svg" fit="cover"></image-slot>
+    <img src="your-mock.svg" alt="" loading="lazy" decoding="async" />
   </div>
   <div class="body">
     <div class="title-line">
@@ -87,4 +86,4 @@ Projects live as `<a class="row">` entries inside the `.work-list` in `public/in
 </a>
 ```
 
-The thumbnail uses the bundled `<image-slot>` web component (`public/image-slot.js`); point its `src=` at any image in `public/`. Hovering the row drops the duotone filter and reveals the original colours.
+Drop the mock image into `public/` and reference it from the `<img src>`. A blue duotone SVG filter is applied at rest; hovering the row drops the filter and reveals the original colours.

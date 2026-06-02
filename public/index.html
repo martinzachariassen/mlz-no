@@ -22,7 +22,7 @@
   <meta property="og:url"         content="https://mlz.no/" />
   <meta property="og:title"       content="Martin Zachariassen" />
   <meta property="og:description" content="Senior Software Engineer. Backend systems, distributed architecture, APIs, data pipelines, infrastructure." />
-  <meta property="og:locale"      content="en_US" />
+  <meta property="og:locale"      content="en_GB" />
   <meta property="og:image"       content="https://mlz.no/og.png" />
   <meta property="og:image:width"  content="1200" />
   <meta property="og:image:height" content="630" />
@@ -99,62 +99,11 @@
       font-family: var(--mono);
       color: var(--text);
       background: var(--bg);
-      min-height: 100vh;
+      min-height: 100dvh;
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
       font-size: 14px;
       line-height: 1.6;
-    }
-
-    /* -------- floating background shapes -------- */
-    .bg-float {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
-      overflow: hidden;
-    }
-    .shape {
-      position: absolute;
-      display: block;
-      will-change: transform, opacity;
-      color: var(--accent);
-    }
-    @media (prefers-reduced-motion: no-preference) {
-      .shape { animation: drift linear infinite; }
-    }
-    @keyframes drift {
-      0%   { transform: translate3d(0, 0, 0) rotate(0deg); opacity: 0; }
-      10%  { opacity: var(--op, 0.5); }
-      90%  { opacity: var(--op, 0.5); }
-      100% { transform: translate3d(var(--dx, 20px), -120vh, 0) rotate(var(--rot, 90deg)); opacity: 0; }
-    }
-    /* shape primitives */
-    .sq  { width: var(--s, 8px); height: var(--s, 8px); background: currentColor; }
-    .sqo { width: var(--s, 10px); height: var(--s, 10px); border: 1px solid currentColor; }
-    .ln  { width: var(--s, 24px); height: 1px; background: currentColor; }
-    .lnv { width: 1px; height: var(--s, 24px); background: currentColor; }
-    .pl  {
-      width: var(--s, 12px); height: var(--s, 12px); position: relative;
-    }
-    .pl::before, .pl::after {
-      content: ""; position: absolute; background: currentColor;
-    }
-    .pl::before { left: 0; right: 0; top: 50%; height: 1px; transform: translateY(-50%); }
-    .pl::after  { top: 0; bottom: 0; left: 50%; width: 1px; transform: translateX(-50%); }
-    .dt  { width: 3px; height: 3px; background: currentColor; border-radius: 0; }
-    .tri {
-      width: 0; height: 0;
-      border-left: var(--s, 7px) solid transparent;
-      border-right: var(--s, 7px) solid transparent;
-      border-bottom: calc(var(--s, 7px) * 1.6) solid currentColor;
-      background: transparent;
-    }
-    .ang {
-      /* small L-bracket */
-      width: var(--s, 14px); height: var(--s, 14px);
-      border-top: 1px solid currentColor;
-      border-left: 1px solid currentColor;
     }
 
     /* layers, page above bg */
@@ -268,12 +217,6 @@
       width: 6px; height: 6px; background: var(--accent);
       box-shadow: 0 0 8px var(--accent-glow);
     }
-
-    /* shapes density */
-    [data-shapes="off"] .bg-float,
-    [data-shapes="grid"] .bg-float,
-    [data-shapes="flow"] .bg-float { display: none; }
-    [data-shapes="subtle"] .bg-float .shape:nth-child(2n) { display: none; }
 
     /* static dot grid background */
     body::before {
@@ -430,8 +373,9 @@
       overflow: hidden;
       transition: box-shadow .35s ease, border-color .35s ease;
     }
-    .row .thumb image-slot {
+    .row .thumb img {
       width: 100%; height: 100%; display: block;
+      object-fit: cover;
       filter: url(#duotone-blue);
       transition: filter .4s ease;
     }
@@ -509,7 +453,7 @@
         border-color: var(--accent);
         box-shadow: 0 0 24px var(--accent-glow);
       }
-      .row:hover .thumb image-slot { filter: none; }
+      .row:hover .thumb img { filter: none; }
     }
 
     /* ---------- footer ---------- */
@@ -575,26 +519,8 @@
   </filter>
 </svg>
 
-<!-- Floating background -->
+<!-- Ambient flow-field canvas -->
 <canvas class="flowfield" aria-hidden="true"></canvas>
-<div class="bg-float" aria-hidden="true">
-  <span class="shape sqo" style="left:6%;  bottom:-10%; --s:14px; --op:0.45; --dx:30px;  --rot:120deg; animation-duration: 38s; animation-delay: -4s;"></span>
-  <span class="shape sq"  style="left:14%; bottom:-10%; --s:5px;  --op:0.55; --dx:-20px; --rot:0deg;   animation-duration: 26s; animation-delay: -12s;"></span>
-  <span class="shape ln"  style="left:22%; bottom:-10%; --s:34px; --op:0.4;  --dx:40px;  --rot:30deg;  animation-duration: 44s; animation-delay: -2s;"></span>
-  <span class="shape pl"  style="left:30%; bottom:-10%; --s:14px; --op:0.45; --dx:-15px; --rot:90deg;  animation-duration: 32s; animation-delay: -18s;"></span>
-  <span class="shape ang" style="left:38%; bottom:-10%; --s:16px; --op:0.5;  --dx:25px;  --rot:-60deg; animation-duration: 36s; animation-delay: -8s;"></span>
-  <span class="shape tri" style="left:46%; bottom:-10%; --s:7px;  --op:0.35; --dx:-10px; --rot:180deg; animation-duration: 30s; animation-delay: -22s;"></span>
-  <span class="shape sqo" style="left:54%; bottom:-10%; --s:9px;  --op:0.5;  --dx:-30px; --rot:45deg;  animation-duration: 42s; animation-delay: -6s;"></span>
-  <span class="shape dt"  style="left:60%; bottom:-10%;           --op:0.7;  --dx:18px;  --rot:0deg;   animation-duration: 22s; animation-delay: -14s;"></span>
-  <span class="shape lnv" style="left:67%; bottom:-10%; --s:28px; --op:0.4;  --dx:-12px; --rot:0deg;   animation-duration: 34s; animation-delay: -10s;"></span>
-  <span class="shape sq"  style="left:74%; bottom:-10%; --s:7px;  --op:0.55; --dx:25px;  --rot:0deg;   animation-duration: 28s; animation-delay: -20s;"></span>
-  <span class="shape ang" style="left:81%; bottom:-10%; --s:12px; --op:0.45; --dx:-25px; --rot:120deg; animation-duration: 40s; animation-delay: -16s;"></span>
-  <span class="shape pl"  style="left:88%; bottom:-10%; --s:10px; --op:0.4;  --dx:15px;  --rot:-90deg; animation-duration: 30s; animation-delay: -3s;"></span>
-  <span class="shape sqo" style="left:94%; bottom:-10%; --s:16px; --op:0.35; --dx:-18px; --rot:60deg;  animation-duration: 46s; animation-delay: -24s;"></span>
-  <span class="shape ln"  style="left:10%; bottom:-10%; --s:20px; --op:0.35; --dx:18px;  --rot:90deg;  animation-duration: 50s; animation-delay: -28s;"></span>
-  <span class="shape dt"  style="left:42%; bottom:-10%;           --op:0.6;  --dx:-22px; --rot:0deg;   animation-duration: 24s; animation-delay: -7s;"></span>
-  <span class="shape tri" style="left:78%; bottom:-10%; --s:6px;  --op:0.4;  --dx:14px;  --rot:-45deg; animation-duration: 32s; animation-delay: -15s;"></span>
-</div>
 
 <!-- fixed vertical brand mark on the left edge -->
 <a class="brandmark" href="#top" aria-label="MLZ home">
@@ -671,12 +597,7 @@
       <a class="row" href="https://ip.mlz.no" target="_blank" rel="noopener noreferrer" data-umami-event="project-ip-speil">
         <span class="idx">01</span>
         <div class="thumb">
-          <image-slot
-            id="proj-ip-speil"
-            shape="rect"
-            placeholder="ip-speil"
-            src="project-one-mock.svg"
-            fit="cover"></image-slot>
+          <img src="project-one-mock.svg" alt="" loading="lazy" decoding="async" />
         </div>
         <div class="body">
           <div class="title-line">
@@ -700,8 +621,6 @@
 <footer class="foot">
   <span>© 2026 · Martin Zachariassen</span>
 </footer>
-
-<script src="image-slot.js"></script>
 
 <!-- Flow field background (Perlin-ish noise field, ambient drifting specks) -->
 <script>

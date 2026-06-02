@@ -6,7 +6,6 @@ const publicRoot = join(root, 'public');
 const requiredFiles = [
   'index.html',
   '404.html',
-  'image-slot.js',
   'project-one-mock.svg',
   'favicon.svg',
   'favicon.ico',
@@ -20,8 +19,6 @@ const requiredFiles = [
   'favicon-256.png',
   'favicon-512.png',
   'apple-touch-icon.png',
-  'icon-192.png',
-  'icon-512.png',
   'og.png',
   'twitter-card.png',
   'robots.txt',
@@ -75,11 +72,6 @@ for (const asset of referencedLocalAssets) {
   if (!existsSync(path)) {
     fail(`Missing referenced asset: /${asset}`);
   }
-}
-
-const js = readFileSync(join(publicRoot, 'image-slot.js'), 'utf8');
-if (js.includes('<script>') || js.includes('</script>')) {
-  fail('Unexpected HTML script tag in public/image-slot.js');
 }
 
 if (!process.exitCode) {
