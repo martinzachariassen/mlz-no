@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="color-scheme" content="light" />
+  <meta name="format-detection" content="telephone=no" />
   <title>Martin Zachariassen — Senior Software Developer</title>
   <meta name="description" content="Martin Zachariassen — Senior Software Developer based in Oslo. Backend systems, distributed architecture, APIs, data pipelines, infrastructure." />
   <link rel="canonical" href="https://mlz.no/" />
@@ -17,20 +19,24 @@
   <meta name="theme-color" content="#ecebe4" />
 
   <!-- Open Graph -->
-  <meta property="og:type"        content="website" />
-  <meta property="og:url"         content="https://mlz.no/" />
-  <meta property="og:title"       content="Martin Zachariassen" />
-  <meta property="og:description" content="Senior Software Developer. Backend systems, distributed architecture, APIs, data pipelines, infrastructure." />
-  <meta property="og:locale"      content="en_GB" />
-  <meta property="og:image"       content="https://mlz.no/og.png" />
+  <meta property="og:type"         content="website" />
+  <meta property="og:site_name"    content="Martin Zachariassen" />
+  <meta property="og:url"          content="https://mlz.no/" />
+  <meta property="og:title"        content="Martin Zachariassen" />
+  <meta property="og:description"  content="Senior Software Developer. Backend systems, distributed architecture, APIs, data pipelines, infrastructure." />
+  <meta property="og:locale"       content="en_GB" />
+  <meta property="og:image"        content="https://mlz.no/og.png" />
+  <meta property="og:image:type"   content="image/png" />
   <meta property="og:image:width"  content="1200" />
   <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt"    content="Martin Zachariassen — Senior Software Developer" />
 
   <!-- Twitter / X card -->
   <meta name="twitter:card"        content="summary_large_image" />
   <meta name="twitter:title"       content="Martin Zachariassen" />
   <meta name="twitter:description" content="Senior Software Developer. Backend systems, distributed architecture, APIs, data pipelines, infrastructure." />
   <meta name="twitter:image"       content="https://mlz.no/twitter-card.png" />
+  <meta name="twitter:image:alt"   content="Martin Zachariassen — Senior Software Developer" />
 
   <!-- JSON-LD Person schema -->
   <script type="application/ld+json">
@@ -51,7 +57,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&amp;family=Instrument+Serif:ital@0;1&amp;family=Space+Grotesk:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/styles.css" fetchpriority="high" />
 
   <!-- Umami analytics -->
   <script defer src="https://cloud.umami.is/script.js" data-website-id="e73d093f-ea9e-4839-8c5f-3dd4888a3c36"></script>
@@ -60,22 +66,22 @@
 
 <div class="hero">
 
-  <!-- drifting marks -->
+  <!-- drifting marks (per-mark drift in styles.css to satisfy CSP style-src) -->
   <div class="bg" aria-hidden="true">
-    <span class="mk sq"  style="left:8%;  bottom:-12%; --s:14px; --op:.16; --dx:24px;  --rot:120deg; animation-duration:42s; animation-delay:-4s;"></span>
-    <span class="mk sqf" style="left:16%; bottom:-12%; --s:5px;  --op:.22; --dx:-16px; --rot:0deg;   animation-duration:30s; animation-delay:-12s;"></span>
-    <span class="mk ln"  style="left:24%; bottom:-12%; --s:30px; --op:.14; --dx:34px;  --rot:30deg;  animation-duration:48s; animation-delay:-2s;"></span>
-    <span class="mk pl"  style="left:33%; bottom:-12%; --s:13px; --op:.18; --dx:-12px; --rot:90deg;  animation-duration:36s; animation-delay:-18s;"></span>
-    <span class="mk ang" style="left:42%; bottom:-12%; --s:15px; --op:.18; --dx:22px;  --rot:-60deg; animation-duration:40s; animation-delay:-8s;"></span>
-    <span class="mk sqf" style="left:52%; bottom:-12%; --s:4px;  --op:.24; --dx:-26px; --rot:0deg;   animation-duration:26s; animation-delay:-20s;"></span>
-    <span class="mk sq"  style="left:60%; bottom:-12%; --s:9px;  --op:.16; --dx:18px;  --rot:45deg;  animation-duration:44s; animation-delay:-6s;"></span>
-    <span class="mk pl"  style="left:68%; bottom:-12%; --s:11px; --op:.16; --dx:-14px; --rot:-90deg; animation-duration:34s; animation-delay:-14s;"></span>
-    <span class="mk ang" style="left:77%; bottom:-12%; --s:12px; --op:.18; --dx:24px;  --rot:120deg; animation-duration:38s; animation-delay:-10s;"></span>
-    <span class="mk ln"  style="left:86%; bottom:-12%; --s:24px; --op:.13; --dx:-18px; --rot:90deg;  animation-duration:50s; animation-delay:-24s;"></span>
-    <span class="mk sqf" style="left:93%; bottom:-12%; --s:5px;  --op:.22; --dx:16px;  --rot:0deg;   animation-duration:28s; animation-delay:-3s;"></span>
-    <span class="mk sq"  style="left:12%; bottom:-12%; --s:8px;  --op:.16; --dx:18px;  --rot:45deg;  animation-duration:46s; animation-delay:-28s;"></span>
-    <span class="mk pl"  style="left:48%; bottom:-12%; --s:10px; --op:.16; --dx:14px;  --rot:90deg;  animation-duration:32s; animation-delay:-16s;"></span>
-    <span class="mk ang" style="left:72%; bottom:-12%; --s:13px; --op:.16; --dx:-20px; --rot:-60deg; animation-duration:44s; animation-delay:-22s;"></span>
+    <span class="mk sq"></span>
+    <span class="mk sqf"></span>
+    <span class="mk ln"></span>
+    <span class="mk pl"></span>
+    <span class="mk ang"></span>
+    <span class="mk sqf"></span>
+    <span class="mk sq"></span>
+    <span class="mk pl"></span>
+    <span class="mk ang"></span>
+    <span class="mk ln"></span>
+    <span class="mk sqf"></span>
+    <span class="mk sq"></span>
+    <span class="mk pl"></span>
+    <span class="mk ang"></span>
   </div>
 
   <!-- top bar -->
