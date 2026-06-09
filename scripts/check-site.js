@@ -6,30 +6,17 @@ const publicRoot = join(root, 'public');
 const requiredFiles = [
   'index.html',
   '404.html',
-  'project-one-mock.svg',
+  'styles.css',
   'favicon.svg',
   'favicon.ico',
-  'favicon-16.png',
   'favicon-32.png',
-  'favicon-48.png',
-  'favicon-64.png',
-  'favicon-96.png',
-  'favicon-128.png',
   'favicon-192.png',
-  'favicon-256.png',
-  'favicon-512.png',
   'apple-touch-icon.png',
   'og.png',
   'twitter-card.png',
   'robots.txt',
   'sitemap.xml',
   'site.webmanifest'
-];
-
-const requiredAssetSources = [
-  'assets/mlz-glyph.svg',
-  'assets/mlz-lockup.svg',
-  'assets/mlz-wordmark.svg'
 ];
 
 function fail(message) {
@@ -43,13 +30,6 @@ for (const file of requiredFiles) {
     fail(`Missing public file: ${file}`);
   } else if (!statSync(path).isFile()) {
     fail(`Expected a file: public/${file}`);
-  }
-}
-
-for (const file of requiredAssetSources) {
-  const path = join(root, file);
-  if (!existsSync(path)) {
-    fail(`Missing source asset: ${file}`);
   }
 }
 
