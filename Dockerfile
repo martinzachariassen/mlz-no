@@ -9,7 +9,8 @@ COPY public/ /usr/share/nginx/html/
 COPY nginx.conf /etc/nginx/templates/default.conf.template
 
 # Restrict envsubst to PORT so nginx variables ($uri, $cache_control, …) survive.
-ENV NGINX_ENVSUBST_TEMPLATE_VARIABLES='$PORT'
+# The official entrypoint reads NGINX_ENVSUBST_FILTER as a regex over env-var names.
+ENV NGINX_ENVSUBST_FILTER='^PORT$'
 ENV PORT=80
 
 EXPOSE 80
