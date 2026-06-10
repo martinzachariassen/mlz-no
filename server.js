@@ -21,7 +21,7 @@ const contentTypes = {
 };
 
 function resolvePath(url) {
-  const pathname = new URL(url, `http://${host}:${port}`).pathname;
+  const pathname = new URL(url, 'http://localhost').pathname;
   const decoded = decodeURIComponent(pathname);
   const normalized = normalize(decoded).replace(/^(\.\.[/\\])+/, '');
   const requested = join(root, normalized);
@@ -34,18 +34,19 @@ function resolvePath(url) {
 
 createServer((request, response) => {
   const filePath = resolvePath(request.url);
-  const notFoundPath = join(root, '404.html');
-  const resolvedPath = filePath && existsSync(filePath) ? filePath : notFoundPath;
-  const status = resolvedPath === filePath ? 200 : 404;
-  const contentType = contentTypes[extname(resolvedPath)] || 'application/octet-stream';
 
-  response.writeHead(status, {
+  if (!filePath || !existsSync(filePath)) {
+    response.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    response.end('Not found');
+    return;
+  }
+
+  const contentType = contentTypes[extname(filePath)] || 'application/octet-stream';
+  response.writeHead(200, {
     'Content-Type': contentType,
     'Cache-Control': 'no-store'
   });
-
-  createReadStream(resolvedPath).pipe(response);
+  createReadStream(filePath).pipe(response);
 }).listen(port, host, () => {
-  console.log(`Serving ${fileURLToPath(new URL('public/', `file://${__dirname}/`))}`);
-  console.log(`http://${host}:${port}`);
+  console.log(`Serving ${fileURLToPath(new URL('public/', `file://${__dirname}/`))} on port ${port}`);
 });

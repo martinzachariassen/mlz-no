@@ -5,7 +5,7 @@ developer based in Oslo.
 
 ## Stack
 
-- Static HTML/CSS, no build step, no dependencies
+- Static HTML/CSS, no build step, no runtime dependencies
 - Editorial monospace layout on a paper background — Space Mono +
   Architects Daughter (with Instrument Serif and Space Grotesk available as
   alternate name treatments via `data-font` on `<html>`)
@@ -13,11 +13,12 @@ developer based in Oslo.
 - Drifting CSS-animated marks behind the hero; honours
   `prefers-reduced-motion`
 - [Umami](https://umami.is) for privacy-first analytics
-- nginx on [Railway](https://railway.app) for hosting
+- Tiny single-file Node static server (`server.js`), hosted on
+  [Railway](https://railway.app)
 
 ## Local development
 
-Node version is pinned in `mise.toml`. Start a local static preview with:
+Node version is pinned in `mise.toml`. Start a local preview with:
 
 ```bash
 mise run dev
@@ -26,17 +27,12 @@ mise run dev
 Then open <http://127.0.0.1:4173>. You can also open `public/index.html`
 directly in a browser when you don't need a local server.
 
-Run the local static checks with:
-
-```bash
-mise run check
-```
-
 ## Deployment
 
-The site deploys automatically to Railway on every push to `main`. Railway
-detects the `Dockerfile`, builds an nginx:alpine image, and serves the
-static files from `public/`.
+The site deploys automatically to Railway on every push to `main`. Railway's
+Nixpacks builder detects Node via `package.json`, runs `npm start`, and
+`server.js` streams files from `public/` on `$PORT`, bound to `::` so the
+edge can reach the container over either IPv4 or IPv6.
 
 ### Custom domain
 
@@ -46,8 +42,7 @@ automatically.
 ## Files served from `public/`
 
 - `index.html` — the homepage
-- `404.html` — error page (nginx serves this for any 404)
-- `styles.css` — all page styles (shared between `index.html` and `404.html`)
+- `styles.css` — all page styles
 - `favicon.svg`, `favicon.ico`, `favicon-32.png`, `favicon-192.png` — favicon
   set, also referenced as PWA icons from `site.webmanifest`
 - `apple-touch-icon.png` — 180×180 iOS home-screen icon
@@ -56,13 +51,9 @@ automatically.
 - `twitter-card.png` — 1200×675 Twitter / X card
 - `robots.txt`, `sitemap.xml`
 
-`scripts/check-site.js` (run via `mise run check`) verifies that every file
-above exists and that every local `href`/`src` referenced from
-`index.html`/`404.html` resolves.
-
 ## Design knobs
 
-Both pages set defaults on `<html>` via data attributes that the CSS reads:
+The page sets defaults on `<html>` via data attributes that the CSS reads:
 
 - `data-font` — `hand` (default), `grotesk`, `mono`, `serif`
 - `data-case` — `upper` (default), `title`, `lower`

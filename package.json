@@ -1,0 +1,10 @@
+{
+  "name": "mlz-no",
+  "private": true,
+  "scripts": {
+    "start": "HOST=:: node server.js"
+  },
+  "engines": {
+    "node": "24.x"
+  }
+}

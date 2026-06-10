@@ -3,8 +3,4 @@ node = "24.12.0"
 
 [tasks.dev]
 description = "Serve public/ on http://127.0.0.1:4173"
-run = "node dev-server.js"
-
-[tasks.check]
-description = "Verify all required and referenced static assets exist"
-run = "node scripts/check-site.js"
+run = "node server.js"
