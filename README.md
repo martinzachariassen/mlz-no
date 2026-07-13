@@ -39,6 +39,40 @@ edge can reach the container over either IPv4 or IPv6.
 Set under **Settings → Networking** in the Railway dashboard. SSL is handled
 automatically.
 
+## Resilience & hardening
+
+`server.js` is built to stay up under hostile traffic (malformed URIs,
+path-probing scanners, slowloris, request floods):
+
+- **Never crashes on input.** URL parsing and percent-decoding are wrapped, so a
+  malformed request like `GET /%` returns `400` instead of throwing an uncaught
+  `URIError` and killing the process. `uncaughtException` / `unhandledRejection`
+  are a final safety net — a stateless file server is safer staying up than
+  crash-looping.
+- **Startup manifest.** `public/` is enumerated once at boot into an in-memory
+  map, so each request is an O(1) lookup with no per-request filesystem calls,
+  and path traversal is impossible by construction (only files present at boot
+  are reachable). Adding files needs a restart — every deploy is a fresh process,
+  so that's a non-issue.
+- **Method allowlist** — only `GET`/`HEAD`; everything else is `405`.
+- **Per-client rate limiting** — fixed window keyed on `X-Forwarded-For`, with a
+  bounded client table (fail-open) so a spoofed-IP flood can't exhaust memory.
+- **Timeouts & caps** — header/request/keep-alive/socket timeouts blunt
+  slowloris; `maxConnections` caps concurrent sockets; malformed HTTP is answered
+  and the socket closed via the `clientError` handler.
+- **Security headers** on every response — a CSP scoped to exactly what the page
+  loads (Google Fonts + Umami), plus HSTS, `nosniff`, `X-Frame-Options: DENY`,
+  `Referrer-Policy`, and `Permissions-Policy`.
+
+Tunable via env vars (sensible defaults): `RATE_LIMIT_MAX` (per window; `0`
+disables), `RATE_LIMIT_WINDOW_MS`, `RATE_LIMIT_MAX_CLIENTS`, `MAX_CONNECTIONS`.
+
+> **Volumetric DDoS** — a true bandwidth/packet flood must be absorbed at the
+> edge, not in the app. Front the Railway domain with **Cloudflare** (free tier,
+> proxied DNS record) for network-layer DDoS protection, WAF rules, and caching.
+> The hardening above keeps a single instance healthy against application-layer
+> abuse; it is the last line of defence, not a substitute for an edge.
+
 ## Files served from `public/`
 
 - `index.html` — the homepage
