@@ -19,12 +19,26 @@ developer based in Oslo.
 ## Project layout
 
 ```
-public/        # everything served to the browser (HTML, CSS, icons, images)
-src/index.ts   # Bun + Hono server: serves public/, hardened against abuse
-package.json   # Bun project + scripts
-tsconfig.json  # TypeScript config
-mise.toml      # pins Bun, defines the dev / start tasks
+public/                 # everything served to the browser
+  index.html            #   the homepage
+  robots.txt            #   crawler directives (well-known root path)
+  sitemap.xml           #   single-URL sitemap (well-known root path)
+  favicon.ico           #   legacy favicon (browsers auto-fetch /favicon.ico)
+  site.webmanifest      #   PWA manifest
+  assets/
+    css/styles.css      #   all page styles
+    icons/              #   favicon.svg, favicon-32/192.png, apple-touch-icon.png
+    social/             #   og.png, twitter-card.png
+src/index.ts            # Bun + Hono server: serves public/, hardened against abuse
+package.json            # Bun project + scripts
+tsconfig.json           # TypeScript config
+mise.toml               # pins Bun, defines the dev / start tasks
 ```
+
+A handful of files stay at the `public/` root on purpose: `robots.txt`,
+`sitemap.xml`, and `favicon.ico` are requested by crawlers and browsers at
+fixed, well-known paths, and `site.webmanifest` is conventionally root-served.
+Everything else lives under `assets/`.
 
 ## Local development
 
@@ -79,15 +93,27 @@ Tunable via env vars (sensible defaults): `RATE_LIMIT_MAX` (per window),
 
 ## Files served from `public/`
 
+Root (fixed well-known paths):
+
 - `index.html` — the homepage
-- `styles.css` — all page styles
-- `favicon.svg`, `favicon.ico`, `favicon-32.png`, `favicon-192.png` — favicon
-  set, also referenced as PWA icons from `site.webmanifest`
-- `apple-touch-icon.png` — 180×180 iOS home-screen icon
+- `favicon.ico` — legacy favicon; browsers auto-fetch `/favicon.ico`
 - `site.webmanifest` — PWA manifest (name, theme colour, icons)
+- `robots.txt`, `sitemap.xml`
+
+`assets/css/`:
+
+- `styles.css` — all page styles
+
+`assets/icons/`:
+
+- `favicon.svg`, `favicon-32.png`, `favicon-192.png` — favicon set, also
+  referenced as PWA icons from `site.webmanifest`
+- `apple-touch-icon.png` — 180×180 iOS home-screen icon
+
+`assets/social/`:
+
 - `og.png` — 1200×630 Open Graph card
 - `twitter-card.png` — 1200×675 Twitter / X card
-- `robots.txt`, `sitemap.xml`
 
 ## Design knobs
 
