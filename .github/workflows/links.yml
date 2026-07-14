@@ -1,0 +1,42 @@
+name: Link Check
+
+# Catches dead links and missing assets in the static site — the markup, the
+# sitemap, the manifest, robots.txt. The weekly run also catches external links
+# (GitHub, LinkedIn, Google Fonts) that rot after we last touched the code.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "37 6 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: links-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lychee:
+    name: check links
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # --root-dir resolves root-relative hrefs (/assets/…, /favicon.ico)
+      # against the served directory, exactly as the browser would. lychee
+      # requires an absolute path here, so anchor it to the checkout root.
+      - name: Check links
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: >-
+            --root-dir ${{ github.workspace }}/public
+            --include-mail=false
+            --cache
+            --max-cache-age 1d
+            public/index.html
+            public/sitemap.xml
+            public/site.webmanifest
+            public/robots.txt
+          fail: true
