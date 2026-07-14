@@ -12,3 +12,11 @@ run = "bun run src/index.ts"
 [tasks.typecheck]
 description = "Type-check the server with tsc (no emit)"
 run = "bun run typecheck"
+
+[tasks.format]
+description = "Format and auto-fix src/ with Biome"
+run = "bun run format"
+
+[tasks.lint]
+description = "Lint + format check src/ with Biome (read-only)"
+run = "bun run lint"
