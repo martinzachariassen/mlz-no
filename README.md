@@ -51,6 +51,13 @@ mise run dev
 
 Then open <http://127.0.0.1:4173>.
 
+Type-check the server (Bun runs the TypeScript directly, so this is only needed
+in CI or before a commit):
+
+```bash
+mise run typecheck
+```
+
 ## Deployment
 
 The site deploys automatically to Railway on every push to `main`, straight from

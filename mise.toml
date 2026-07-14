@@ -8,3 +8,7 @@ run = "bun run --hot src/index.ts"
 [tasks.start]
 description = "Serve public/ in production mode"
 run = "bun run src/index.ts"
+
+[tasks.typecheck]
+description = "Type-check the server with tsc (no emit)"
+run = "bun run typecheck"
