@@ -4,6 +4,11 @@ name: Lighthouse
 # SEO, and performance — against the real server. LHCI boots `bun run start`,
 # waits for the "listening" log line, then runs Lighthouse three times and
 # asserts the category scores in .github/lighthouse/lighthouserc.json.
+#
+# Accessibility and SEO are hard gates. Best-practices and performance are
+# warnings: Lighthouse's "Use HTTPS" audit always fails against the plain-HTTP
+# test server, and perf swings with third-party font/analytics fetches — neither
+# reflects production (HTTPS, behind Railway/Cloudflare).
 on:
   push:
     branches: [main]
