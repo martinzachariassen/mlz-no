@@ -1,24 +1,49 @@
+<div align="center">
+
 # mlz.no
 
-Personal homepage for [Martin Zachariassen](https://mlz.no) — senior software
-developer based in Oslo.
+**Personal homepage for [Martin Zachariassen](https://mlz.no)** — senior software developer based in Oslo.
 
-## Stack
+[![CI](https://img.shields.io/github/actions/workflow/status/martinzachariassen/mlz-no/ci.yml?branch=main&label=CI&style=flat-square)](https://github.com/martinzachariassen/mlz-no/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
+[![Bun](https://img.shields.io/badge/Bun-1.3-14151a?style=flat-square&logo=bun&logoColor=white)](https://bun.sh)
+[![Hono](https://img.shields.io/badge/Hono-4-e36002?style=flat-square&logo=hono&logoColor=white)](https://hono.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178c6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![Deployed on Railway](https://img.shields.io/badge/Railway-deploy-0B0D0E?style=flat-square&logo=railway&logoColor=white)](https://railway.app)
 
-- Static HTML + CSS in `public/` — no build step for the site itself.
-- Served by a small, hardened [Bun](https://bun.sh) + [Hono](https://hono.dev)
-  server (`src/index.ts`), written in TypeScript and deployed on
-  [Railway](https://railway.app).
-- Editorial monospace layout on a paper background — Space Mono + Architects
-  Daughter (Instrument Serif and Space Grotesk available as alternate name
-  treatments via `data-font` on `<html>`).
-- Low-chroma accent palettes (`data-accent` on `<html>`) — cyan by default.
-- Drifting CSS-animated marks behind the hero; honours `prefers-reduced-motion`.
-- [Umami](https://umami.is) for privacy-first analytics.
+[**mlz.no →**](https://mlz.no)
+
+<img src="public/assets/social/og.png" alt="mlz.no — Martin Zachariassen, Senior Software Developer" width="640" />
+
+</div>
+
+## Overview
+
+A single, static landing page with an editorial monospace layout on a paper
+background. There's no build step for the site — the HTML and CSS in `public/`
+are served as-is by a small, hardened [Bun](https://bun.sh) +
+[Hono](https://hono.dev) server, deployed on [Railway](https://railway.app).
+
+- **Type** — Space Mono + Architects Daughter, with Instrument Serif and Space
+  Grotesk available as alternate name treatments (`data-font` on `<html>`).
+- **Palette** — low-chroma accents (`data-accent` on `<html>`), cyan by default.
+- **Motion** — drifting CSS-animated marks behind the hero; honours
+  `prefers-reduced-motion`.
+- **Analytics** — [Umami](https://umami.is), privacy-first and cookieless.
+
+## Tech stack
+
+| Layer      | Choice                                                                 |
+| ---------- | ---------------------------------------------------------------------- |
+| Runtime    | [Bun](https://bun.sh) (pinned via `mise.toml`)                          |
+| Server     | [Hono](https://hono.dev) + hardening middleware, in TypeScript         |
+| Frontend   | Hand-written HTML + CSS, no framework, no build                        |
+| Hosting    | [Railway](https://railway.app) — auto-deploy from `main`               |
+| Analytics  | [Umami](https://umami.is)                                              |
 
 ## Project layout
 
-```
+```text
 public/                 # everything served to the browser
   index.html            #   the homepage
   robots.txt            #   crawler directives (well-known root path)
@@ -32,7 +57,8 @@ public/                 # everything served to the browser
 src/index.ts            # Bun + Hono server: serves public/, hardened against abuse
 package.json            # Bun project + scripts
 tsconfig.json           # TypeScript config
-mise.toml               # pins Bun, defines the dev / start tasks
+railway.json            # Railway config-as-code (healthcheck path)
+mise.toml               # pins Bun, defines the dev / start / typecheck tasks
 ```
 
 A handful of files stay at the `public/` root on purpose: `robots.txt`,
@@ -42,14 +68,14 @@ Everything else lives under `assets/`.
 
 ## Local development
 
-Bun is pinned in `mise.toml` (`mise install` if it isn't present yet). Start a
-hot-reloading preview with:
+Bun is pinned in `mise.toml` — run `mise install` if it isn't present yet. Then
+start a hot-reloading preview:
 
 ```bash
 mise run dev
 ```
 
-Then open <http://127.0.0.1:4173>.
+Open <http://127.0.0.1:4173>.
 
 Type-check the server (Bun runs the TypeScript directly, so this is only needed
 in CI or before a commit):
@@ -72,10 +98,8 @@ endpoint and only switches traffic to the new version once it returns `200`, so 
 broken build never takes the live site down. The route is registered before the
 rate limiter, so a flood can't throttle the probe into a false "unhealthy".
 
-### Custom domain
-
-Set under **Settings → Networking** in the Railway dashboard. SSL is handled
-automatically.
+Custom domains are set under **Settings → Networking** in the Railway dashboard;
+SSL is handled automatically.
 
 ## Resilience & hardening
 
@@ -98,43 +122,28 @@ than hand-rolled code:
 Tunable via env vars (sensible defaults): `RATE_LIMIT_MAX` (per window),
 `RATE_LIMIT_WINDOW_MS`, `PORT`, `HOST`.
 
+CI (`.github/workflows/ci.yml`) type-checks the server and boots it to smoke-test
+that the hardening still holds — status codes for `GET`/`POST`/missing/traversal
+paths, plus the presence of the key security headers.
+
 > **Volumetric DDoS** — a true bandwidth / packet flood must be absorbed at the
 > edge, not in the app. Front the Railway domain with **Cloudflare** (free tier,
 > proxied DNS record) for network-layer DDoS protection, WAF rules, and caching.
 > The hardening above keeps a single instance healthy against application-layer
 > abuse; it is the last line of defence, not a substitute for an edge.
 
-## Files served from `public/`
-
-Root (fixed well-known paths):
-
-- `index.html` — the homepage
-- `favicon.ico` — legacy favicon; browsers auto-fetch `/favicon.ico`
-- `site.webmanifest` — PWA manifest (name, theme colour, icons)
-- `robots.txt`, `sitemap.xml`
-
-`assets/css/`:
-
-- `styles.css` — all page styles
-
-`assets/icons/`:
-
-- `favicon.svg`, `favicon-32.png`, `favicon-192.png` — favicon set, also
-  referenced as PWA icons from `site.webmanifest`
-- `apple-touch-icon.png` — 180×180 iOS home-screen icon
-
-`assets/social/`:
-
-- `og.png` — 1200×630 Open Graph card
-- `twitter-card.png` — 1200×675 Twitter / X card
-
 ## Design knobs
 
-The page sets defaults on `<html>` via data attributes that the CSS reads:
+The page sets defaults on `<html>` via data attributes that the CSS reads —
+change them in the markup to retune without touching CSS:
 
-- `data-font` — `hand` (default), `grotesk`, `mono`, `serif`
-- `data-case` — `upper` (default), `title`, `lower`
-- `data-accent` — `cyan` (default), `blue`, `green`, `rust`, `ink`
-- `data-motion` — `subtle` (default; halves the marks), `off` (hides them)
+| Attribute     | Default            | Options                            |
+| ------------- | ------------------ | ---------------------------------- |
+| `data-font`   | `hand`             | `grotesk`, `mono`, `serif`         |
+| `data-case`   | `upper`            | `title`, `lower`                   |
+| `data-accent` | `cyan`             | `blue`, `green`, `rust`, `ink`     |
+| `data-motion` | `subtle`           | `off` (hides the drifting marks)   |
 
-Change them in the markup to retune without touching CSS.
+## License
+
+[MIT](LICENSE) © Martin Zachariassen
