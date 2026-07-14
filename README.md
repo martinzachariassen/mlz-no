@@ -66,6 +66,12 @@ the GitHub repo. Railway's Railpack builder detects Bun (via `package.json` +
 server binds to `::` on `$PORT` so the edge can reach the container over either
 IPv4 or IPv6.
 
+`railway.json` ([config as code](https://docs.railway.com/reference/config-as-code))
+points Railway's healthcheck at `/health`. During a deploy Railway polls that
+endpoint and only switches traffic to the new version once it returns `200`, so a
+broken build never takes the live site down. The route is registered before the
+rate limiter, so a flood can't throttle the probe into a false "unhealthy".
+
 ### Custom domain
 
 Set under **Settings → Networking** in the Railway dashboard. SSL is handled

@@ -22,6 +22,13 @@ const rateLimit = Number(process.env.RATE_LIMIT_MAX ?? 120);
 
 const app = new Hono();
 
+// --- Healthcheck ------------------------------------------------------------
+// Railway polls this during a deploy and only switches traffic to the new
+// version once it returns 200 (see railway.json → deploy.healthcheckPath).
+// Registered before the rate limiter and method allowlist so a flood can never
+// throttle the probe into a false "unhealthy" and stall or roll back a rollout.
+app.get("/health", (c) => c.text("ok"));
+
 // --- Security headers on every response -------------------------------------
 // The CSP is scoped to exactly what public/index.html loads: Google Fonts
 // (styles from googleapis, font files from gstatic) and Umami analytics.
