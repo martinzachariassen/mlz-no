@@ -24,13 +24,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # --base public resolves root-relative hrefs (/assets/…, /favicon.ico)
-      # against the served directory, exactly as the browser would.
+      # --root-dir resolves root-relative hrefs (/assets/…, /favicon.ico)
+      # against the served directory, exactly as the browser would. lychee
+      # requires an absolute path here, so anchor it to the checkout root.
       - name: Check links
         uses: lycheeverse/lychee-action@v2
         with:
           args: >-
-            --base public
+            --root-dir ${{ github.workspace }}/public
             --include-mail=false
             --cache
             --max-cache-age 1d
