@@ -1,6 +1,15 @@
 {
   "name": "mlz-no",
+  "version": "1.0.0",
   "private": true,
+  "description": "Personal homepage for Martin Zachariassen, served by a hardened Bun + Hono static server.",
+  "homepage": "https://mlz.no",
+  "author": "Martin Zachariassen <hi@mlz.no>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/martinzachariassen/mlz-no.git"
+  },
   "type": "module",
   "scripts": {
     "dev": "bun run --hot src/index.ts",
