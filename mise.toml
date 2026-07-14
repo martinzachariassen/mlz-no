@@ -1,6 +1,14 @@
 [tools]
-node = "24.12.0"
+bun = "1.3.14"
 
 [tasks.dev]
-description = "Serve public/ on http://127.0.0.1:4173"
-run = "node server.js"
+description = "Serve public/ on http://127.0.0.1:4173 with hot reload"
+run = "bun run --hot src/index.ts"
+
+[tasks.start]
+description = "Serve public/ in production mode"
+run = "bun run src/index.ts"
+
+[tasks.typecheck]
+description = "Type-check the server with tsc (no emit)"
+run = "bun run typecheck"

@@ -5,34 +5,66 @@ developer based in Oslo.
 
 ## Stack
 
-- Static HTML/CSS, no build step, no runtime dependencies
-- Editorial monospace layout on a paper background — Space Mono +
-  Architects Daughter (with Instrument Serif and Space Grotesk available as
-  alternate name treatments via `data-font` on `<html>`)
-- Low-chroma accent palettes (`data-accent` on `<html>`) — cyan by default
-- Drifting CSS-animated marks behind the hero; honours
-  `prefers-reduced-motion`
-- [Umami](https://umami.is) for privacy-first analytics
-- Tiny single-file Node static server (`server.js`), hosted on
-  [Railway](https://railway.app)
+- Static HTML + CSS in `public/` — no build step for the site itself.
+- Served by a small, hardened [Bun](https://bun.sh) + [Hono](https://hono.dev)
+  server (`src/index.ts`), written in TypeScript and deployed on
+  [Railway](https://railway.app).
+- Editorial monospace layout on a paper background — Space Mono + Architects
+  Daughter (Instrument Serif and Space Grotesk available as alternate name
+  treatments via `data-font` on `<html>`).
+- Low-chroma accent palettes (`data-accent` on `<html>`) — cyan by default.
+- Drifting CSS-animated marks behind the hero; honours `prefers-reduced-motion`.
+- [Umami](https://umami.is) for privacy-first analytics.
+
+## Project layout
+
+```
+public/                 # everything served to the browser
+  index.html            #   the homepage
+  robots.txt            #   crawler directives (well-known root path)
+  sitemap.xml           #   single-URL sitemap (well-known root path)
+  favicon.ico           #   legacy favicon (browsers auto-fetch /favicon.ico)
+  site.webmanifest      #   PWA manifest
+  assets/
+    css/styles.css      #   all page styles
+    icons/              #   favicon.svg, favicon-32/192.png, apple-touch-icon.png
+    social/             #   og.png, twitter-card.png
+src/index.ts            # Bun + Hono server: serves public/, hardened against abuse
+package.json            # Bun project + scripts
+tsconfig.json           # TypeScript config
+mise.toml               # pins Bun, defines the dev / start tasks
+```
+
+A handful of files stay at the `public/` root on purpose: `robots.txt`,
+`sitemap.xml`, and `favicon.ico` are requested by crawlers and browsers at
+fixed, well-known paths, and `site.webmanifest` is conventionally root-served.
+Everything else lives under `assets/`.
 
 ## Local development
 
-Node version is pinned in `mise.toml`. Start a local preview with:
+Bun is pinned in `mise.toml` (`mise install` if it isn't present yet). Start a
+hot-reloading preview with:
 
 ```bash
 mise run dev
 ```
 
-Then open <http://127.0.0.1:4173>. You can also open `public/index.html`
-directly in a browser when you don't need a local server.
+Then open <http://127.0.0.1:4173>.
+
+Type-check the server (Bun runs the TypeScript directly, so this is only needed
+in CI or before a commit):
+
+```bash
+mise run typecheck
+```
 
 ## Deployment
 
-The site deploys automatically to Railway on every push to `main`. Railway's
-Nixpacks builder detects Node via `package.json`, runs `npm start`, and
-`server.js` streams files from `public/` on `$PORT`, bound to `::` so the
-edge can reach the container over either IPv4 or IPv6.
+The site deploys automatically to Railway on every push to `main`, straight from
+the GitHub repo. Railway's Railpack builder detects Bun (via `package.json` +
+`bun.lock`), runs `bun install`, and starts the server with `bun run start`. The
+server binds to `::` on `$PORT` so the edge can reach the container over either
+IPv4 or IPv6.
 
 ### Custom domain
 
@@ -41,33 +73,26 @@ automatically.
 
 ## Resilience & hardening
 
-`server.js` is built to stay up under hostile traffic (malformed URIs,
-path-probing scanners, slowloris, request floods):
+`src/index.ts` leans on well-maintained, mostly first-party middleware rather
+than hand-rolled code:
 
-- **Never crashes on input.** URL parsing and percent-decoding are wrapped, so a
-  malformed request like `GET /%` returns `400` instead of throwing an uncaught
-  `URIError` and killing the process. `uncaughtException` / `unhandledRejection`
-  are a final safety net — a stateless file server is safer staying up than
-  crash-looping.
-- **Startup manifest.** `public/` is enumerated once at boot into an in-memory
-  map, so each request is an O(1) lookup with no per-request filesystem calls,
-  and path traversal is impossible by construction (only files present at boot
-  are reachable). Adding files needs a restart — every deploy is a fresh process,
-  so that's a non-issue.
+- **Security headers on every response** (`hono/secure-headers`) — a CSP scoped
+  to exactly what the page loads (Google Fonts + Umami), plus HSTS, `nosniff`,
+  `X-Frame-Options: DENY`, `Referrer-Policy`, and `Permissions-Policy`.
+- **Per-client rate limiting** (`hono-rate-limiter`) — fixed window keyed on the
+  left-most `X-Forwarded-For` entry; the in-memory store resets each window and
+  is fine for a single instance.
+- **Safe static serving** (`hono/bun` `serveStatic`) — resolves requests within
+  `public/`, so path traversal is blocked by construction.
 - **Method allowlist** — only `GET`/`HEAD`; everything else is `405`.
-- **Per-client rate limiting** — fixed window keyed on `X-Forwarded-For`, with a
-  bounded client table (fail-open) so a spoofed-IP flood can't exhaust memory.
-- **Timeouts & caps** — header/request/keep-alive/socket timeouts blunt
-  slowloris; `maxConnections` caps concurrent sockets; malformed HTTP is answered
-  and the socket closed via the `clientError` handler.
-- **Security headers** on every response — a CSP scoped to exactly what the page
-  loads (Google Fonts + Umami), plus HSTS, `nosniff`, `X-Frame-Options: DENY`,
-  `Referrer-Policy`, and `Permissions-Policy`.
+- **Timeouts & body cap** — `idleTimeout` blunts slow / idle connections
+  (slowloris); `maxRequestBodySize` rejects oversized bodies. Malformed input
+  returns a `4xx` / `500` rather than crashing the process.
 
-Tunable via env vars (sensible defaults): `RATE_LIMIT_MAX` (per window; `0`
-disables), `RATE_LIMIT_WINDOW_MS`, `RATE_LIMIT_MAX_CLIENTS`, `MAX_CONNECTIONS`.
+Tunable via env vars (sensible defaults): `RATE_LIMIT_MAX` (per window),
+`RATE_LIMIT_WINDOW_MS`, `PORT`, `HOST`.
 
-> **Volumetric DDoS** — a true bandwidth/packet flood must be absorbed at the
+> **Volumetric DDoS** — a true bandwidth / packet flood must be absorbed at the
 > edge, not in the app. Front the Railway domain with **Cloudflare** (free tier,
 > proxied DNS record) for network-layer DDoS protection, WAF rules, and caching.
 > The hardening above keeps a single instance healthy against application-layer
@@ -75,15 +100,27 @@ disables), `RATE_LIMIT_WINDOW_MS`, `RATE_LIMIT_MAX_CLIENTS`, `MAX_CONNECTIONS`.
 
 ## Files served from `public/`
 
+Root (fixed well-known paths):
+
 - `index.html` — the homepage
-- `styles.css` — all page styles
-- `favicon.svg`, `favicon.ico`, `favicon-32.png`, `favicon-192.png` — favicon
-  set, also referenced as PWA icons from `site.webmanifest`
-- `apple-touch-icon.png` — 180×180 iOS home-screen icon
+- `favicon.ico` — legacy favicon; browsers auto-fetch `/favicon.ico`
 - `site.webmanifest` — PWA manifest (name, theme colour, icons)
+- `robots.txt`, `sitemap.xml`
+
+`assets/css/`:
+
+- `styles.css` — all page styles
+
+`assets/icons/`:
+
+- `favicon.svg`, `favicon-32.png`, `favicon-192.png` — favicon set, also
+  referenced as PWA icons from `site.webmanifest`
+- `apple-touch-icon.png` — 180×180 iOS home-screen icon
+
+`assets/social/`:
+
 - `og.png` — 1200×630 Open Graph card
 - `twitter-card.png` — 1200×675 Twitter / X card
-- `robots.txt`, `sitemap.xml`
 
 ## Design knobs
 
