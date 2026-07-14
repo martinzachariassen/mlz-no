@@ -5,6 +5,7 @@
 **Personal homepage for [Martin Zachariassen](https://mlz.no)** — senior software developer based in Oslo.
 
 [![CI](https://img.shields.io/github/actions/workflow/status/martinzachariassen/mlz-no/ci.yml?branch=main&label=CI&style=flat-square)](https://github.com/martinzachariassen/mlz-no/actions/workflows/ci.yml)
+[![CodeQL](https://img.shields.io/github/actions/workflow/status/martinzachariassen/mlz-no/codeql.yml?branch=main&label=CodeQL&style=flat-square)](https://github.com/martinzachariassen/mlz-no/actions/workflows/codeql.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
 [![Bun](https://img.shields.io/badge/Bun-1.3-14151a?style=flat-square&logo=bun&logoColor=white)](https://bun.sh)
 [![Hono](https://img.shields.io/badge/Hono-4-e36002?style=flat-square&logo=hono&logoColor=white)](https://hono.dev)
@@ -122,9 +123,12 @@ than hand-rolled code:
 Tunable via env vars (sensible defaults): `RATE_LIMIT_MAX` (per window),
 `RATE_LIMIT_WINDOW_MS`, `PORT`, `HOST`.
 
-CI (`.github/workflows/ci.yml`) type-checks the server and boots it to smoke-test
-that the hardening still holds — status codes for `GET`/`POST`/missing/traversal
-paths, plus the presence of the key security headers.
+CI (`.github/workflows/ci.yml`) lints with [Biome](https://biomejs.dev),
+type-checks the server, and boots it to smoke-test that the hardening still holds
+— status codes for `GET`/`POST`/missing/traversal paths, plus the presence of the
+key security headers. [CodeQL](https://codeql.github.com) scans on every push and
+weekly, and [Dependabot](https://docs.github.com/code-security/dependabot) keeps
+the Bun and GitHub Actions dependencies current.
 
 > **Volumetric DDoS** — a true bandwidth / packet flood must be absorbed at the
 > edge, not in the app. Front the Railway domain with **Cloudflare** (free tier,
