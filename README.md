@@ -152,10 +152,13 @@ one deliberate defence:
 > single instance healthy against application-layer abuse — it's the last line
 > of defence, not a substitute for an edge.
 
-**Verified in CI.** [`ci.yml`](.github/workflows/ci.yml) lints with Biome,
-type-checks, builds, then boots the real server and asserts the contract: status
-codes for `GET`/`POST`/missing/traversal paths and the presence of the key
-security headers. [CodeQL](https://codeql.github.com) scans on every push and weekly;
+**Verified in CI.** [`ci.yml`](.github/workflows/ci.yml) runs two stages: a
+**build** job lints with Biome, type-checks, builds the bundle, and uploads
+`dist/` as an artifact; a **smoke** job then downloads that exact artifact, boots
+the real server, and asserts the contract — status codes for
+`GET`/`POST`/missing/traversal paths and the presence of the key security
+headers. Testing the uploaded artifact means CI exercises the same bundle that
+would deploy, not a rebuilt copy. [CodeQL](https://codeql.github.com) scans on every push and weekly;
 [Dependabot](https://docs.github.com/code-security/dependabot) keeps Bun and
 GitHub Actions dependencies current; and
 [OpenSSF Scorecard](https://scorecard.dev) grades the repo's supply-chain
