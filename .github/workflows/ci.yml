@@ -5,7 +5,8 @@ on:
     branches: [main]
   pull_request:
 
-# Read-only token is all this workflow needs.
+# Read-only token is all this workflow needs. Artifact upload/download between
+# jobs uses the Actions runtime token, not the REST API, so no extra scope.
 permissions:
   contents: read
 
@@ -15,8 +16,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  check:
-    name: typecheck + smoke
+  build:
+    name: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -35,13 +36,48 @@ jobs:
       - name: Type-check
         run: mise run typecheck
 
-      # Boot the real server and assert the hardening still holds. HOST is pinned
-      # to IPv4 so the check is independent of the runner's dual-stack settings
-      # (the app defaults to :: for Railway).
+      - name: Build
+        run: mise run build
+
+      # Hand the exact production bundle to the smoke job so it tests what would
+      # ship, rather than rebuilding a second copy.
+      - name: Upload build output
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+          retention-days: 7
+
+  smoke:
+    name: smoke
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      # Pinned to IPv4 so the check is independent of the runner's dual-stack
+      # settings (the app defaults to :: for Railway).
+      HOST: "127.0.0.1"
+      PORT: "4173"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up mise (installs Bun from mise.toml)
+        uses: jdx/mise-action@v2
+
+      # The server itself (hono + middleware) still needs its dependencies; the
+      # frontend bundle comes from the build job's artifact.
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Download build output
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      # Boot the real server against the built dist/ and assert the hardening
+      # still holds.
       - name: Smoke-test the server
-        env:
-          HOST: "127.0.0.1"
-          PORT: "4173"
         run: |
           set -euo pipefail
           bun run start &
@@ -66,7 +102,7 @@ jobs:
 
           base="http://127.0.0.1:$PORT"
           check "GET / -> 200"          200 "$(curl -s -o /dev/null -w '%{http_code}' "$base/")"
-          check "GET /styles -> 200"    200 "$(curl -s -o /dev/null -w '%{http_code}' "$base/assets/css/styles.css")"
+          check "GET /robots -> 200"    200 "$(curl -s -o /dev/null -w '%{http_code}' "$base/robots.txt")"
           check "POST / -> 405"         405 "$(curl -s -o /dev/null -w '%{http_code}' -X POST "$base/")"
           check "missing -> 404"        404 "$(curl -s -o /dev/null -w '%{http_code}' "$base/nope")"
           check "traversal -> 404"      404 "$(curl -s -o /dev/null -w '%{http_code}' "$base/%2e%2e/package.json")"

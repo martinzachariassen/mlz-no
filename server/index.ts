@@ -1,5 +1,5 @@
-// This process sits behind Railway's edge and serves a fixed set of static
-// files, so it must never crash on input and should shed load rather than fall
+// This process sits behind Railway's edge and serves the Vite build output
+// (dist/), so it must never crash on input and should shed load rather than fall
 // over. Volumetric (network-layer) DDoS still has to be absorbed at the edge —
 // front the Railway domain with Cloudflare. This is the last line of defence.
 
@@ -18,8 +18,10 @@ const app = new Hono();
 // throttle Railway's deploy probe into a false "unhealthy" and stall a rollout.
 app.get("/health", (c) => c.text("ok"));
 
-// The CSP is scoped to exactly what public/index.html loads — Google Fonts and
-// Umami. Keep it in sync with the markup.
+// The CSP is scoped to exactly what the built page loads — the bundled JS/CSS
+// (self), Google Fonts, and Umami. Keep it in sync with index.html. The Vite
+// build ships no inline scripts (modulePreload polyfill is disabled) and no
+// inline styles, so script-src / style-src stay free of 'unsafe-inline'.
 app.use(
   "*",
   secureHeaders({
@@ -68,9 +70,9 @@ app.use("*", async (c, next) => {
   await next();
 });
 
-// serveStatic resolves requests within public/ and blocks path traversal by
+// serveStatic resolves requests within dist/ and blocks path traversal by
 // construction — only files that exist on disk are reachable.
-app.use("*", serveStatic({ root: "./public" }));
+app.use("*", serveStatic({ root: "./dist" }));
 
 app.notFound((c) => c.text("Not found", 404));
 

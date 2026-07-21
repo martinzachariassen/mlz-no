@@ -2,21 +2,29 @@
 bun = "1.3.14"
 
 [tasks.dev]
-description = "Serve public/ on http://127.0.0.1:4173 with hot reload"
-run = "bun run --hot src/index.ts"
+description = "Start the Vite dev server on http://127.0.0.1:4173 with HMR"
+run = "bun run dev"
+
+[tasks.build]
+description = "Build the production bundle into dist/"
+run = "bun run build"
+
+[tasks.preview]
+description = "Preview the production build with Vite"
+run = "bun run preview"
 
 [tasks.start]
-description = "Serve public/ in production mode"
-run = "bun run src/index.ts"
+description = "Serve dist/ in production via the Bun + Hono server"
+run = "bun run start"
 
 [tasks.typecheck]
-description = "Type-check the server with tsc (no emit)"
+description = "Type-check the app and server with tsc (no emit)"
 run = "bun run typecheck"
 
 [tasks.format]
-description = "Format and auto-fix src/ with Biome"
+description = "Format and auto-fix with Biome"
 run = "bun run format"
 
 [tasks.lint]
-description = "Lint + format check src/ with Biome (read-only)"
+description = "Lint + format check with Biome (read-only)"
 run = "bun run lint"
