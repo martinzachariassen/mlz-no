@@ -1,0 +1,58 @@
+.links {
+  display: flex;
+  gap: clamp(12px, 2vw, 18px);
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 6px;
+}
+.lk {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  border: 1.5px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  text-decoration: none;
+  padding: 13px 22px;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.lk .ic {
+  width: 15px;
+  height: 15px;
+  display: block;
+  flex: 0 0 auto;
+  transition: transform 0.25s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.lk .ic svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+@media (hover: hover) {
+  .lk:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 5px 5px 0 var(--accent);
+    border-color: var(--accent);
+  }
+  .lk:hover .ic {
+    transform: translateX(-1px) rotate(-4deg);
+  }
+}
+.lk:focus-visible {
+  outline: none;
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0 var(--accent);
+  border-color: var(--accent);
+}
+.lk:focus-visible .ic {
+  transform: translateX(-1px) rotate(-4deg);
+}

@@ -1,0 +1,36 @@
+/* Design tokens. Accent is swappable one attribute away via [data-accent] on
+   <html> — see the design knobs in index.html / README. */
+:root {
+  --paper: #ecebe4;
+  --paper-2: #e4e2da;
+  --ink: #1a1a18;
+  --ink-2: #4a4a45;
+  --muted: #6e6c64;
+  --line: #cbc9be;
+  --accent: oklch(0.74 0.13 195);
+  --accent-deep: oklch(0.52 0.1 200);
+  --mono: "Space Mono", ui-monospace, monospace;
+  --hand: "Architects Daughter", cursive;
+  --gutter: clamp(24px, 5vw, 56px);
+}
+
+[data-accent="cyan"] {
+  --accent: oklch(0.74 0.13 195);
+  --accent-deep: oklch(0.52 0.1 200);
+}
+[data-accent="blue"] {
+  --accent: oklch(0.62 0.15 250);
+  --accent-deep: oklch(0.46 0.13 255);
+}
+[data-accent="green"] {
+  --accent: oklch(0.7 0.13 155);
+  --accent-deep: oklch(0.48 0.11 158);
+}
+[data-accent="rust"] {
+  --accent: oklch(0.66 0.15 45);
+  --accent-deep: oklch(0.48 0.13 42);
+}
+[data-accent="ink"] {
+  --accent: oklch(0.32 0.02 250);
+  --accent-deep: oklch(0.24 0.015 250);
+}

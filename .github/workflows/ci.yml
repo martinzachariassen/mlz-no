@@ -35,6 +35,9 @@ jobs:
       - name: Type-check
         run: mise run typecheck
 
+      - name: Build
+        run: mise run build
+
       # Boot the real server and assert the hardening still holds. HOST is pinned
       # to IPv4 so the check is independent of the runner's dual-stack settings
       # (the app defaults to :: for Railway).
@@ -66,7 +69,7 @@ jobs:
 
           base="http://127.0.0.1:$PORT"
           check "GET / -> 200"          200 "$(curl -s -o /dev/null -w '%{http_code}' "$base/")"
-          check "GET /styles -> 200"    200 "$(curl -s -o /dev/null -w '%{http_code}' "$base/assets/css/styles.css")"
+          check "GET /robots -> 200"    200 "$(curl -s -o /dev/null -w '%{http_code}' "$base/robots.txt")"
           check "POST / -> 405"         405 "$(curl -s -o /dev/null -w '%{http_code}' -X POST "$base/")"
           check "missing -> 404"        404 "$(curl -s -o /dev/null -w '%{http_code}' "$base/nope")"
           check "traversal -> 404"      404 "$(curl -s -o /dev/null -w '%{http_code}' "$base/%2e%2e/package.json")"

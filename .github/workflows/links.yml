@@ -35,7 +35,7 @@ jobs:
             --include-mail=false
             --cache
             --max-cache-age 1d
-            public/index.html
+            index.html
             public/sitemap.xml
             public/site.webmanifest
             public/robots.txt
