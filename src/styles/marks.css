@@ -8,6 +8,20 @@
   pointer-events: none;
   overflow: hidden;
 }
+/* The marks ride in their own layer so useHeroFx can parallax the whole field a
+   few pixels against the static grid without disturbing each mark's float. --px/
+   --py default to 0, so with JS off the field simply sits still. */
+.field {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+  opacity: 0.55;
+  transform: translate3d(
+    calc(var(--px, 0) * 9px),
+    calc(var(--py, 0) * 9px),
+    0
+  );
+}
 .mk {
   position: absolute;
   bottom: -12%;
@@ -24,14 +38,14 @@
 /* Per-mark drift kept in CSS, not inline styles, so the CSP style-src stays tight. */
 .mk:nth-child(1)  { left: 8%;  --s: 14px; --op: .16; --dx: 24px;  --rot: 120deg; animation-duration: 42s; animation-delay: -4s; }
 .mk:nth-child(2)  { left: 16%; --s: 5px;  --op: .22; --dx: -16px; --rot: 0deg;   animation-duration: 30s; animation-delay: -12s; }
-.mk:nth-child(3)  { left: 24%; --s: 30px; --op: .14; --dx: 34px;  --rot: 30deg;  animation-duration: 48s; animation-delay: -2s; }
+.mk:nth-child(3)  { left: 24%; --s: 15px; --op: .14; --dx: 34px;  --rot: 30deg;  animation-duration: 48s; animation-delay: -2s; }
 .mk:nth-child(4)  { left: 33%; --s: 13px; --op: .18; --dx: -12px; --rot: 90deg;  animation-duration: 36s; animation-delay: -18s; }
 .mk:nth-child(5)  { left: 42%; --s: 15px; --op: .18; --dx: 22px;  --rot: -60deg; animation-duration: 40s; animation-delay: -8s; }
 .mk:nth-child(6)  { left: 52%; --s: 4px;  --op: .24; --dx: -26px; --rot: 0deg;   animation-duration: 26s; animation-delay: -20s; }
 .mk:nth-child(7)  { left: 60%; --s: 9px;  --op: .16; --dx: 18px;  --rot: 45deg;  animation-duration: 44s; animation-delay: -6s; }
 .mk:nth-child(8)  { left: 68%; --s: 11px; --op: .16; --dx: -14px; --rot: -90deg; animation-duration: 34s; animation-delay: -14s; }
 .mk:nth-child(9)  { left: 77%; --s: 12px; --op: .18; --dx: 24px;  --rot: 120deg; animation-duration: 38s; animation-delay: -10s; }
-.mk:nth-child(10) { left: 86%; --s: 24px; --op: .13; --dx: -18px; --rot: 90deg;  animation-duration: 50s; animation-delay: -24s; }
+.mk:nth-child(10) { left: 86%; --s: 14px; --op: .13; --dx: -18px; --rot: 90deg;  animation-duration: 50s; animation-delay: -24s; }
 .mk:nth-child(11) { left: 93%; --s: 5px;  --op: .22; --dx: 16px;  --rot: 0deg;   animation-duration: 28s; animation-delay: -3s; }
 .mk:nth-child(12) { left: 12%; --s: 8px;  --op: .16; --dx: 18px;  --rot: 45deg;  animation-duration: 46s; animation-delay: -28s; }
 .mk:nth-child(13) { left: 48%; --s: 10px; --op: .16; --dx: 14px;  --rot: 90deg;  animation-duration: 32s; animation-delay: -16s; }

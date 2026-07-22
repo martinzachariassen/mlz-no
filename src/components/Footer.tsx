@@ -10,10 +10,10 @@ export function Footer() {
   const { copyrightYear, firstName, lastName, coordinates } = profile;
   return (
     <footer className="foot">
-      <span>
+      <span data-glitch>
         © {copyrightYear} · {firstName} {lastName}
       </span>
-      <span>
+      <span data-glitch>
         {coordinates.lat}
         <Degree />
         {coordinates.latDir} · {coordinates.lon}
