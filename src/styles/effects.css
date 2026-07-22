@@ -1,0 +1,127 @@
+/* Cursor spotlight + per-character glitch — the interactive layer driven by
+   useHeroFx. Both are pure enhancement: the custom properties below have static
+   fallbacks, so with JS off the page is a clean sheet of paper. */
+
+/* --- Cursor spotlight ------------------------------------------------------
+   At rest the background is clean paper — no grid. A faint engineering grid is
+   revealed only inside a soft disc that tracks the pointer (masked so it fades
+   to nothing at the edges), with a whisper of accent pooling underneath. Both
+   fade out when the pointer leaves. --mx/--my are written from useHeroFx via the
+   CSSOM, so CSP style-src stays free of 'unsafe-inline'. */
+.spot,
+.glow {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+.spot {
+  --cell: 30px;
+  --gl: rgba(24, 23, 18, 0.055);
+  --gl-major: rgba(24, 23, 18, 0.08);
+  --mx: 50%;
+  --my: 42%;
+  background-image:
+    linear-gradient(to right, var(--gl) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--gl) 1px, transparent 1px),
+    linear-gradient(to right, var(--gl-major) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--gl-major) 1px, transparent 1px);
+  background-size:
+    var(--cell) var(--cell),
+    var(--cell) var(--cell),
+    calc(var(--cell) * 5) calc(var(--cell) * 5),
+    calc(var(--cell) * 5) calc(var(--cell) * 5);
+  -webkit-mask: radial-gradient(
+    340px 340px at var(--mx) var(--my),
+    #000 30%,
+    transparent 72%
+  );
+  mask: radial-gradient(
+    340px 340px at var(--mx) var(--my),
+    #000 30%,
+    transparent 72%
+  );
+  opacity: 0;
+  transition: opacity 0.55s ease;
+}
+.glow {
+  z-index: 1;
+  --mx: 50%;
+  --my: 42%;
+  background: radial-gradient(
+    400px 400px at var(--mx) var(--my),
+    color-mix(in oklch, var(--accent) 16%, transparent),
+    transparent 68%
+  );
+  mix-blend-mode: multiply;
+  opacity: 0;
+  transition: opacity 0.55s ease;
+}
+.bg.lit .spot {
+  opacity: 1;
+}
+.bg.lit .glow {
+  opacity: 0.32;
+}
+[data-motion="off"] .spot,
+[data-motion="off"] .glow {
+  display: none;
+}
+
+/* --- Per-character glitch --------------------------------------------------
+   useHeroFx splits every [data-glitch] element's text into .ch spans, then drops
+   .fx-glitch onto random individual characters (name, role, footer, brand, and
+   the contact-link labels) in small clusters at random intervals — an ambient
+   digital corruption, never a constant loop. A character only becomes
+   inline-block for the ~0.4s it glitches (transform/clip-path need it), so the
+   resting typography and the handwriting kerning are untouched. */
+:root {
+  --glitch-1: var(--accent);
+  --glitch-2: oklch(0.62 0.22 18);
+}
+.name .gl {
+  display: inline-block;
+}
+.ch.fx-glitch {
+  display: inline-block;
+  animation: fx-glitch-char 0.4s steps(1, end) both;
+  will-change: transform, clip-path;
+}
+@keyframes fx-glitch-char {
+  0%,
+  100% {
+    transform: translate(0);
+    text-shadow: none;
+    opacity: 1;
+  }
+  18% {
+    transform: translate(-2px, -1px);
+    text-shadow: 2px 0 var(--glitch-1), -2px 0 var(--glitch-2);
+  }
+  34% {
+    transform: translate(2px, 1px);
+    text-shadow: -2px 0 var(--glitch-2), 2px 0 var(--glitch-1);
+    clip-path: inset(0 0 48% 0);
+  }
+  50% {
+    transform: translate(-1px, 0);
+    opacity: 0.65;
+  }
+  66% {
+    transform: translate(2px, -1px);
+    text-shadow: -2px 0 var(--glitch-1), 2px 0 var(--glitch-2);
+    clip-path: inset(44% 0 0 0);
+  }
+  82% {
+    transform: translate(-1px, 1px);
+    text-shadow: 1px 0 var(--glitch-1), -1px 0 var(--glitch-2);
+  }
+}
+[data-motion="off"] .ch.fx-glitch {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ch.fx-glitch {
+    animation: none;
+  }
+}

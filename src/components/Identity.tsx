@@ -5,17 +5,19 @@ export function Identity() {
   return (
     <main className="center">
       <h1 className="name">
-        {profile.firstName}
-        <br />
-        {profile.lastName}
+        <span className="gl" data-glitch>
+          {profile.firstName}
+          <br />
+          {profile.lastName}
+        </span>
       </h1>
 
       <div className="role">
-        <span>{profile.role}</span>
+        <span data-glitch>{profile.role}</span>
         <span className="sep" aria-hidden="true">
           /
         </span>
-        <span>{profile.location}</span>
+        <span data-glitch>{profile.location}</span>
       </div>
 
       <ContactLinks />

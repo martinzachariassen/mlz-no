@@ -20,7 +20,7 @@ export function ContactLinks() {
             <span className="ic">
               <Icon />
             </span>
-            {link.label}
+            <span data-glitch>{link.label}</span>
           </a>
         );
       })}
