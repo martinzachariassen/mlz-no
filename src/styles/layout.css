@@ -13,7 +13,7 @@
   font-size: 11px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--muted-foreground);
 }
 .brand {
   display: inline-flex;
@@ -104,26 +104,26 @@
 
 /* min()/clamp cap the font size so the long surname stays inside the viewport. */
 [data-font="hand"] .name {
-  font-family: "Architects Daughter", cursive;
+  font-family: var(--font-hand);
   font-weight: 400;
   font-size: min(8vw, 112px);
   letter-spacing: 0;
   line-height: 0.9;
 }
 [data-font="grotesk"] .name {
-  font-family: "Space Grotesk", sans-serif;
+  font-family: var(--font-grotesk);
   font-weight: 700;
   font-size: min(7vw, 96px);
   letter-spacing: -0.02em;
 }
 [data-font="mono"] .name {
-  font-family: "Space Mono", monospace;
+  font-family: var(--font-mono);
   font-weight: 700;
   font-size: min(6vw, 64px);
   letter-spacing: -0.01em;
 }
 [data-font="serif"] .name {
-  font-family: "Instrument Serif", serif;
+  font-family: var(--font-serif);
   font-weight: 400;
   font-size: min(8.5vw, 120px);
   letter-spacing: 0;
@@ -189,7 +189,7 @@
   font-size: 10px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--muted-foreground);
   border-top: 1px solid var(--line);
 }
 .foot > span {
@@ -222,10 +222,6 @@
     gap: 10px;
     width: 100%;
   }
-  .lk {
-    padding: 12px 16px;
-    font-size: 11px;
-  }
   .foot {
     font-size: 9px;
     letter-spacing: 0.18em;
@@ -236,14 +232,6 @@
   .topbar {
     font-size: 9px;
     letter-spacing: 0.16em;
-  }
-  .lk {
-    padding: 11px 14px;
-    gap: 8px;
-  }
-  .lk .ic {
-    width: 13px;
-    height: 13px;
   }
 }
 

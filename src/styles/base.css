@@ -1,19 +1,12 @@
-*{box-sizing: border-box;}
+/* Body/html defaults, resets and font come from Tailwind's preflight and the DS
+   base layer (@martinzachariassen/design/styles/base.css) — both set the same
+   paper/ink/Space-Mono surface this app used to hand-roll. Only the hero-specific
+   layout and reveal choreography live here. */
 html,
 body {
-  margin: 0;
-  padding: 0;
   height: 100%;
 }
-html {
-  background: var(--paper);
-}
 body {
-  font-family: var(--mono);
-  color: var(--ink);
-  background: var(--paper);
-  min-height: 100%;
-  -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
 
@@ -23,6 +16,21 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+/* The DS GridBackground keeps its masked grid visible even at rest, but this
+   page's signature is clean paper until the pointer reveals it. Fade the grid
+   layer (the root's first child) in only while `data-lit` — the glow layer is
+   already gated by the component. Only GridBackground carries data-lit here. */
+[data-lit] > div:first-child {
+  opacity: 0;
+  transition: opacity 0.55s ease;
+}
+[data-lit="true"] > div:first-child {
+  opacity: 1;
+}
+[data-motion="off"] [data-lit] > div:first-child {
+  opacity: 0;
 }
 .hero::after {
   content: "";

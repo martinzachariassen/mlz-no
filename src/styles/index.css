@@ -1,7 +1,29 @@
-/* Order matters: tokens first (custom props), then base, then the sections. */
-@import "./tokens.css";
+/* Tokens, base defaults, and Tailwind utilities all flow from
+   @martinzachariassen/design — the canonical source of truth. Order: Tailwind
+   first, then the DS token layer, then the DS base defaults, then this app's
+   bespoke hero/topbar/footer layers (which read the DS tokens). The DS fonts.css
+   is intentionally skipped — index.html already loads the four faces via <link>,
+   so importing it would double the request. */
+@import "tailwindcss";
+@import "@martinzachariassen/design/styles/theme.css";
+@import "@martinzachariassen/design/styles/base.css";
 @import "./base.css";
-@import "./marks.css";
 @import "./layout.css";
-@import "./contact.css";
-@import "./effects.css";
+
+/* The DS ships its component classes compiled into its dist bundle; Tailwind
+   skips node_modules by default, so point it there explicitly to emit them. */
+@source "../../node_modules/@martinzachariassen/design/dist";
+
+/* Legacy aliases: this app's bespoke CSS predates the DS and names its tokens
+   --paper/--ink/etc. Map them onto the identical DS semantic tokens so the
+   hero/topbar/footer keep working while sourcing their values from the system.
+   --accent / --accent-deep are provided directly by theme.css (same values). */
+:root {
+  --paper:   var(--background);
+  --paper-2: var(--muted);
+  --ink:     var(--foreground);
+  --ink-2:   var(--mlz-ink-2);
+  --line:    var(--border);
+  --mono:    var(--font-mono);
+  --hand:    var(--font-hand);
+}
