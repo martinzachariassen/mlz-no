@@ -1,25 +1,20 @@
+import { GlitchText } from "@martinzachariassen/design";
 import { profile } from "../data/profile";
 
-const Degree = () => (
-  <span className="deg" aria-hidden="true">
-    °
-  </span>
-);
-
+// The footer: copyright on the left, coordinates on the right, hairline rule
+// above (border-border). GlitchText carries the ambient flicker.
 export function Footer() {
   const { copyrightYear, firstName, lastName, coordinates } = profile;
+  const credit = `© ${copyrightYear} · ${firstName} ${lastName}`;
+  const coords = `${coordinates.lat}°${coordinates.latDir} · ${coordinates.lon}°${coordinates.lonDir}`;
+
   return (
-    <footer className="foot">
-      <span data-glitch>
-        © {copyrightYear} · {firstName} {lastName}
-      </span>
-      <span data-glitch>
-        {coordinates.lat}
-        <Degree />
-        {coordinates.latDir} · {coordinates.lon}
-        <Degree />
-        {coordinates.lonDir}
-      </span>
+    <footer
+      className="relative z-10 flex animate-rise items-center justify-between gap-3 border-border border-t px-[clamp(20px,5vw,48px)] pt-5 pb-[max(20px,env(safe-area-inset-bottom))] font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground"
+      style={{ animationDelay: "0.75s" }}
+    >
+      <GlitchText text={credit} />
+      <GlitchText text={coords} />
     </footer>
   );
 }
