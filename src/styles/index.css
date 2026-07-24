@@ -1,7 +1,18 @@
-/* Order matters: tokens first (custom props), then base, then the sections. */
-@import "./tokens.css";
-@import "./base.css";
-@import "./marks.css";
-@import "./layout.css";
-@import "./contact.css";
-@import "./effects.css";
+/* Inherit the MLZ design system. We pull the pieces individually rather than the
+   one-line `styles/index.css` bundle so that fonts load via a preconnected
+   <link> in index.html (fast first paint, reliable ordering) instead of a bundled
+   @import url() — which Tailwind can't hoist above its base layer, so the browser
+   would drop it. `@source` points Tailwind at the compiled components so their
+   classes are emitted. See @martinzachariassen/design. */
+@import "tailwindcss";
+@import "@martinzachariassen/design/styles/theme.css";
+@import "@martinzachariassen/design/styles/base.css";
+@source "../../node_modules/@martinzachariassen/design/dist";
+
+/* The hero fills the viewport and clips its decorative layers; belt-and-braces
+   against a stray horizontal scrollbar from the drifting marks. */
+@layer base {
+  body {
+    overflow-x: hidden;
+  }
+}
