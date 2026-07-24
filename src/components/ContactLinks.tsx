@@ -1,4 +1,4 @@
-import { buttonVariants, cn, GlitchText } from "@martinzachariassen/design";
+import { buttonVariants, cn } from "@martinzachariassen/design";
 import { contactLinks } from "../data/profile";
 import { contactIcons } from "./icons";
 
@@ -26,7 +26,7 @@ export function ContactLinks() {
             })}
           >
             <Icon />
-            <GlitchText text={link.label} />
+            {link.label}
           </a>
         );
       })}

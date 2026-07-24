@@ -1,17 +1,15 @@
-import { FloatingMarks, GridBackground } from "@martinzachariassen/design";
+import { FloatingMarks } from "@martinzachariassen/design";
 import { Footer } from "./Footer";
 import { Identity } from "./Identity";
 import { TopBar } from "./TopBar";
 
 // The whole page: a paper sheet that fills the viewport, with the design
-// system's signature background layers behind the identity. GridBackground
-// (interactive) is the cursor-following spotlight; FloatingMarks is the drifting
-// sketch layer. Both are aria-hidden, click-through, and reduced-motion aware, so
-// the content stands on its own with JS or motion off.
+// system's drifting FloatingMarks as the sole background layer behind the
+// identity. It's aria-hidden, click-through, and reduced-motion aware, so the
+// content stands on its own with JS or motion off.
 export function Hero() {
   return (
     <div className="relative flex min-h-svh flex-col overflow-hidden">
-      <GridBackground interactive className="z-0" />
       <FloatingMarks className="z-0" />
       {/* Soft vignette for depth. React applies this inline gradient via the
           CSSOM on the client, which CSP style-src does not govern, so the

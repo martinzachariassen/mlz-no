@@ -1,8 +1,4 @@
-import {
-  BrandMark,
-  BrandWordmark,
-  GlitchText,
-} from "@martinzachariassen/design";
+import { BrandMark, BrandWordmark } from "@martinzachariassen/design";
 import { profile } from "../data/profile";
 
 // The header: the MLZ lockup (mark + wordmark) on the left, a blinking build
@@ -28,7 +24,7 @@ export function TopBar() {
         <span aria-hidden className="animate-blink text-accent-deep">
           ▮
         </span>
-        <GlitchText text={profile.since} />
+        {profile.since}
       </span>
     </header>
   );
