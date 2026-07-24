@@ -1,3 +1,4 @@
+import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
@@ -5,7 +6,7 @@ import { defineConfig } from "vite";
 // dist root verbatim, so favicons, robots.txt, sitemap.xml, and the manifest
 // keep their well-known URLs.
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   server: { host: "127.0.0.1", port: 4173 },
   preview: { host: "127.0.0.1", port: 4173 },
   build: {

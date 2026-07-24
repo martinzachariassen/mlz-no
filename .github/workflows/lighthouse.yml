@@ -16,6 +16,8 @@ on:
 
 permissions:
   contents: read
+  # Pull @martinzachariassen/design from GitHub Packages during install (.npmrc).
+  packages: read
 
 concurrency:
   group: lighthouse-${{ github.workflow }}-${{ github.ref }}
@@ -36,6 +38,8 @@ jobs:
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # LHCI's startServerCommand (bun run start) serves dist/, so build first.
       - name: Build

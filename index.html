@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<!-- Design knobs: retune the look from here without touching CSS. See README.
-     data-font: hand | grotesk | mono | serif · data-case: upper | title | lower
-     data-accent: cyan | blue | green | rust | ink · data-motion: subtle | off -->
-<html lang="en" data-font="hand" data-case="upper" data-accent="cyan" data-motion="subtle">
+<!-- Look is inherited from @martinzachariassen/design. Retune at runtime from
+     here: data-accent: cyan | blue | green | rust | ink (+ class="dark" for the
+     ink theme, data-motion="off" to kill motion). -->
+<html lang="en" data-accent="cyan">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -53,6 +53,9 @@
   }
   </script>
 
+  <!-- The design system's four typefaces (see @martinzachariassen/design fonts.css).
+       Loaded here as a preconnected <link> for fast, render-blocking-free first
+       paint; the CSP allows exactly these two Google Fonts origins. -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&amp;family=Instrument+Serif:ital@0;1&amp;family=Space+Grotesk:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap" rel="stylesheet" />
