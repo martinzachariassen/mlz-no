@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "mlz-no",
+  "compatibility_date": "2026-07-01",
+
+  // A static-assets-only Worker: there is no `main` entrypoint, so Cloudflare
+  // serves dist/ straight from the edge and no JavaScript runs per request.
+  // Security headers and cache policy live in public/_headers, which Vite copies
+  // to the dist root at build time.
+  "assets": {
+    "directory": "./dist",
+    // This site has no client-side router, so an unknown path must stay a real
+    // 404 rather than rewriting to index.html and reporting a soft 200.
+    "not_found_handling": "none"
+  }
+
+  // Serving on the apex domain requires mlz.no to be an active zone on the same
+  // Cloudflare account. Add it in the dashboard (Workers & Pages -> mlz-no ->
+  // Settings -> Domains & Routes), or uncomment the block below to keep the
+  // binding in version control once the zone exists.
+  //
+  // "routes": [{ "pattern": "mlz.no", "custom_domain": true }]
+}

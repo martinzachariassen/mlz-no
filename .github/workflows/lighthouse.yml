@@ -1,14 +1,14 @@
 name: Lighthouse
 
 # Audits the homepage the way a browser sees it — accessibility, best-practices,
-# SEO, and performance — against the real server. LHCI boots `bun run start`,
-# waits for the "listening" log line, then runs Lighthouse three times and
-# asserts the category scores in .github/lighthouse/lighthouserc.json.
+# SEO, and performance — against the real Workers runtime. LHCI boots
+# `wrangler dev`, waits for its "Ready on" line, then runs Lighthouse three
+# times and asserts the category scores in .github/lighthouse/lighthouserc.json.
 #
 # Accessibility and SEO are hard gates. Best-practices and performance are
 # warnings: Lighthouse's "Use HTTPS" audit always fails against the plain-HTTP
-# test server, and perf swings with third-party font/analytics fetches — neither
-# reflects production (HTTPS, behind Railway/Cloudflare).
+# local runtime, and perf swings with third-party font/analytics fetches —
+# neither reflects production on Cloudflare's edge.
 on:
   push:
     branches: [main]
@@ -28,8 +28,7 @@ jobs:
     name: audit homepage
     runs-on: ubuntu-latest
     env:
-      HOST: "127.0.0.1"
-      PORT: "4173"
+      WRANGLER_SEND_METRICS: "false"
     steps:
       - uses: actions/checkout@v7
 
@@ -41,7 +40,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # LHCI's startServerCommand (bun run start) serves dist/, so build first.
+      # LHCI's startServerCommand (wrangler dev) serves dist/, so build first.
       - name: Build
         run: mise run build
 

@@ -26,7 +26,8 @@ jobs:
       - uses: actions/checkout@v7
 
       # Installs the Bun version pinned in mise.toml — single source of truth,
-      # no separate bun-version to keep in sync.
+      # no separate bun-version to keep in sync. Bun is the package manager and
+      # build runner only; nothing Bun-specific runs in production.
       - name: Set up mise (installs Bun from mise.toml)
         uses: jdx/mise-action@v4
 
@@ -59,18 +60,18 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     env:
-      # Pinned to IPv4 so the check is independent of the runner's dual-stack
-      # settings (the app defaults to :: for Railway).
-      HOST: "127.0.0.1"
       PORT: "4173"
+      # wrangler dev runs entirely on the local workerd runtime — no Cloudflare
+      # account or API token is involved.
+      WRANGLER_SEND_METRICS: "false"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up mise (installs Bun from mise.toml)
-        uses: jdx/mise-action@v2
+        uses: jdx/mise-action@v4
 
-      # The server itself (hono + middleware) still needs its dependencies; the
-      # frontend bundle comes from the build job's artifact.
+      # wrangler itself is a devDependency; the frontend bundle comes from the
+      # build job's artifact.
       - name: Install dependencies
         run: bun install --frozen-lockfile
         env:
@@ -82,19 +83,21 @@ jobs:
           name: dist
           path: dist/
 
-      # Boot the real server against the built dist/ and assert the hardening
-      # still holds.
-      - name: Smoke-test the server
+      # Serve the built dist/ through the same Workers runtime Cloudflare runs
+      # in production, and assert the hardening and cache policy still hold.
+      # Everything checked here comes from public/_headers or from Workers'
+      # built-in static-asset behaviour — there is no server code left to test.
+      - name: Smoke-test the Workers static-asset deployment
         run: |
           set -euo pipefail
-          bun run start &
+          bunx wrangler dev --ip 127.0.0.1 --port "$PORT" > wrangler-dev.log 2>&1 &
           server=$!
           trap 'kill "$server" 2>/dev/null || true' EXIT
 
-          # Wait (up to ~10s) for the server to accept connections.
-          for _ in $(seq 1 40); do
+          # workerd takes longer to boot than a plain JS process; wait up to 60s.
+          for _ in $(seq 1 120); do
             curl -sf -o /dev/null "http://127.0.0.1:$PORT/" && break
-            sleep 0.25
+            sleep 0.5
           done
 
           fail=0
@@ -108,14 +111,18 @@ jobs:
           }
 
           base="http://127.0.0.1:$PORT"
-          check "GET / -> 200"          200 "$(curl -s -o /dev/null -w '%{http_code}' "$base/")"
-          check "GET /robots -> 200"    200 "$(curl -s -o /dev/null -w '%{http_code}' "$base/robots.txt")"
-          check "POST / -> 405"         405 "$(curl -s -o /dev/null -w '%{http_code}' -X POST "$base/")"
-          check "missing -> 404"        404 "$(curl -s -o /dev/null -w '%{http_code}' "$base/nope")"
-          check "traversal -> 404"      404 "$(curl -s -o /dev/null -w '%{http_code}' "$base/%2e%2e/package.json")"
+          code() { curl -s -o /dev/null -w '%{http_code}' "$@"; }
 
-          # The security-header middleware must be in the chain.
-          for header in content-security-policy strict-transport-security x-content-type-options; do
+          check "GET / -> 200"          200 "$(code "$base/")"
+          check "GET /robots -> 200"    200 "$(code "$base/robots.txt")"
+          check "POST / -> 405"         405 "$(code -X POST "$base/")"
+          check "missing -> 404"        404 "$(code "$base/nope")"
+          check "traversal -> 404"      404 "$(code "$base/%2e%2e/package.json")"
+          # _headers configures the deployment; it must never be servable itself.
+          check "_headers -> 404"       404 "$(code "$base/_headers")"
+
+          # The hardening headers from public/_headers must be on every response.
+          for header in content-security-policy strict-transport-security x-content-type-options x-frame-options referrer-policy permissions-policy; do
             if curl -s -D - -o /dev/null "$base/" | grep -qi "^$header:"; then
               echo "ok   header $header present"
             else
@@ -124,4 +131,40 @@ jobs:
             fi
           done
 
+          # Fingerprinted bundles must be immutably cacheable and compressed —
+          # the two things the old Bun + Hono server never sent.
+          bundle="$(find dist/bundle -name '*.js' -print -quit)"
+          if [ -z "$bundle" ]; then
+            echo "FAIL no hashed bundle found in dist/bundle"
+            fail=1
+          else
+            url="$base/bundle/$(basename "$bundle")"
+            headers="$(curl -s -D - -o /dev/null -H 'Accept-Encoding: gzip, br' "$url")"
+            if echo "$headers" | grep -qi '^cache-control:.*immutable'; then
+              echo "ok   bundle is immutably cacheable"
+            else
+              echo "FAIL bundle missing immutable Cache-Control"
+              fail=1
+            fi
+            if echo "$headers" | grep -qi '^content-encoding:'; then
+              echo "ok   bundle is compressed"
+            else
+              echo "FAIL bundle served uncompressed"
+              fail=1
+            fi
+          fi
+
+          # A stable-URL favicon must NOT be immutable, or it could never be
+          # replaced for anyone who already loaded the old one.
+          if curl -s -D - -o /dev/null "$base/assets/icons/favicon.svg" | grep -qi '^cache-control:.*immutable'; then
+            echo "FAIL favicon marked immutable"
+            fail=1
+          else
+            echo "ok   favicon is not immutable"
+          fi
+
+          if [ "$fail" -ne 0 ]; then
+            echo "--- wrangler dev log ---"
+            cat wrangler-dev.log
+          fi
           exit "$fail"

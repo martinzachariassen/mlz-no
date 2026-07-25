@@ -13,9 +13,13 @@ run = "bun run build"
 description = "Preview the production build with Vite"
 run = "bun run preview"
 
-[tasks.start]
-description = "Serve dist/ in production via the Bun + Hono server"
-run = "bun run start"
+[tasks."preview:worker"]
+description = "Serve dist/ through the local Workers runtime (applies _headers)"
+run = "bun run preview:worker"
+
+[tasks.deploy]
+description = "Deploy dist/ to Cloudflare Workers with wrangler"
+run = "bun run deploy"
 
 [tasks.typecheck]
 description = "Type-check the app and server with tsc (no emit)"

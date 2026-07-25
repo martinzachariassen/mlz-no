@@ -13,7 +13,7 @@ export function Hero() {
       <FloatingMarks className="z-0" />
       {/* Soft vignette for depth. React applies this inline gradient via the
           CSSOM on the client, which CSP style-src does not govern, so the
-          server's strict no-inline-style policy still holds. */}
+          strict no-inline-style policy in public/_headers still holds. */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 z-[1] animate-pulse-soft"

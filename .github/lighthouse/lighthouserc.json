@@ -3,9 +3,9 @@
     "collect": {
       "url": ["http://127.0.0.1:4173/"],
       "numberOfRuns": 3,
-      "startServerCommand": "bun run start",
-      "startServerReadyPattern": "listening",
-      "startServerReadyTimeout": 15000
+      "startServerCommand": "bunx wrangler dev --ip 127.0.0.1 --port 4173",
+      "startServerReadyPattern": "Ready on",
+      "startServerReadyTimeout": 60000
     },
     "assert": {
       "assertions": {

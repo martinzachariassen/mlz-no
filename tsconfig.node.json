@@ -11,7 +11,7 @@
     "strict": true,
     "skipLibCheck": true,
     "noUncheckedIndexedAccess": true,
-    "types": ["bun"]
+    "types": []
   },
-  "include": ["server", "vite.config.ts"]
+  "include": ["vite.config.ts"]
 }
