@@ -71,7 +71,7 @@ All day-to-day tasks live in `mise.toml`:
 | `mise run preview`   | Preview the production build with Vite                |
 | `mise run preview:worker` | Serve `dist/` through the local Workers runtime  |
 | `mise run deploy`    | Deploy `dist/` to Cloudflare Workers                  |
-| `mise run typecheck` | Type-check the app and server (`tsc --noEmit`)        |
+| `mise run typecheck` | Type-check the app and build config (`tsc --noEmit`)  |
 | `mise run lint`      | Lint + format check with Biome (read-only)            |
 | `mise run format`    | Format and auto-fix with Biome                        |
 

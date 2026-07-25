@@ -22,7 +22,7 @@ description = "Deploy dist/ to Cloudflare Workers with wrangler"
 run = "bun run deploy"
 
 [tasks.typecheck]
-description = "Type-check the app and server with tsc (no emit)"
+description = "Type-check the app and build config with tsc (no emit)"
 run = "bun run typecheck"
 
 [tasks.format]
