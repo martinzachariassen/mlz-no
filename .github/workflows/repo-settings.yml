@@ -1,0 +1,79 @@
+name: Repo Settings
+
+# Keeps the repo's "About" box — description, homepage, topics — matching
+# .github/settings.yml, so metadata is reviewed in a diff like everything else
+# instead of drifting out of date in the sidebar.
+#
+# Pull requests dry-run: the file is parsed and validated and the diff is
+# printed, but nothing is written. Pushes to main apply it.
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/settings.yml
+      - .github/scripts/sync-repo-settings.ts
+      - .github/workflows/repo-settings.yml
+  pull_request:
+    paths:
+      - .github/settings.yml
+      - .github/scripts/sync-repo-settings.ts
+      - .github/workflows/repo-settings.yml
+  # Re-apply on demand — after editing the About box by hand, or the first time
+  # REPO_SETTINGS_TOKEN is configured.
+  workflow_dispatch:
+
+# The sync script authenticates with its own token from the environment; this
+# workflow needs nothing beyond reading its own source.
+permissions:
+  contents: read
+
+concurrency:
+  group: repo-settings-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    name: sync settings
+    runs-on: ubuntu-latest
+    env:
+      # The `secrets` context is not available in `if:` conditions, so fold the
+      # presence check into an env var the steps below can branch on.
+      HAS_TOKEN: ${{ secrets.REPO_SETTINGS_TOKEN != '' }}
+      APPLY: ${{ github.event_name != 'pull_request' }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # The script uses an explicit token; leaving git credentials on disk
+          # would only widen what a compromised step could reach.
+          persist-credentials: false
+
+      - name: Set up mise (installs Bun from mise.toml)
+        uses: jdx/mise-action@v4
+
+      # No `bun install` — the script has no dependencies, only Bun's built-ins.
+      - name: Validate and diff
+        if: env.APPLY != 'true' || env.HAS_TOKEN != 'true'
+        run: bun .github/scripts/sync-repo-settings.ts --dry-run
+        env:
+          # Reading repo metadata is within the default token's `contents: read`.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Apply
+        if: env.APPLY == 'true' && env.HAS_TOKEN == 'true'
+        run: bun .github/scripts/sync-repo-settings.ts
+        env:
+          GITHUB_TOKEN: ${{ secrets.REPO_SETTINGS_TOKEN }}
+
+      # Writing repo metadata needs `Administration: write`, which the Actions
+      # GITHUB_TOKEN cannot be granted at any permission level — hence the PAT.
+      # Warn rather than fail: an unconfigured secret should not paint main red,
+      # but it must not pass silently either, or the drift this workflow exists
+      # to prevent just moves somewhere quieter.
+      - name: Warn if no token is configured
+        if: env.APPLY == 'true' && env.HAS_TOKEN != 'true'
+        run: |
+          echo "::warning title=Repo settings not applied::\
+          REPO_SETTINGS_TOKEN is not set, so .github/settings.yml was \
+          validated but not applied. Add a fine-grained PAT scoped to this \
+          repo with 'Administration: read and write' as the repository secret \
+          REPO_SETTINGS_TOKEN, then re-run this workflow."

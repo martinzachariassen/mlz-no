@@ -13,5 +13,5 @@
     "noUncheckedIndexedAccess": true,
     "types": ["bun"]
   },
-  "include": ["server", "vite.config.ts"]
+  "include": ["server", ".github/scripts", "vite.config.ts"]
 }

@@ -1,0 +1,52 @@
+# The source of truth for this repo's GitHub "About" box — description,
+# homepage, and topics. These are GitHub *settings*, not files, so they drift
+# silently: the description survived the rewrite from hand-written HTML/CSS to
+# Vite + React and went stale for two releases before anyone noticed. Keeping
+# them here means a stack change and its metadata land in the same commit, and
+# review catches the drift instead of the sidebar.
+#
+# .github/workflows/repo-settings.yml applies this on every push to main that
+# touches the file; pull requests dry-run it. See the README's "Repo metadata"
+# section for the token the apply step needs.
+#
+# The shape matches the probot/settings app's `repository:` block, so the file
+# stays portable if this ever moves to that app instead of the workflow.
+
+repository:
+  # GitHub truncates hard in search results and social cards, so this stays well
+  # under the 350-character API limit. Name the stack, the design system, and
+  # the server — the three things that actually distinguish the repo.
+  description: >-
+    Personal homepage at mlz.no — a Vite + React + TypeScript single-page site
+    styled entirely from the @martinzachariassen/design system, built to static
+    assets and served by a hardened Bun + Hono server on Railway.
+
+  homepage: https://mlz.no
+
+  # Lowercase, hyphenated, 20 max — GitHub rejects anything else. Ordered by
+  # what a reader needs first: the stack, then what the repo *is*, then the
+  # infrastructure and hardening that make it more than a landing page.
+  #
+  # Prefer GitHub's canonical topic over a near-miss variant (`bun`, not
+  # `bunjs`; `hono`, not `hono-js`) — only the canonical one carries the
+  # curated topic page and the traffic that comes with it.
+  topics:
+    # Stack
+    - bun
+    - hono
+    - vite
+    - react
+    - typescript
+    - tailwindcss
+    - biome
+    # What this is
+    - design-system
+    - personal-website
+    - portfolio-website
+    - static-site
+    # Infrastructure & hardening
+    - railway
+    - csp
+    - security-headers
+    - rate-limiting
+    - codeql

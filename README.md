@@ -167,6 +167,10 @@ public/                 # copied verbatim to the dist root by Vite
     └── social/         #   og.png, twitter-card.png — built on the design system's SocialCard frame
 assets/
 └── banner.png          # README header banner (design system's RepoBanner, standard layout)
+.github/
+├── settings.yml        # repo description + topics — the About box, as code
+└── scripts/
+    └── sync-repo-settings.ts  # applies settings.yml via the GitHub API
 server/index.ts         # Bun + Hono server: serves dist/, hardened against abuse
 vite.config.ts          # Vite config (React + Tailwind v4 plugins, CSP-safe build settings)
 railway.json            # Railway config-as-code (healthcheck path)
@@ -246,6 +250,40 @@ Sensible defaults, all optional:
 
 Retuning the visual theme is a [design system](#design-system) concern — see
 that section for the `data-accent` / dark-mode knobs on `<html>`.
+
+### Repo metadata
+
+The GitHub **About** box — description, homepage, topics — is generated from
+[`.github/settings.yml`](.github/settings.yml) rather than edited in the
+sidebar. These are settings, not files, so they drift silently: the description
+still advertised a "zero-build, hand-written HTML/CSS site" two releases after
+the Vite + React rewrite. Keeping them in the repo means a stack change and its
+metadata land in the same commit.
+
+[`repo-settings.yml`](.github/workflows/repo-settings.yml) applies the file on
+every push to `main` that touches it, and on demand via **workflow_dispatch**;
+pull requests dry-run it, so the diff shows up in the checks before it lands.
+The [sync script](.github/scripts/sync-repo-settings.ts) is dependency-free —
+it validates against GitHub's limits (350-character description, 20 topics,
+lowercase and hyphenated) and diffs before it writes, so a run that changes
+nothing makes no API call. To preview a change locally:
+
+```bash
+export GITHUB_TOKEN=$(gh auth token)
+export GITHUB_REPOSITORY=martinzachariassen/mlz-no
+bun .github/scripts/sync-repo-settings.ts --dry-run
+```
+
+> [!IMPORTANT]
+> Writing repo metadata needs the `Administration: read and write` permission,
+> which the Actions `GITHUB_TOKEN` **cannot be granted at any permission
+> level** — unlike the `packages: read` used elsewhere in CI. The apply step
+> therefore reads a [fine-grained
+> PAT](https://github.com/settings/personal-access-tokens/new) scoped to this
+> repo alone with that one permission, stored as the repository secret
+> `REPO_SETTINGS_TOKEN`. Until it is set, the workflow validates the file and
+> emits a warning instead of applying it — it never fails the build over a
+> missing secret.
 
 ## License
 
