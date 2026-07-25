@@ -131,25 +131,24 @@ jobs:
             fi
           done
 
-          # Fingerprinted bundles must be immutably cacheable and compressed —
-          # the two things the old Bun + Hono server never sent.
+          # Fingerprinted bundles must be immutably cacheable — the cache policy
+          # in public/_headers that the old Bun + Hono server never sent.
+          #
+          # Compression is deliberately NOT asserted here: Content-Encoding is
+          # added by Cloudflare's edge in production, not by the local workerd
+          # runtime that `wrangler dev` runs, so there is nothing to observe
+          # against the dev server. It is verified implicitly by the site working
+          # in production, not in this smoke test.
           bundle="$(find dist/bundle -name '*.js' -print -quit)"
           if [ -z "$bundle" ]; then
             echo "FAIL no hashed bundle found in dist/bundle"
             fail=1
           else
             url="$base/bundle/$(basename "$bundle")"
-            headers="$(curl -s -D - -o /dev/null -H 'Accept-Encoding: gzip, br' "$url")"
-            if echo "$headers" | grep -qi '^cache-control:.*immutable'; then
+            if curl -s -D - -o /dev/null "$url" | grep -qi '^cache-control:.*immutable'; then
               echo "ok   bundle is immutably cacheable"
             else
               echo "FAIL bundle missing immutable Cache-Control"
-              fail=1
-            fi
-            if echo "$headers" | grep -qi '^content-encoding:'; then
-              echo "ok   bundle is compressed"
-            else
-              echo "FAIL bundle served uncompressed"
               fail=1
             fi
           fi

@@ -174,6 +174,7 @@ assets/
 vite.config.ts          # Vite config (React + Tailwind v4 plugins, CSP-safe build settings)
 wrangler.jsonc          # Cloudflare Workers config — static assets only, no `main`
 mise.toml               # pins Bun, defines the dev / build / deploy / lint tasks
+DEPLOYMENT.md           # first-time Cloudflare setup runbook (account, secrets, domain)
 ```
 
 `robots.txt`, `sitemap.xml`, and `favicon.ico` stay at the `public/` root on
@@ -219,9 +220,11 @@ would make them unreplaceable.
 it under `wrangler dev` — the same `workerd` runtime Cloudflare runs in
 production — and asserts the contract: status codes for
 `GET`/`POST`/missing/traversal/`_headers` paths, the presence of every security
-header, that hashed bundles are compressed and immutably cacheable, and that the
-favicon is *not*. Testing the uploaded artifact means CI exercises the same
-bundle that would deploy, not a rebuilt copy.
+header, that hashed bundles are immutably cacheable, and that the favicon is
+*not*. (Compression is a Cloudflare edge guarantee, not something the local
+`wrangler dev` runtime applies, so it is out of the smoke test's scope.) Testing
+the uploaded artifact means CI exercises the same bundle that would deploy, not a
+rebuilt copy.
 [CodeQL](https://codeql.github.com) scans on every push and weekly;
 [Dependabot](https://docs.github.com/code-security/dependabot) keeps Bun and
 GitHub Actions dependencies current; and
@@ -229,6 +232,9 @@ GitHub Actions dependencies current; and
 posture and publishes the score behind the badge above.
 
 ## Deployment
+
+> First-time setup — Cloudflare account, API token, repo secrets, custom domain
+> — is a step-by-step runbook in [`DEPLOYMENT.md`](DEPLOYMENT.md).
 
 Every push to `main` runs [`deploy.yml`](.github/workflows/deploy.yml), which
 installs, builds `dist/`, and publishes it with `wrangler deploy`.
