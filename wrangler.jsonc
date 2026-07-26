@@ -12,6 +12,28 @@
     // This site has no client-side router, so an unknown path must stay a real
     // 404 rather than rewriting to index.html and reporting a soft 200.
     "not_found_handling": "none"
+  },
+
+  // Persist the observability settings configured in the Cloudflare dashboard so
+  // a `wrangler deploy` keeps them consistent across deployments instead of
+  // reverting to account defaults. This is a static-assets-only Worker (no
+  // `main`), so these take effect only if a Worker handler is ever added — but
+  // keeping them in version control is harmless and future-proofs that. The
+  // nested `logs.enabled` overrides the top-level `enabled: false`, so
+  // invocation logs are still collected once a handler exists.
+  "observability": {
+    "enabled": false,
+    "head_sampling_rate": 1,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "invocation_logs": true
+    },
+    "traces": {
+      "enabled": false,
+      "persist": true,
+      "head_sampling_rate": 1
+    }
   }
 
   // Serving on the apex domain requires mlz.no to be an active zone on the same
