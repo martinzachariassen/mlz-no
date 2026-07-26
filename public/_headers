@@ -3,10 +3,12 @@
 # where Cloudflare consumes it. It is never itself servable — requests to
 # /_headers return 404.
 #
-# Cloudflare already sets ETag and `Cache-Control: public, max-age=0,
-# must-revalidate` on HTML, and compresses responses, so none of that is
-# repeated here. What remains is the hardening the old Bun + Hono server used to
-# apply per request, plus the cache policy for fingerprinted assets.
+# This deployment has no server: the Worker has no `main`, so no code runs per
+# request. Security hardening and cache policy therefore can't live in code —
+# this file is the only place to apply them. Cloudflare already sets ETag and
+# `Cache-Control: public, max-age=0, must-revalidate` on HTML and compresses
+# responses, so that isn't repeated here; what remains is the hardening headers
+# plus the cache policy for fingerprinted and stable-URL assets.
 
 /*
   Strict-Transport-Security: max-age=31536000; includeSubDomains
@@ -25,4 +27,10 @@
 # they get a day of caching rather than immutability — otherwise replacing a
 # favicon would never reach anyone who had already loaded the old one.
 /assets/*
+  Cache-Control: public, max-age=86400
+
+# favicon.ico stays at the well-known root URL that browsers and crawlers request
+# automatically, so it can't move under /assets/ — but it's stable across
+# deploys, so give it the same day of caching.
+/favicon.ico
   Cache-Control: public, max-age=86400
