@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<!-- The 404 page. Cloudflare serves this file with a real 404 status for any
+     unknown path (wrangler.jsonc -> assets.not_found_handling: "404-page").
+     Look is inherited from @martinzachariassen/design, same as index.html. -->
+<html lang="en" data-accent="cyan">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="color-scheme" content="light" />
+  <meta name="format-detection" content="telephone=no" />
+  <!-- A 404 must never be indexed, and it has no canonical URL of its own. -->
+  <meta name="robots" content="noindex" />
+  <title>404 — Page Not Found · Martin Zachariassen</title>
+  <meta name="description" content="The page you were looking for does not exist." />
+
+  <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/assets/icons/favicon-192.png" />
+  <link rel="shortcut icon" href="/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <meta name="theme-color" content="#ecebe4" />
+
+  <!-- Same preconnected Google Fonts as index.html; the CSP allows exactly
+       these two origins. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&amp;family=Instrument+Serif:ital@0;1&amp;family=Space+Grotesk:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap" rel="stylesheet" />
+
+  <script defer src="https://cloud.umami.is/script.js" data-website-id="e73d093f-ea9e-4839-8c5f-3dd4888a3c36"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/notfound.tsx"></script>
+</body>
+</html>

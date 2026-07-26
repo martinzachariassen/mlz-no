@@ -18,5 +18,15 @@ export default defineConfig({
     // Drop Vite's inline modulePreload polyfill so the built HTML carries no
     // inline <script>, keeping the CSP's script-src at a strict 'self'.
     modulePreload: { polyfill: false },
+    // Multi-page build: index.html is the site; 404.html builds to dist/404.html,
+    // which Cloudflare serves with a 404 status for unknown paths (see
+    // wrangler.jsonc assets.not_found_handling). Paths resolve from the config
+    // root, so no Node path helpers are needed.
+    rollupOptions: {
+      input: {
+        main: "index.html",
+        notFound: "404.html",
+      },
+    },
   },
 });
