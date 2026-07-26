@@ -22,14 +22,17 @@ jobs:
   build:
     name: build
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       # Installs the Bun version pinned in mise.toml — single source of truth,
       # no separate bun-version to keep in sync. Bun is the package manager and
       # build runner only; nothing Bun-specific runs in production.
       - name: Set up mise (installs Bun from mise.toml)
-        uses: jdx/mise-action@v4
+        uses: jdx/mise-action@9e7f7633ff6f6d6048a9418a68d48f288f50eb14 # v4
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -48,7 +51,7 @@ jobs:
       # Hand the exact production bundle to the smoke job so it tests what would
       # ship, rather than rebuilding a second copy.
       - name: Upload build output
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: dist
           path: dist/
@@ -59,16 +62,19 @@ jobs:
     name: smoke
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     env:
       PORT: "4173"
       # wrangler dev runs entirely on the local workerd runtime — no Cloudflare
       # account or API token is involved.
       WRANGLER_SEND_METRICS: "false"
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       - name: Set up mise (installs Bun from mise.toml)
-        uses: jdx/mise-action@v4
+        uses: jdx/mise-action@9e7f7633ff6f6d6048a9418a68d48f288f50eb14 # v4
 
       # wrangler itself is a devDependency; the frontend bundle comes from the
       # build job's artifact.
@@ -78,7 +84,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download build output
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: dist
           path: dist/
