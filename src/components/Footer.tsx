@@ -10,7 +10,7 @@ export function Footer() {
 
   return (
     <footer
-      className="relative z-10 flex animate-rise items-center justify-between gap-3 border-border border-t px-[clamp(20px,5vw,48px)] pt-5 pb-[max(20px,env(safe-area-inset-bottom))] font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground"
+      className="relative z-10 flex animate-rise items-center justify-between gap-3 border-border border-t px-[clamp(20px,5vw,48px)] pt-5 pb-[max(20px,env(safe-area-inset-bottom))] font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:text-[11px]"
       style={{ animationDelay: "0.75s" }}
     >
       <span>{credit}</span>

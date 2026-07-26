@@ -3,15 +3,22 @@
   "name": "mlz-no",
   "compatibility_date": "2026-07-01",
 
-  // A static-assets-only Worker: there is no `main` entrypoint, so Cloudflare
-  // serves dist/ straight from the edge and no JavaScript runs per request.
-  // Security headers and cache policy live in public/_headers, which Vite copies
-  // to the dist root at build time.
+  // Keep both *.workers.dev URLs off. These must live here, not in the
+  // dashboard — a `wrangler deploy` re-enables anything toggled off in the UI.
+  // Separate switches: the first covers the production URL, the second the
+  // per-branch preview URLs.
+  "workers_dev": false,
+  "preview_urls": false,
+
+  // Static-assets-only Worker: no `main` entrypoint, so dist/ is served straight
+  // from the edge and no JavaScript runs per request. Security headers and cache
+  // policy live in public/_headers, which Vite copies to the dist root at build.
   "assets": {
     "directory": "./dist",
-    // This site has no client-side router, so an unknown path must stay a real
-    // 404 rather than rewriting to index.html and reporting a soft 200.
-    "not_found_handling": "none"
+    // No client-side router here, so an unknown path must return a real 404.
+    // "404-page" serves dist/404.html with a 404 status; switch to "none" if
+    // that file is ever removed from the build.
+    "not_found_handling": "404-page"
   },
 
   // Persist the observability settings configured in the Cloudflare dashboard so
@@ -34,12 +41,11 @@
       "persist": true,
       "head_sampling_rate": 1
     }
-  }
+  },
 
-  // Serving on the apex domain requires mlz.no to be an active zone on the same
-  // Cloudflare account. Add it in the dashboard (Workers & Pages -> mlz-no ->
-  // Settings -> Domains & Routes), or uncomment the block below to keep the
-  // binding in version control once the zone exists.
-  //
-  // "routes": [{ "pattern": "mlz.no", "custom_domain": true }]
+  // Bind the apex domain in version control so it survives a rebuild from
+  // scratch. Wrangler reconciles this list on deploy — any custom domain not
+  // listed here gets removed. www is deliberately absent: the redirect rule
+  // catches it at the edge, so it never reaches the Worker.
+  "routes": [{ "pattern": "mlz.no", "custom_domain": true }]
 }
