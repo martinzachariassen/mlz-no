@@ -10,10 +10,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
 [![Vite](https://img.shields.io/badge/Vite-7-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vite.dev)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev)
-[![Bun](https://img.shields.io/badge/Bun-1.3-14151a?style=flat-square&logo=bun&logoColor=white)](https://bun.sh)
-[![Hono](https://img.shields.io/badge/Hono-4-e36002?style=flat-square&logo=hono&logoColor=white)](https://hono.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178c6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
-[![Deployed on Railway](https://img.shields.io/badge/Railway-deploy-0B0D0E?style=flat-square&logo=railway&logoColor=white)](https://railway.app)
+[![Deployed on Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?style=flat-square&logo=cloudflare&logoColor=white)](https://workers.cloudflare.com)
 
 [**Live site**](https://mlz.no) · [Quick start](#quick-start) · [Design system](#design-system) · [Tech stack](#tech-stack) · [Hardening](#security--hardening) · [Deployment](#deployment) · [Configuration](#configuration)
 
@@ -31,8 +29,8 @@ editorial monospace landing page on a paper background. The frontend is a small
 from a handful of focused components, styled entirely from
 [`@martinzachariassen/design`](https://github.com/martinzachariassen/mlz-design),
 and driven by a single `profile` data source — built to static assets and served
-by a ~100-line TypeScript server that exists for one reason: to stay up and stay
-safe without a heavy framework in front of it.
+straight from Cloudflare's edge, with no server process and no per-request code
+anywhere in the path.
 
 - **Design-system UI** — every visual — palette, type, motion, the brand mark
   itself — is inherited from [`@martinzachariassen/design`](#design-system)
@@ -40,16 +38,16 @@ safe without a heavy framework in front of it.
   share one look and move together when the system changes.
 - **Lightweight component composition** — React + TypeScript, one component per
   section, all page content driven from `src/data/profile.ts`.
-- **Hardened by default** — strict CSP, rate limiting, method allowlist, and
-  traversal-safe static serving on every response. The build ships no inline
-  `<script>`/`<style>` tags, so `script-src` / `style-src` stay free of
-  `unsafe-inline` — the design system's own inline `style` props apply via the
-  CSSOM on the client, which `style-src` doesn't govern.
+- **Hardened by default** — a strict CSP and the full set of security headers on
+  every response, declared in [`public/_headers`](public/_headers). The build
+  ships no inline `<script>`/`<style>` tags, so `script-src` / `style-src` stay
+  free of `unsafe-inline` — the design system's own inline `style` props apply
+  via the CSSOM on the client, which `style-src` doesn't govern.
 - **Respectful motion & analytics** — the design system's drifting marks and
   glitch accents honour `prefers-reduced-motion`; cookieless, privacy-first
   [Umami](https://umami.is) analytics.
 - **Boring, verifiable CI** — every push lints, type-checks, builds, then boots
-  the real server and asserts the hardening still holds.
+  the real Workers runtime and asserts the hardening and cache policy still hold.
 
 ## Quick start
 
@@ -60,7 +58,7 @@ safe without a heavy framework in front of it.
 git clone https://github.com/martinzachariassen/mlz-no.git
 cd mlz-no
 mise install     # installs the pinned Bun
-bun install      # installs React, Vite, Hono + middleware
+bun install      # installs React, Vite, and the design system
 mise run dev     # Vite dev server with HMR on http://127.0.0.1:4173
 ```
 
@@ -70,23 +68,27 @@ All day-to-day tasks live in `mise.toml`:
 | -------------------- | ----------------------------------------------------- |
 | `mise run dev`       | Vite dev server with HMR on port `4173`               |
 | `mise run build`     | Build the production bundle into `dist/`              |
-| `mise run preview`   | Preview the production build with Vite               |
-| `mise run start`     | Serve `dist/` via the Bun + Hono server              |
-| `mise run typecheck` | Type-check the app and server (`tsc --noEmit`)        |
+| `mise run preview`   | Preview the production build with Vite                |
+| `mise run preview:worker` | Serve `dist/` through the local Workers runtime  |
+| `mise run deploy`    | Deploy `dist/` to Cloudflare Workers                  |
+| `mise run typecheck` | Type-check the app and build config (`tsc --noEmit`)  |
 | `mise run lint`      | Lint + format check with Biome (read-only)            |
 | `mise run format`    | Format and auto-fix with Biome                        |
 
 ## Tech stack
 
-| Layer     | Choice                                                          |
-| --------- | --------------------------------------------------------------- |
-| Runtime   | [Bun](https://bun.sh) — pinned via `mise.toml`                  |
-| Frontend  | [React](https://react.dev) 19 + TypeScript                     |
-| Build     | [Vite](https://vite.dev) 7                                      |
-| Server    | [Hono](https://hono.dev) + first-party middleware, TypeScript   |
-| Tooling   | [Biome](https://biomejs.dev) for lint + format                  |
-| Hosting   | [Railway](https://railway.app) — auto-deploy from `main`        |
-| Analytics | [Umami](https://umami.is) — cookieless, privacy-first           |
+| Layer     | Choice                                                                          |
+| --------- | ------------------------------------------------------------------------------- |
+| Frontend  | [React](https://react.dev) 19 + TypeScript                                      |
+| Build     | [Vite](https://vite.dev) 8                                                      |
+| Toolchain | [Bun](https://bun.sh) — package manager and build runner, pinned via `mise.toml` |
+| Tooling   | [Biome](https://biomejs.dev) for lint + format                                  |
+| Hosting   | [Cloudflare Workers](https://workers.cloudflare.com) static assets — auto-deploy from `main` |
+| Analytics | [Umami](https://umami.is) — cookieless, privacy-first                           |
+
+There is no server process and no runtime dependency: `dependencies` is the
+design system plus React, and Bun never runs in production — it only installs
+packages and drives `vite build`.
 
 ## Design system
 
@@ -115,8 +117,9 @@ you own:
   automatic, per-run `GITHUB_TOKEN` is used directly — no secret to manage. This
   only works because the `mlz-design` package's **Manage Actions access**
   settings explicitly grant this repo Read.
-- **Railway:** has no ambient token, so a `GITHUB_TOKEN` (PAT, `read:packages`)
-  is set as a dashboard environment variable.
+- **Deploys:** [`deploy.yml`](.github/workflows/deploy.yml) builds inside
+  Actions for exactly this reason — the same automatic `GITHUB_TOKEN` covers the
+  install, so no long-lived PAT has to be handed to Cloudflare.
 
 **3. Inherit it** — `src/styles/index.css` imports the package's tokens and base
 layer, and `@source`s its compiled classes so Tailwind emits them:
@@ -158,6 +161,7 @@ src/
 └── styles/
     └── index.css       #     Tailwind + design-system imports, one `@layer base` tweak
 public/                 # copied verbatim to the dist root by Vite
+├── _headers            #   security headers + cache policy (read by Cloudflare)
 ├── robots.txt          #   crawler directives (well-known root path)
 ├── sitemap.xml         #   single-URL sitemap (well-known root path)
 ├── favicon.ico         #   legacy favicon (browsers auto-fetch /favicon.ico)
@@ -167,10 +171,10 @@ public/                 # copied verbatim to the dist root by Vite
     └── social/         #   og.png, twitter-card.png — built on the design system's SocialCard frame
 assets/
 └── banner.png          # README header banner (design system's RepoBanner, standard layout)
-server/index.ts         # Bun + Hono server: serves dist/, hardened against abuse
 vite.config.ts          # Vite config (React + Tailwind v4 plugins, CSP-safe build settings)
-railway.json            # Railway config-as-code (healthcheck path)
-mise.toml               # pins Bun, defines the dev / build / start / lint tasks
+wrangler.jsonc          # Cloudflare Workers config — static assets only, no `main`
+mise.toml               # pins Bun, defines the dev / build / deploy / lint tasks
+DEPLOYMENT.md           # first-time Cloudflare setup runbook (account, secrets, domain)
 ```
 
 `robots.txt`, `sitemap.xml`, and `favicon.ico` stay at the `public/` root on
@@ -180,35 +184,48 @@ purpose — crawlers and browsers request them at fixed, well-known paths — an
 
 ## Security & hardening
 
-The server ([`server/index.ts`](server/index.ts)) leans on well-maintained,
-mostly first-party middleware rather than hand-rolled code. Each threat maps to
-one deliberate defence:
+There is no application code on the request path, so most of the old server's
+job is now either a Cloudflare platform guarantee or a line in
+[`public/_headers`](public/_headers). Each threat still maps to one deliberate
+defence:
 
 | Threat                        | Defence                                                                                                        |
 | ----------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| XSS / content injection       | CSP scoped to exactly what the page loads (bundled JS/CSS from self, Google Fonts, Umami), via `hono/secure-headers`; the Vite build ships no inline scripts or styles |
+| XSS / content injection       | CSP scoped to exactly what the page loads (bundled JS/CSS from self, Google Fonts, Umami), declared in `_headers`; the Vite build ships no inline scripts or styles |
 | Clickjacking, sniffing, leaks | `X-Frame-Options: DENY`, `nosniff`, HSTS, `Referrer-Policy`, `Permissions-Policy` on every response             |
-| Request floods (L7)           | Per-client rate limiting (`hono-rate-limiter`), fixed window keyed on the left-most `X-Forwarded-For` entry     |
-| Path traversal                | `serveStatic` resolves strictly within `dist/` — blocked by construction                                        |
-| Method abuse                  | `GET`/`HEAD` allowlist; everything else gets a `405`                                                            |
-| Slowloris / oversized bodies  | 30 s `idleTimeout` and a 16 KiB request-body cap                                                                |
-| Crashes on malformed input    | Central `onError` turns any thrown handler into a generic `500` — nothing leaks, the process stays up           |
-| Broken deploys                | Railway only shifts traffic once `/health` returns `200`; the route sits *before* the rate limiter so a flood can't fake an unhealthy probe |
+| Request floods (L7)           | Absorbed at Cloudflare's edge, where it belongs — static assets are served from cache and never reach an origin |
+| Path traversal                | Only files present in the uploaded asset manifest are addressable; there is no filesystem to traverse            |
+| Method abuse                  | Workers' static-asset handler answers anything other than `GET`/`HEAD` with a `405`                             |
+| Config disclosure             | `_headers` configures the deployment but is never itself servable — it returns `404`                            |
+| Crashes on malformed input    | No per-request code runs; there is nothing to throw and no process to take down                                 |
+| Broken deploys                | Assets are uploaded before the new version is activated, so a failed deploy leaves the previous one serving      |
 
-> [!IMPORTANT]
-> A true volumetric DDoS must be absorbed at the **edge**, not in the app.
-> Front the Railway domain with Cloudflare (free tier, proxied DNS record) for
-> network-layer protection, WAF rules, and caching. The hardening above keeps a
-> single instance healthy against application-layer abuse — it's the last line
-> of defence, not a substitute for an edge.
+Two things that were previously missing entirely now come for free: responses are
+compressed, and content-hashed bundles under `/bundle/` are served
+`immutable`. Favicons and social cards under `/assets/` deliberately are *not*
+immutable — those URLs are stable across deploys, so caching them permanently
+would make them unreplaceable.
+
+> [!NOTE]
+> The rate limiter that used to run in-process is gone on purpose. It was
+> per-instance, in-memory, and keyed on a spoofable `X-Forwarded-For`, so it
+> never meaningfully mitigated a flood. Serving from Cloudflare's edge addresses
+> the same threat at the layer that can actually absorb it. If a specific abuse
+> pattern ever needs shaping, that is a WAF or Rate Limiting rule on the zone,
+> not code in this repo.
 
 **Verified in CI.** [`ci.yml`](.github/workflows/ci.yml) runs two stages: a
 **build** job lints with Biome, type-checks, builds the bundle, and uploads
 `dist/` as an artifact; a **smoke** job then downloads that exact artifact, boots
-the real server, and asserts the contract — status codes for
-`GET`/`POST`/missing/traversal paths and the presence of the key security
-headers. Testing the uploaded artifact means CI exercises the same bundle that
-would deploy, not a rebuilt copy. [CodeQL](https://codeql.github.com) scans on every push and weekly;
+it under `wrangler dev` — the same `workerd` runtime Cloudflare runs in
+production — and asserts the contract: status codes for
+`GET`/`POST`/missing/traversal/`_headers` paths, the presence of every security
+header, that hashed bundles are immutably cacheable, and that the favicon is
+*not*. (Compression is a Cloudflare edge guarantee, not something the local
+`wrangler dev` runtime applies, so it is out of the smoke test's scope.) Testing
+the uploaded artifact means CI exercises the same bundle that would deploy, not a
+rebuilt copy.
+[CodeQL](https://codeql.github.com) scans on every push and weekly;
 [Dependabot](https://docs.github.com/code-security/dependabot) keeps Bun and
 GitHub Actions dependencies current; and
 [OpenSSF Scorecard](https://scorecard.dev) grades the repo's supply-chain
@@ -216,33 +233,46 @@ posture and publishes the score behind the badge above.
 
 ## Deployment
 
-Every push to `main` deploys automatically to [Railway](https://railway.app).
-Railway's Railpack builder detects Bun (via `package.json` + `bun.lock`), runs
-`bun install`, builds the app with `bun run build`, and starts the server with
-`bun run start` — which serves the generated `dist/`. The server binds to `::`
-on `$PORT` so the edge can reach the container over IPv4 or IPv6.
+> First-time setup — Cloudflare account, API token, repo secrets, custom domain
+> — is a step-by-step runbook in [`DEPLOYMENT.md`](DEPLOYMENT.md).
 
-[`railway.json`](railway.json)
-([config as code](https://docs.railway.com/reference/config-as-code)) pins the
-build (`bun run build`) and start (`bun run start`) commands and points the
-healthcheck at `/health` — during a deploy, traffic only switches to the new
-version once it returns `200`, so a broken build never takes the live site down.
+Every push to `main` runs [`deploy.yml`](.github/workflows/deploy.yml), which
+installs, builds `dist/`, and publishes it with `wrangler deploy`.
 
-Custom domains are configured under **Settings → Networking** in the Railway
-dashboard; SSL is automatic.
+[`wrangler.jsonc`](wrangler.jsonc) declares a **static-assets-only Worker**: it
+has no `main` entrypoint, so Cloudflare serves `dist/` directly from the edge and
+no JavaScript executes per request. `not_found_handling` is left at `none` — this
+site has no client-side router, so an unknown path must stay a real `404` rather
+than rewriting to `index.html` and reporting a soft `200` to crawlers.
+
+The deploy runs from GitHub Actions rather than Cloudflare's own Git integration
+because the build needs a GitHub Packages token to install the
+[design system](#design-system); Actions supplies one per run, so no long-lived
+PAT has to live in Cloudflare. It needs two repository secrets:
+
+| Secret                  | Where to get it                                                        |
+| ----------------------- | ---------------------------------------------------------------------- |
+| `CLOUDFLARE_API_TOKEN`  | Cloudflare dashboard → My Profile → API Tokens → *Edit Cloudflare Workers* |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare dashboard → Workers & Pages → Account ID                     |
+
+**Custom domain.** The first deploy publishes to `mlz-no.<subdomain>.workers.dev`.
+To serve `mlz.no`, add it under **Workers & Pages → mlz-no → Settings → Domains
+& Routes** (the zone must be on the same account); SSL is automatic. To keep that
+binding in version control instead, uncomment the `routes` block in
+[`wrangler.jsonc`](wrangler.jsonc).
 
 ## Configuration
 
-### Environment variables
+No runtime environment variables exist — there is no runtime. What used to be
+`PORT`, `HOST`, and the rate-limit knobs is now either irrelevant or a Cloudflare
+zone setting.
 
-Sensible defaults, all optional:
+Deploy-time configuration lives in two files:
 
-| Variable               | Default | Purpose                             |
-| ---------------------- | ------- | ----------------------------------- |
-| `PORT`                 | `4173`  | Port the server listens on          |
-| `HOST`                 | `::`    | Bind address (dual-stack)           |
-| `RATE_LIMIT_MAX`       | `120`   | Requests allowed per window         |
-| `RATE_LIMIT_WINDOW_MS` | `10000` | Rate-limit window length in ms      |
+| File                                   | Controls                                              |
+| -------------------------------------- | ----------------------------------------------------- |
+| [`wrangler.jsonc`](wrangler.jsonc)     | Worker name, asset directory, 404 handling, routes    |
+| [`public/_headers`](public/_headers)   | Security headers and cache policy per path            |
 
 Retuning the visual theme is a [design system](#design-system) concern — see
 that section for the `data-accent` / dark-mode knobs on `<html>`.
@@ -254,5 +284,5 @@ that section for the `data-accent` / dark-mode knobs on `<html>`.
 ---
 
 <div align="center">
-<sub>Built with <a href="https://bun.sh">Bun</a> and <a href="https://hono.dev">Hono</a> · Deployed on <a href="https://railway.app">Railway</a> · <a href="https://mlz.no">mlz.no</a></sub>
+<sub>Built with <a href="https://react.dev">React</a> and <a href="https://vite.dev">Vite</a> · Deployed on <a href="https://workers.cloudflare.com">Cloudflare Workers</a> · <a href="https://mlz.no">mlz.no</a></sub>
 </div>

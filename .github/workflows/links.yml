@@ -21,14 +21,17 @@ jobs:
   lychee:
     name: check links
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       # --root-dir resolves root-relative hrefs (/assets/…, /favicon.ico)
       # against the served directory, exactly as the browser would. lychee
       # requires an absolute path here, so anchor it to the checkout root.
       - name: Check links
-        uses: lycheeverse/lychee-action@v2
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2
         with:
           args: >-
             --root-dir ${{ github.workspace }}/public

@@ -14,8 +14,8 @@ export default {
     project: "mlz.no",
     eyebrow: "MLZ · Personal Site",
     description:
-      "Personal homepage — a small Vite + React + TypeScript app, served by a hardened Bun + Hono static server.",
-    badges: ["React", "Vite", "Bun", "Hono", "TypeScript"],
+      "Personal homepage — a small Vite + React + TypeScript app, deployed to Cloudflare Workers as static assets.",
+    badges: ["React", "Vite", "TypeScript", "Cloudflare"],
     install: "bun run dev",
     footer: "github.com/martinzachariassen/mlz-no",
   },
