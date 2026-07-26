@@ -9,7 +9,7 @@ export function ContactLinks() {
   return (
     <nav
       aria-label="Contact links"
-      className="mt-1.5 flex animate-rise flex-wrap justify-center gap-[clamp(12px,2vw,18px)]"
+      className="mt-1.5 flex w-full max-w-[320px] animate-rise flex-col gap-3 sm:max-w-none sm:flex-row sm:flex-wrap sm:justify-center sm:gap-[clamp(12px,2vw,18px)]"
       style={{ animationDelay: "0.6s" }}
     >
       {contactLinks.map((link) => {
@@ -19,7 +19,10 @@ export function ContactLinks() {
             key={link.label}
             href={link.href}
             data-umami-event={link.event}
-            className={cn(buttonVariants(), "no-underline")}
+            className={cn(
+              buttonVariants(),
+              "h-10 w-full px-4 text-[13px] no-underline sm:h-11 sm:w-auto sm:px-[22px] sm:text-xs",
+            )}
             {...(link.external && {
               target: "_blank",
               rel: "noopener noreferrer me",

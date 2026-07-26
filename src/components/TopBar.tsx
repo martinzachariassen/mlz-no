@@ -6,7 +6,7 @@ import { profile } from "../data/profile";
 export function TopBar() {
   return (
     <header
-      className="relative z-10 flex animate-rise items-center justify-between gap-4 px-[clamp(20px,5vw,48px)] pt-[max(28px,env(safe-area-inset-top))] pb-7 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground"
+      className="relative z-10 flex animate-rise items-center justify-between gap-4 px-[clamp(20px,5vw,48px)] pt-[max(28px,env(safe-area-inset-top))] pb-7 font-mono text-[12px] uppercase tracking-[0.2em] text-muted-foreground"
       style={{ animationDelay: "0.05s" }}
     >
       <a
