@@ -1,8 +1,6 @@
 import { BrandMark, BrandWordmark } from "@martinzachariassen/design";
 import { profile } from "../data/profile";
 
-// The header: the MLZ lockup (mark + wordmark) on the left, a blinking build
-// status on the right. animate-rise gives it the staged entrance.
 export function TopBar() {
   return (
     <header

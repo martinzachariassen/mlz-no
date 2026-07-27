@@ -4,7 +4,7 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    # One grouped PR per week keeps the noise down on a small project.
+    # One grouped PR per week keeps the noise down
     groups:
       bun:
         patterns: ["*"]

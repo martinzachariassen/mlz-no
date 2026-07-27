@@ -1,8 +1,5 @@
 import { profile } from "../data/profile";
 
-// The footer: copyright on the left, coordinates on the right, hairline rule
-// above (border-border). Plain text — the glitch effect is reserved for the
-// identity so it stays a sparse accent.
 export function Footer() {
   const { copyrightYear, firstName, lastName, coordinates } = profile;
   const credit = `© ${copyrightYear} · ${firstName} ${lastName}`;
