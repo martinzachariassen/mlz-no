@@ -1,0 +1,30 @@
+#!/usr/bin/env sh
+#
+# Pre-commit safety net: format and apply Biome's safe fixes to staged files so
+# unformatted code can never reach CI, where `biome ci` (mise run lint) would
+# reject it. This mirrors that gate locally, one tier earlier.
+#
+# Wired via `git config core.hooksPath .githooks`, which the package.json
+# `prepare` script sets automatically on `bun install`. Run it by hand if needed:
+#   git config core.hooksPath .githooks
+#
+set -eu
+
+# The files being committed that Biome is configured to handle (biome.json
+# includes ts/tsx plus the config .ts files). NUL-delimited to stay safe on odd
+# names; --diff-filter=ACMR skips deletions.
+files=$(git diff --cached --name-only --diff-filter=ACMR -z \
+  | tr '\0' '\n' \
+  | grep -E '\.(ts|tsx|js|jsx|mjs|cjs)$' || true)
+
+[ -z "$files" ] && exit 0
+
+# Apply safe fixes (format + organize imports + safe lint), then re-stage what
+# Biome rewrote. --no-errors-on-unmatched keeps files outside biome.json's
+# includes (e.g. tsconfig.json) from failing the run.
+printf '%s\n' "$files" | xargs bunx biome check --write --no-errors-on-unmatched --files-ignore-unknown=true
+printf '%s\n' "$files" | xargs git add
+
+# Final gate: re-run in check-only mode (same as CI). If anything is still off —
+# e.g. an unsafe lint error Biome won't auto-fix — block the commit.
+printf '%s\n' "$files" | xargs bunx biome check --no-errors-on-unmatched --files-ignore-unknown=true

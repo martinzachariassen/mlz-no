@@ -1,0 +1,5 @@
+{
+  // Prompt contributors to install the Biome extension so format-on-save (see
+  // .vscode/settings.json) actually has an engine to run.
+  "recommendations": ["biomejs.biome"]
+}
