@@ -2,9 +2,6 @@ import { buttonVariants, cn } from "@martinzachariassen/design";
 import { contactLinks } from "../data/profile";
 import { contactIcons } from "./icons";
 
-// Contact links styled as the signature MLZ ghost button. Rendered as anchors —
-// buttonVariants gives an <a> the exact button look (lift + offset accent shadow
-// on hover, icon nudge) without needing the <button> element.
 export function ContactLinks() {
   return (
     <nav
