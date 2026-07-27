@@ -14,8 +14,16 @@ export function Identity() {
         className="m-0 animate-rise font-hand text-[clamp(40px,11vw,57px)] font-normal uppercase leading-[0.9] text-foreground sm:text-[clamp(54px,9vw,112px)]"
         style={{ animationDelay: "0.15s" }}
       >
-        <GlitchText text={profile.firstName} interval={GLITCH_INTERVAL} className="block" />
-        <GlitchText text={profile.lastName} interval={GLITCH_INTERVAL} className="block" />
+        <GlitchText
+          text={profile.firstName}
+          interval={GLITCH_INTERVAL}
+          className="block"
+        />
+        <GlitchText
+          text={profile.lastName}
+          interval={GLITCH_INTERVAL}
+          className="block"
+        />
       </h1>
 
       <div
