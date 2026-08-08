@@ -1,4 +1,4 @@
-import { buttonVariants, cn } from "@martinzachariassen/design";
+import { Button, cn, stackVariants } from "@martinzachariassen/design";
 import { contactLinks } from "../data/profile";
 import { contactIcons } from "./icons";
 
@@ -6,28 +6,37 @@ export function ContactLinks() {
   return (
     <nav
       aria-label="Contact links"
-      className="mt-1.5 flex w-full max-w-[320px] animate-rise flex-col gap-3 sm:max-w-none sm:flex-row sm:flex-wrap sm:justify-center sm:gap-[clamp(12px,2vw,18px)]"
+      className={cn(
+        stackVariants({
+          direction: "responsive",
+          gap: "md",
+          justify: "center",
+          wrap: true,
+        }),
+        "mx-auto mt-1.5 w-full max-w-xs animate-rise sm:max-w-none",
+      )}
       style={{ animationDelay: "0.6s" }}
     >
       {contactLinks.map((link) => {
         const Icon = contactIcons[link.icon];
         return (
-          <a
-            key={link.label}
-            href={link.href}
-            data-umami-event={link.event}
-            className={cn(
-              buttonVariants(),
-              "h-10 w-full px-4 text-[13px] no-underline sm:h-11 sm:w-auto sm:px-[22px] sm:text-xs",
-            )}
-            {...(link.external && {
-              target: "_blank",
-              rel: "noopener noreferrer me",
-            })}
-          >
-            <Icon />
-            {link.label}
-          </a>
+          // asChild renders a real anchor wearing the button's styles, so
+          // middle-click, copy-link and open-in-new-tab all still work — and the
+          // size variant handles every breakpoint, so no height or padding
+          // overrides are needed.
+          <Button key={link.label} asChild className="w-full sm:w-auto">
+            <a
+              href={link.href}
+              data-umami-event={link.event}
+              {...(link.external && {
+                target: "_blank",
+                rel: "noopener noreferrer me",
+              })}
+            >
+              <Icon />
+              {link.label}
+            </a>
+          </Button>
         );
       })}
     </nav>

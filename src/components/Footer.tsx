@@ -1,3 +1,9 @@
+import {
+  cn,
+  containerVariants,
+  Separator,
+  Text,
+} from "@martinzachariassen/design";
 import { profile } from "../data/profile";
 
 export function Footer() {
@@ -7,11 +13,30 @@ export function Footer() {
 
   return (
     <footer
-      className="relative z-10 flex animate-rise items-center justify-between gap-3 border-border border-t px-[clamp(20px,5vw,48px)] pt-5 pb-[max(20px,env(safe-area-inset-bottom))] font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:text-[11px]"
+      className="relative z-10 animate-rise"
       style={{ animationDelay: "0.75s" }}
     >
-      <span>{credit}</span>
-      <span>{coords}</span>
+      <Separator />
+      <div
+        className={cn(
+          containerVariants({ size: "full", gutter: "lg" }),
+          "flex items-center justify-between gap-3 pt-5",
+          "pb-[max(20px,env(safe-area-inset-bottom))]",
+        )}
+      >
+        <Text
+          variant="eyebrow"
+          className="text-[10px] tracking-[0.2em] sm:text-[11px]"
+        >
+          {credit}
+        </Text>
+        <Text
+          variant="eyebrow"
+          className="text-[10px] tracking-[0.2em] sm:text-[11px]"
+        >
+          {coords}
+        </Text>
+      </div>
     </footer>
   );
 }

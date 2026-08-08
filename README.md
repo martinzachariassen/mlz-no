@@ -40,11 +40,15 @@ There are no runtime environment variables — nothing executes per request. Wha
 | `CLOUDFLARE_API_TOKEN`  | deploy (repo secret) | yes      | Token from the "Edit Cloudflare Workers" template.                                                                    |
 | `CLOUDFLARE_ACCOUNT_ID` | deploy (repo secret) | yes      | The account the Worker lives in.                                                                                      |
 
-Deploy-time behaviour lives in two files: [`wrangler.jsonc`](wrangler.jsonc) (Worker name, asset directory, 404 handling, routes) and [`public/_headers`](public/_headers) (security headers and cache policy per path). The visual theme is set on `<html>` in [`index.html`](index.html) via `data-accent` (`cyan` · `blue` · `green` · `rust` · `ink`) and a `dark` class, both defined by the design system.
+Deploy-time behaviour lives in two files: [`wrangler.jsonc`](wrangler.jsonc) (Worker name, asset directory, 404 handling, routes) and [`public/_headers`](public/_headers) (security headers and cache policy per path).
+
+The visual theme is the reader's: a `ThemeToggle` (light · dark · system) and an `AccentPicker` (`cyan` · `blue` · `green` · `rust` · `ink`) persist their choice to `localStorage` under `mlz-theme` and `mlz-accent`, and the design system applies it as a `dark` class and a `data-accent` attribute on `<html>`. The markup in [`index.html`](index.html) only carries the no-JS default. Because `script-src` is `'self'`, the pre-paint bootstrap that prevents a flash of the wrong theme cannot be inlined — [`vite/theme-init.ts`](vite/theme-init.ts) emits it as a hashed same-origin script instead.
+
+Fonts are self-hosted: Space Grotesk and Space Mono ship inside the design system, Architects Daughter comes from Fontsource, and all of them are fingerprinted into `/bundle/`. Nothing is fetched from a third-party origin, which is why `font-src` and `style-src` are both `'self'`.
 
 ## Architecture
 
-Vite builds the React + TypeScript app and the design system's tokens into `dist/`, which `wrangler deploy` uploads to Cloudflare Workers as static assets. The one thing to get right: there is no server. The Worker has no `main`, so no JavaScript runs per request — hardening and caching are configuration ([`public/_headers`](public/_headers)), not code. Content-hashed bundles under `/bundle/` are served `immutable`; stable-URL favicons and social cards under `/assets/` are not.
+Vite builds the React + TypeScript app and the design system's tokens into `dist/`, which `wrangler deploy` uploads to Cloudflare Workers as static assets. The one thing to get right: there is no server. The Worker has no `main`, so no JavaScript runs per request — hardening and caching are configuration ([`public/_headers`](public/_headers)), not code. Content-hashed bundles under `/bundle/` are served `immutable`; stable-URL favicons and social cards under `/assets/` are not. Those favicons and social cards are committed output — the design system's generator that produced them was removed in v0.4.0, so they are now maintained by hand.
 
 ```mermaid
 flowchart LR
