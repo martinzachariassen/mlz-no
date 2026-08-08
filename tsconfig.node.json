@@ -13,5 +13,5 @@
     "noUncheckedIndexedAccess": true,
     "types": []
   },
-  "include": ["vite.config.ts"]
+  "include": ["vite.config.ts", "vite/**/*.ts"]
 }
