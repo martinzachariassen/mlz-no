@@ -1,5 +1,4 @@
 import {
-  AccentPicker,
   cn,
   containerVariants,
   Separator,
@@ -21,10 +20,7 @@ export function Footer() {
       <div
         className={cn(
           containerVariants({ size: "full", gutter: "lg" }),
-          // Reversed on mobile so the picker sits above the credit; AccentPicker
-          // puts className on its inner control rather than its root, so the
-          // ordering has to come from the parent.
-          "flex flex-col-reverse items-center justify-between gap-3 pt-5 sm:flex-row",
+          "flex items-center justify-between gap-3 pt-5",
           "pb-[max(20px,env(safe-area-inset-bottom))]",
         )}
       >
@@ -34,10 +30,9 @@ export function Footer() {
         >
           {credit}
         </Text>
-        <AccentPicker />
         <Text
           variant="eyebrow"
-          className="hidden text-[10px] tracking-[0.2em] sm:inline sm:text-[11px]"
+          className="text-[10px] tracking-[0.2em] sm:text-[11px]"
         >
           {coords}
         </Text>
