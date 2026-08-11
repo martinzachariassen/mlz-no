@@ -23,8 +23,7 @@
     "lint": "biome ci ."
   },
   "dependencies": {
-    "@fontsource/architects-daughter": "^5.3.0",
-    "@martinzachariassen/design": "^0.5.0",
+    "@martinzachariassen/design": "^0.8.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },

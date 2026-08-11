@@ -7,15 +7,11 @@
    same-origin and public/_headers can hold `font-src 'self'` / `style-src
    'self'` with no third-party origins at all. It also carries the `@source`
    directive that points Tailwind at the compiled components, so the manual one
-   this file used to need is gone.
-
-   Architects Daughter — --font-hand, the hero headline — is the one face the
-   package does not bundle. Fontsource ships it under the exact family name the
-   token expects, latin subset, 400 only (that is the entire font), with a
-   unicode-range that covers æ/ø/å. */
+   this file used to need is gone. Since v0.6.0 the bundle covers all four
+   families — including Architects Daughter (--font-hand, the hero headline) —
+   so the separate Fontsource import is gone too. */
 @import "tailwindcss";
 @import "@martinzachariassen/design/styles/index-self-hosted.css";
-@import "@fontsource/architects-daughter/latin-400.css";
 
 @layer base {
   body {

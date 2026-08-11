@@ -44,7 +44,7 @@ Deploy-time behaviour lives in two files: [`wrangler.jsonc`](wrangler.jsonc) (Wo
 
 The visual theme is the reader's: a `ThemeToggle` (light · dark · system) and an `AccentPicker` (`cyan` · `blue` · `green` · `rust` · `ink`) persist their choice to `localStorage` under `mlz-theme` and `mlz-accent`, and the design system applies it as a `dark` class and a `data-accent` attribute on `<html>`. The markup in [`index.html`](index.html) only carries the no-JS default. Because `script-src` is `'self'`, the pre-paint bootstrap that prevents a flash of the wrong theme cannot be inlined — [`vite/theme-init.ts`](vite/theme-init.ts) emits it as a hashed same-origin script instead.
 
-Fonts are self-hosted: Space Grotesk and Space Mono ship inside the design system, Architects Daughter comes from Fontsource, and all of them are fingerprinted into `/bundle/`. Nothing is fetched from a third-party origin, which is why `font-src` and `style-src` are both `'self'`.
+Fonts are self-hosted: all four families — Space Grotesk, Space Mono, Architects Daughter and Instrument Serif — ship inside the design system and are fingerprinted into `/bundle/`. Nothing is fetched from a third-party origin, which is why `font-src` and `style-src` are both `'self'`.
 
 ## Architecture
 
