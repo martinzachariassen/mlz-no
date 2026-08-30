@@ -31,10 +31,11 @@
       {
         "source": "**",
         "headers": [
-          // Kept as the floor, not the effective value: Hosting replaces this
-          // with its own `max-age=31556926; includeSubDomains; preload`, which
-          // is strictly stronger. Ours is what the emulator serves, and what
-          // would apply if Hosting ever stopped setting one.
+          // This is the value served on mlz.no. Hosting substitutes its own
+          // `max-age=31556926; includeSubDomains; preload` on the *.web.app and
+          // *.firebaseapp.com URLs only, so the custom domain is governed here.
+          // includeSubDomains reaches design.mlz.no and ip.mlz.no, both already
+          // HTTPS-only — same as under the previous Cloudflare deployment.
           {
             "key": "Strict-Transport-Security",
             "value": "max-age=31536000; includeSubDomains"
