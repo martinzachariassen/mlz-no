@@ -38,8 +38,8 @@ function Prompt() {
   );
 }
 
-// The 404 page. Cloudflare serves dist/404.html with a real 404 status for any
-// unknown path (wrangler.jsonc -> assets.not_found_handling: "404-page"). It
+// The 404 page. Firebase Hosting serves dist/404.html with a real 404 status
+// for any unknown path, by virtue of the file building to that name. It
 // mirrors the home page's identity block — glitchy numerals with the 0 in the
 // accent colour — then has a little fun: a mock terminal that echoes the failed
 // path as a `cd` error with a random shell-comment quip, plus a route home.

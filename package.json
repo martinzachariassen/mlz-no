@@ -2,7 +2,7 @@
   "name": "mlz-no",
   "version": "1.0.0",
   "private": true,
-  "description": "Personal homepage for Martin Zachariassen — a Vite + React app served as static assets from Cloudflare Workers.",
+  "description": "Personal homepage for Martin Zachariassen — a Vite + React app served as static assets from Firebase Hosting.",
   "homepage": "https://mlz.no",
   "author": "Martin Zachariassen <hi@mlz.no>",
   "license": "MIT",
@@ -16,8 +16,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "preview:worker": "wrangler dev",
-    "deploy": "wrangler deploy",
+    "preview:hosting": "firebase emulators:start --only hosting",
+    "deploy": "firebase deploy --only hosting",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
     "format": "biome check --write .",
     "lint": "biome ci ."
@@ -33,9 +33,9 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^6.0.3",
+    "firebase-tools": "^15.28.2",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
-    "vite": "^8.1.5",
-    "wrangler": "^4.114.0"
+    "vite": "^8.1.5"
   }
 }

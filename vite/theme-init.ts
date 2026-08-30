@@ -14,9 +14,9 @@ const DEV_URL = "/@mlz-theme-init.js";
  *
  * The script has to run before the first paint, or a reader who chose dark mode
  * sees a white flash on every load. The design system's own JSDoc says to inline
- * it with `dangerouslySetInnerHTML` — but public/_headers pins script-src to
+ * it with `dangerouslySetInnerHTML` — but firebase.json pins script-src to
  * 'self' with no 'unsafe-inline' (the same reason build.modulePreload.polyfill
- * is off), and a static-asset Worker has no server to mint a nonce or hash. A
+ * is off), and a static-only deployment has no server to mint a nonce or hash. A
  * file under /bundle/ satisfies the CSP, inherits the immutable Cache-Control,
  * and — being a classic script rather than a module — still blocks the parser,
  * so `.dark` and `data-accent` are on <html> before anything renders.

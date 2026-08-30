@@ -13,12 +13,12 @@ run = "bun run build"
 description = "Preview the production build with Vite"
 run = "bun run preview"
 
-[tasks."preview:worker"]
-description = "Serve dist/ through the local Workers runtime (applies _headers)"
-run = "bun run preview:worker"
+[tasks."preview:hosting"]
+description = "Serve dist/ through the local Firebase Hosting emulator (applies firebase.json)"
+run = "bun run preview:hosting"
 
 [tasks.deploy]
-description = "Deploy dist/ to Cloudflare Workers with wrangler"
+description = "Deploy dist/ to Firebase Hosting with the Firebase CLI"
 run = "bun run deploy"
 
 [tasks.typecheck]

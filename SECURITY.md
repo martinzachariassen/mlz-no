@@ -52,6 +52,6 @@ report (unless you prefer to remain anonymous).
 
 This is a static personal homepage with no user accounts, no backend database,
 and no server-side application code — it is served as static assets from
-Cloudflare Workers. Reports about the site's content security, HTTP response
+Firebase Hosting. Reports about the site's content security, HTTP response
 headers, dependency vulnerabilities, or the CI/CD supply chain are all in scope
 and welcome.

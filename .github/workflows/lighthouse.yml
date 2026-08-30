@@ -1,14 +1,14 @@
 name: Lighthouse
 
 # Audits the homepage the way a browser sees it — accessibility, best-practices,
-# SEO, and performance — against the real Workers runtime. LHCI boots
-# `wrangler dev`, waits for its "Ready on" line, then runs Lighthouse three
+# SEO, and performance — against the Firebase Hosting emulator. LHCI boots the
+# emulator, waits for its "All emulators ready" line, then runs Lighthouse three
 # times and asserts the category scores in .github/lighthouse/lighthouserc.json.
 #
 # Accessibility and SEO are hard gates. Best-practices and performance are
 # warnings: Lighthouse's "Use HTTPS" audit always fails against the plain-HTTP
-# local runtime, and perf swings with third-party font/analytics fetches —
-# neither reflects production on Cloudflare's edge.
+# local emulator, and perf swings with third-party analytics fetches — neither
+# reflects production on Hosting's CDN.
 on:
   push:
     branches: [main]
@@ -28,8 +28,6 @@ jobs:
     name: audit homepage
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    env:
-      WRANGLER_SEND_METRICS: "false"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -43,7 +41,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # LHCI's startServerCommand (wrangler dev) serves dist/, so build first.
+      # LHCI's startServerCommand (the Hosting emulator) serves dist/, so build
+      # first.
       - name: Build
         run: mise run build
 

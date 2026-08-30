@@ -1,10 +1,10 @@
 {
   "ci": {
     "collect": {
-      "url": ["http://127.0.0.1:4173/"],
+      "url": ["http://127.0.0.1:5000/"],
       "numberOfRuns": 3,
-      "startServerCommand": "bunx wrangler dev --ip 127.0.0.1 --port 4173",
-      "startServerReadyPattern": "Ready on",
+      "startServerCommand": "bunx firebase-tools emulators:start --only hosting --project mlz-no",
+      "startServerReadyPattern": "All emulators ready",
       "startServerReadyTimeout": 60000
     },
     "assert": {
