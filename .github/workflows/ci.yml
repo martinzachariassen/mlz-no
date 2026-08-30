@@ -64,10 +64,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
-      PORT: "4173"
-      # wrangler dev runs entirely on the local workerd runtime — no Cloudflare
-      # account or API token is involved.
-      WRANGLER_SEND_METRICS: "false"
+      # Matches firebase.json -> emulators.hosting.port.
+      PORT: "5000"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -76,8 +74,8 @@ jobs:
       - name: Set up mise (installs Bun from mise.toml)
         uses: jdx/mise-action@7e36c90d9ab29c415a2384db3006f3ec8a8cc654 # v4
 
-      # wrangler itself is a devDependency; the frontend bundle comes from the
-      # build job's artifact.
+      # firebase-tools itself is a devDependency; the frontend bundle comes from
+      # the build job's artifact.
       - name: Install dependencies
         run: bun install --frozen-lockfile
         env:
@@ -89,18 +87,20 @@ jobs:
           name: dist
           path: dist/
 
-      # Serve the built dist/ through the same Workers runtime Cloudflare runs
-      # in production, and assert the hardening and cache policy still hold.
-      # Everything checked here comes from public/_headers or from Workers'
-      # built-in static-asset behaviour — there is no server code left to test.
-      - name: Smoke-test the Workers static-asset deployment
+      # Serve the built dist/ through the Firebase Hosting emulator, which runs
+      # the same superstatic stack (redirects -> headers -> files -> rewrites ->
+      # missing) that Hosting runs in production, and assert that the hardening
+      # and cache policy still hold. Everything checked here comes from
+      # firebase.json or from Hosting's built-in static-file behaviour — there is
+      # no server code left to test.
+      - name: Smoke-test the Firebase Hosting deployment
         run: |
           set -euo pipefail
-          bunx wrangler dev --ip 127.0.0.1 --port "$PORT" > wrangler-dev.log 2>&1 &
+          bunx firebase-tools emulators:start --only hosting --project mlz-no > emulator.log 2>&1 &
           server=$!
           trap 'kill "$server" 2>/dev/null || true' EXIT
 
-          # workerd takes longer to boot than a plain JS process; wait up to 60s.
+          # Wait up to 60s for the emulator to bind.
           for _ in $(seq 1 120); do
             curl -sf -o /dev/null "http://127.0.0.1:$PORT/" && break
             sleep 0.5
@@ -121,13 +121,27 @@ jobs:
 
           check "GET / -> 200"          200 "$(code "$base/")"
           check "GET /robots -> 200"    200 "$(code "$base/robots.txt")"
-          check "POST / -> 405"         405 "$(code -X POST "$base/")"
           check "missing -> 404"        404 "$(code "$base/nope")"
           check "traversal -> 404"      404 "$(code "$base/%2e%2e/package.json")"
-          # _headers configures the deployment; it must never be servable itself.
-          check "_headers -> 404"       404 "$(code "$base/_headers")"
+          # firebase.json configures the deployment; the ignore list must keep it
+          # from ever being uploaded and served.
+          check "firebase.json -> 404"  404 "$(code "$base/firebase.json")"
 
-          # The hardening headers from public/_headers must be on every response.
+          # Hosting serves static files for any method rather than rejecting
+          # non-GET with a 405 the way the old Workers deployment did. Pinned
+          # here so the change is deliberate: nothing has side effects, but a
+          # future move back to a method-aware runtime should trip this.
+          check "POST / -> 200"         200 "$(code -X POST "$base/")"
+
+          # The custom 404 page must be the body, not Firebase's generic one.
+          if curl -s "$base/nope" | grep -q 'data-accent'; then
+            echo "ok   404 body is the custom page"
+          else
+            echo "FAIL 404 body is not the custom page"
+            fail=1
+          fi
+
+          # The hardening headers from firebase.json must be on every response.
           for header in content-security-policy strict-transport-security x-content-type-options x-frame-options referrer-policy permissions-policy; do
             if curl -s -D - -o /dev/null "$base/" | grep -qi "^$header:"; then
               echo "ok   header $header present"
@@ -137,14 +151,9 @@ jobs:
             fi
           done
 
-          # Fingerprinted bundles must be immutably cacheable — the cache policy
-          # in public/_headers that the old Bun + Hono server never sent.
-          #
-          # Compression is deliberately NOT asserted here: Content-Encoding is
-          # added by Cloudflare's edge in production, not by the local workerd
-          # runtime that `wrangler dev` runs, so there is nothing to observe
-          # against the dev server. It is verified implicitly by the site working
-          # in production, not in this smoke test.
+          # Fingerprinted bundles must be immutably cacheable. This also proves
+          # the last-match-wins ordering in firebase.json still holds: the
+          # catch-all sets a no-cache policy that this block has to override.
           bundle="$(find dist/bundle -name '*.js' -print -quit)"
           if [ -z "$bundle" ]; then
             echo "FAIL no hashed bundle found in dist/bundle"
@@ -157,6 +166,22 @@ jobs:
               echo "FAIL bundle missing immutable Cache-Control"
               fail=1
             fi
+            # ...and that overriding Cache-Control did not drop the hardening.
+            if curl -s -D - -o /dev/null "$url" | grep -qi '^content-security-policy:'; then
+              echo "ok   bundle still carries the CSP"
+            else
+              echo "FAIL bundle lost the CSP to the cache override"
+              fail=1
+            fi
+          fi
+
+          # HTML must stay revalidated, or a deploy would be invisible for as
+          # long as Hosting's default hour of caching.
+          if curl -s -D - -o /dev/null "$base/" | grep -qi '^cache-control:.*must-revalidate'; then
+            echo "ok   HTML is revalidated"
+          else
+            echo "FAIL HTML is not revalidated"
+            fail=1
           fi
 
           # A stable-URL favicon must NOT be immutable, or it could never be
@@ -168,8 +193,13 @@ jobs:
             echo "ok   favicon is not immutable"
           fi
 
+          # Compression is deliberately NOT asserted here: Content-Encoding is
+          # added by Hosting's CDN in production, not by the local emulator, so
+          # there is nothing to observe against it. It is verified implicitly by
+          # the site working in production, not in this smoke test.
+
           if [ "$fail" -ne 0 ]; then
-            echo "--- wrangler dev log ---"
-            cat wrangler-dev.log
+            echo "--- emulator log ---"
+            cat emulator.log
           fi
           exit "$fail"
