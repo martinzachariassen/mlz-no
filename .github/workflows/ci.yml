@@ -151,11 +151,17 @@ jobs:
           fi
 
           # A stable-URL favicon must NOT be immutable, or it could never be
-          # replaced for anyone who already loaded the old one.
-          if headers "$base/assets/icons/favicon.svg" | grep -qi '^cache-control:.*immutable'; then
+          # replaced for anyone who already loaded the old one. The 200 is
+          # asserted first because the rest is a negative check: a renamed or
+          # missing file would 404, carry no Cache-Control at all, and so pass
+          # the immutability test vacuously.
+          favicon="$base/assets/icons/favicon.svg"
+          if [ "$(curl -s -o /dev/null -w '%{http_code}' "$favicon")" != "200" ]; then
+            bad "favicon is not served (cannot check its cache policy)"
+          elif headers "$favicon" | grep -qi '^cache-control:.*immutable'; then
             bad "favicon marked immutable"
           else
-            ok "favicon is not immutable"
+            ok "favicon is served and not immutable"
           fi
 
           if [ "$fail" -ne 0 ]; then
