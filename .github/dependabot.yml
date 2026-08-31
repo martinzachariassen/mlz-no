@@ -1,29 +1,30 @@
 version: 2
 
-# @martinzachariassen/design comes from GitHub Packages (see .npmrc), which
-# requires auth even though the package is public. Dependabot does NOT inherit
-# the Actions GITHUB_TOKEN — it runs in its own credential context — so without
-# this block it cannot resolve that package. Because the bun ecosystem is
-# grouped with patterns: ["*"], that single auth failure aborts the whole group
-# and every other dependency silently stops being updated with it.
-#
-# PAT needs read:packages only. Store it at
-# Settings -> Secrets and variables -> Dependabot as DEPENDABOT_PACKAGES_TOKEN.
-# It is a classic PAT, so it expires — if weekly bun updates start failing
-# again, check that first.
-registries:
-  github-packages:
-    type: npm-registry
-    url: https://npm.pkg.github.com
-    token: ${{ secrets.DEPENDABOT_PACKAGES_TOKEN }}
-
 updates:
   - package-ecosystem: "bun"
     directory: "/"
-    registries:
-      - github-packages
     schedule:
       interval: "weekly"
+    # @martinzachariassen/design is published to GitHub Packages, which requires
+    # auth even for public packages, and Dependabot does not inherit the Actions
+    # GITHUB_TOKEN — it runs in its own credential context.
+    #
+    # Giving it a credential (a `registries:` block with a classic PAT) does work
+    # for auth, but credential-based .npmrc generation then outranks the
+    # committed .npmrc: during lockfile regeneration Dependabot routed unrelated
+    # scoped packages through GitHub Packages too, writing npm.pkg.github.com
+    # URLs for five @types/* packages that only exist on npmjs.org. CI then 403s
+    # on `bun install --frozen-lockfile`. See #33.
+    #
+    # Not worth solving. This package is mine, it is published rarely, and I know
+    # when it happens — so it is bumped by hand:
+    #
+    #     bun update @martinzachariassen/design
+    #
+    # That keeps Dependabot on public npm only: no PAT, no secret to expire, no
+    # rewritten lockfile.
+    ignore:
+      - dependency-name: "@martinzachariassen/design"
     # One grouped PR per week keeps the noise down
     groups:
       bun:
