@@ -1,6 +1,6 @@
 .storecode/
 node_modules/
 dist/
-.wrangler/
+.firebase/
 .DS_Store
 .claude/
