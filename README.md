@@ -3,7 +3,6 @@
 Personal homepage for Martin Zachariassen — a Vite + React app served as static assets from Firebase Hosting.
 
 [![CI](https://github.com/martinzachariassen/mlz-no/actions/workflows/ci.yml/badge.svg)](https://github.com/martinzachariassen/mlz-no/actions/workflows/ci.yml)
-[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/martinzachariassen/mlz-no/badge)](https://scorecard.dev/viewer/?uri=github.com/martinzachariassen/mlz-no)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 ![The mlz.no homepage — Martin Zachariassen, Senior Software Developer, Oslo](docs/assets/hero.png)
@@ -42,7 +41,7 @@ There are no runtime environment variables — nothing executes per request. Wha
 
 The deploy holds no credential at all: GitHub mints an OIDC token per run, Workload Identity Federation exchanges it for short-lived Google credentials, and the provider's attribute condition restricts the exchange to this repository. Deploy-time behaviour lives in [`firebase.json`](firebase.json) — public directory, security headers, and cache policy per path — with the target project in [`.firebaserc`](.firebaserc).
 
-The visual theme is the reader's: a `ThemeToggle` (light · dark · system) and an `AccentPicker` (`cyan` · `blue` · `green` · `rust` · `ink`) persist their choice to `localStorage` under `mlz-theme` and `mlz-accent`, and the design system applies it as a `dark` class and a `data-accent` attribute on `<html>`. The markup in [`index.html`](index.html) only carries the no-JS default. Because `script-src` is `'self'`, the pre-paint bootstrap that prevents a flash of the wrong theme cannot be inlined — [`vite/theme-init.ts`](vite/theme-init.ts) emits it as a hashed same-origin script instead.
+The visual theme is the reader's: a `ThemeToggle` (light · dark · system) persists the choice to `localStorage` under `mlz-theme`, and the design system applies it as a `dark` class on `<html>`. The accent is not reader-controlled — `index.html` and `404.html` both hardcode `data-accent="cyan"`, which is the only accent the site ships. Because `script-src` is `'self'`, the pre-paint bootstrap that prevents a flash of the wrong theme cannot be inlined — [`vite/theme-init.ts`](vite/theme-init.ts) emits it as a hashed same-origin script instead.
 
 Fonts are self-hosted: all four families — Space Grotesk, Space Mono, Architects Daughter and Instrument Serif — ship inside the design system and are fingerprinted into `/bundle/`. Nothing is fetched from a third-party origin, which is why `font-src` and `style-src` are both `'self'`.
 

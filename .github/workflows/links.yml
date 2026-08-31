@@ -3,12 +3,14 @@ name: Link Check
 # Catches dead links and missing assets in the static site — the markup, the
 # sitemap, the manifest, robots.txt. The weekly run also catches external links
 # (GitHub, LinkedIn) that rot after we last touched the code.
+# Weekly only. The local asset paths are already covered by the CI smoke test
+# and by Lighthouse loading the page; what nothing else catches is an external
+# profile URL (GitHub, LinkedIn) rotting without anyone touching the code, and
+# that needs a cron rather than a push.
 on:
-  push:
-    branches: [main]
-  pull_request:
   schedule:
     - cron: "37 6 * * 1"
+  workflow_dispatch:
 
 permissions:
   contents: read

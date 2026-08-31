@@ -1,11 +1,14 @@
 name: CodeQL
 
+# Weekly only. `main` is protected with strict status checks, so a PR's head is
+# always up to date before merge and a push-to-main run would re-analyse bytes
+# the PR run just cleared. The residual value here is the scheduled sweep —
+# newly-disclosed patterns in code that hasn't changed — not per-PR gating: the
+# app's entire untrusted-input surface is one `window.location.pathname` read
+# rendered as a React text child, which is escaped by construction.
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
-  # Catch newly-disclosed patterns in code that hasn't changed.
   schedule:
     - cron: "23 5 * * 1"
 
