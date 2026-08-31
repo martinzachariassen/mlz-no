@@ -13,18 +13,17 @@ Personal homepage for Martin Zachariassen — a Vite + React app served as stati
 
 - A single-page editorial homepage: name, role, and contact links, with all page copy driven from one file (`src/data/profile.ts`).
 - Ships as **static files on Firebase Hosting** — no Cloud Function, no rewrite to a backend, so nothing executes per request. Every response carries a strict CSP and the full security-header set, declared once in [`firebase.json`](firebase.json) rather than applied by middleware. The Vite build emits no inline `<script>`/`<style>`, so `script-src`/`style-src` stay free of `unsafe-inline`.
-- Every visual — palette, type, motion, the brand mark — is inherited from the private [`@martinzachariassen/design`](https://github.com/martinzachariassen/mlz-design) system, so this site and every other MLZ project share one look and update together.
+- Every visual — palette, type, motion, the brand mark — is inherited from the [`@martinzachariassen/design`](https://github.com/martinzachariassen/mlz-design) system. The design has exactly one owner: this repo consumes it and never adjusts it, so the look cannot drift here.
 - It does **not** run a server, use runtime environment variables, or rate-limit in process (floods are absorbed by Hosting's CDN), and it has no client-side router — an unknown path returns a real `404` with a custom HTML error page ([`404.html`](404.html)), never a soft `200`.
 
 ## Quickstart
 
-Requires [mise](https://mise.jdx.dev) and an authenticated [GitHub CLI](https://cli.github.com) — the design system is a private GitHub Packages dependency, so `bun install` needs a token with `read:packages`.
+Requires [mise](https://mise.jdx.dev). Every dependency is public — the design system installs straight from its public git repo, everything else from npm — so there is no token or registry setup.
 
 ```bash
 git clone https://github.com/martinzachariassen/mlz-no.git
 cd mlz-no
 mise install                          # installs the pinned Bun
-export GITHUB_TOKEN=$(gh auth token)  # auth for the private design system
 bun install                           # React, Vite, and the design system
 mise run dev                          # serves http://127.0.0.1:4173 with HMR
 ```
@@ -35,7 +34,6 @@ There are no runtime environment variables — nothing executes per request. Wha
 
 | Variable                | Used by              | Required | Description                                                                                                           |
 | ----------------------- | -------------------- | -------- | --------------------------------------------------------------------------------------------------------------------- |
-| `GITHUB_TOKEN`          | install (local + CI) | yes      | `read:packages` scope; pulls `@martinzachariassen/design` from GitHub Packages. Locally, `gh auth token` supplies it. |
 | `GCP_WORKLOAD_IDENTITY_PROVIDER` | deploy (repo variable) | yes | Full resource path of the Workload Identity provider. Not a secret. |
 | `GCP_SERVICE_ACCOUNT`   | deploy (repo variable) | yes | `gh-deploy@mlz-no.iam.gserviceaccount.com`, the account the deploy impersonates. Not a secret. |
 
@@ -61,7 +59,6 @@ flowchart LR
 
 ```bash
 mise install                          # pinned Bun
-export GITHUB_TOKEN=$(gh auth token)
 bun install
 mise run lint                         # Biome lint + format check
 mise run typecheck                    # tsc --noEmit (app + build config)
@@ -79,11 +76,11 @@ mise run build                        # production bundle -> dist/
 | `mise run lint`           | Lint + format check with Biome (read-only)                           |
 | `mise run format`         | Format and auto-fix with Biome                                       |
 
-On every push, [`ci.yml`](.github/workflows/ci.yml) lints, type-checks, and builds, then boots the built `dist/` under the Firebase Hosting emulator and asserts that status codes, every security header, and the cache policy still hold. [CodeQL](https://codeql.github.com), [Dependabot](https://docs.github.com/code-security/dependabot), and [OpenSSF Scorecard](https://scorecard.dev) run on separate schedules.
+On every push, [`ci.yml`](.github/workflows/ci.yml) lints, type-checks, and builds, then boots the built `dist/` under the Firebase Hosting emulator and asserts that status codes, every security header, and the cache policy still hold. [CodeQL](https://codeql.github.com) and [Dependabot](https://docs.github.com/code-security/dependabot) run on separate schedules.
 
 ## Deployment
 
-Every push to `main` runs [`deploy.yml`](.github/workflows/deploy.yml): install, `mise run build`, authenticate to Google Cloud over OIDC, `firebase deploy --only hosting`. The deploy runs from GitHub Actions rather than a Git-integrated build on Firebase's side because the build needs a GitHub Packages token for the design system, and Actions supplies one (`GITHUB_TOKEN`) per run.
+Every push to `main` runs [`deploy.yml`](.github/workflows/deploy.yml): install, `mise run build`, authenticate to Google Cloud over OIDC, `firebase deploy --only hosting`.
 
 Every release is also reachable at `mlz-no.web.app` and `mlz-no.firebaseapp.com`. Firebase Hosting always serves those and they cannot be turned off, so [`index.html`](index.html) carries an absolute `rel="canonical"` and `og:url` pointing at `https://mlz.no/` to keep them out of search results. Hosting also reserves the `/__/*` path namespace for its own SDK helpers.
 

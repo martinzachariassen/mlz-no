@@ -23,7 +23,7 @@
     "lint": "biome ci ."
   },
   "dependencies": {
-    "@martinzachariassen/design": "^0.8.0",
+    "@martinzachariassen/design": "github:martinzachariassen/mlz-design#v0.8.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
