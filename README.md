@@ -18,7 +18,7 @@ Personal homepage for Martin Zachariassen — a Vite + React app served as stati
 
 ## Quickstart
 
-Requires [mise](https://mise.jdx.dev). Every dependency is public npm, so there is no token or registry setup.
+Requires [mise](https://mise.jdx.dev). Every dependency is public — the design system installs straight from its public git repo, everything else from npm — so there is no token or registry setup.
 
 ```bash
 git clone https://github.com/martinzachariassen/mlz-no.git

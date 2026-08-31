@@ -5,9 +5,9 @@ on:
     branches: [main]
   pull_request:
 
-# Read-only token is all this workflow needs. Every dependency, including
-# @martinzachariassen/design, comes from public npm, so the install needs no
-# credential at all.
+# Read-only token is all this workflow needs. Every dependency comes from a
+# public source — @martinzachariassen/design from its public git repo, the rest
+# from the public npm registry — so the install needs no credential at all.
 permissions:
   contents: read
 
