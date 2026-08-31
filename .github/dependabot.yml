@@ -1,7 +1,27 @@
 version: 2
+
+# @martinzachariassen/design comes from GitHub Packages (see .npmrc), which
+# requires auth even though the package is public. Dependabot does NOT inherit
+# the Actions GITHUB_TOKEN — it runs in its own credential context — so without
+# this block it cannot resolve that package. Because the bun ecosystem is
+# grouped with patterns: ["*"], that single auth failure aborts the whole group
+# and every other dependency silently stops being updated with it.
+#
+# PAT needs read:packages only. Store it at
+# Settings -> Secrets and variables -> Dependabot as DEPENDABOT_PACKAGES_TOKEN.
+# It is a classic PAT, so it expires — if weekly bun updates start failing
+# again, check that first.
+registries:
+  github-packages:
+    type: npm-registry
+    url: https://npm.pkg.github.com
+    token: ${{ secrets.DEPENDABOT_PACKAGES_TOKEN }}
+
 updates:
   - package-ecosystem: "bun"
     directory: "/"
+    registries:
+      - github-packages
     schedule:
       interval: "weekly"
     # One grouped PR per week keeps the noise down

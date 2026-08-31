@@ -9,9 +9,9 @@ name: Lighthouse
 # warnings: Lighthouse's "Use HTTPS" audit always fails against the plain-HTTP
 # local emulator, and perf swings with third-party analytics fetches — neither
 # reflects production on Hosting's CDN.
+# PRs only: `main` is protected with strict status checks, so the post-merge
+# push would audit the same bytes the PR run just passed.
 on:
-  push:
-    branches: [main]
   pull_request:
 
 permissions:
