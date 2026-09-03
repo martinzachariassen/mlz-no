@@ -1,0 +1,23 @@
+footer {
+  border-top: 1px solid var(--border);
+}
+
+.footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 20px;
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fg-secondary);
+}
+
+@media (min-width: 640px) {
+  .footer-row {
+    font-size: 11px;
+  }
+}

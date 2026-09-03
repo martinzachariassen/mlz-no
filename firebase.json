@@ -1,0 +1,107 @@
+{
+  // Firebase Hosting serves public/ as static files, as-is — no build step.
+  // There is no server: no Cloud Function, no rewrite to any backend, so
+  // nothing executes per request. Security hardening and cache policy
+  // therefore can't live in code — this file is the only place to apply them.
+  "hosting": {
+    "public": "public",
+    // Hosting's default ignore list, spelled out rather than left implicit: this
+    // file must never be uploaded, or it would be servable at /firebase.json.
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    // The build emits real .html files at fixed paths and there is no
+    // client-side router, so URLs are taken literally. Leaving both off keeps an
+    // unknown path a genuine 404 rather than a redirect to a normalized form.
+    "cleanUrls": false,
+    "trailingSlash": false,
+    // public/404.html is served with a real 404 status for unknown paths.
+    // That is Hosting's built-in behaviour for a 404.html in the deploy root —
+    // there is no config key for it, so the filename is the entire contract.
+    // Order matters, and it is *last* match wins: every matching block is
+    // applied in turn and a later one overwrites a header an earlier one set.
+    // So the catch-all comes first and the path-specific Cache-Control rules
+    // after it. Hosting already sets ETag and compresses responses, so neither
+    // is repeated here.
+    "headers": [
+      {
+        "source": "**",
+        "headers": [
+          // This is the value served on mlz.no. Hosting substitutes its own
+          // `max-age=31556926; includeSubDomains; preload` on the *.web.app and
+          // *.firebaseapp.com URLs only, so the custom domain is governed here.
+          // includeSubDomains reaches design.mlz.no and ip.mlz.no, both already
+          // HTTPS-only — same as under the previous Cloudflare deployment.
+          {
+            "key": "Strict-Transport-Security",
+            "value": "max-age=31536000; includeSubDomains"
+          },
+          {
+            "key": "Referrer-Policy",
+            "value": "strict-origin-when-cross-origin"
+          },
+          {
+            "key": "X-Frame-Options",
+            "value": "DENY"
+          },
+          {
+            "key": "X-Content-Type-Options",
+            "value": "nosniff"
+          },
+          {
+            "key": "Permissions-Policy",
+            "value": "geolocation=(), microphone=(), camera=()"
+          },
+          {
+            "key": "Content-Security-Policy",
+            "value": "default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'none'; img-src 'self' data:; font-src 'self'; style-src 'self'; script-src 'self' https://cloud.umami.is; connect-src 'self' https://cloud.umami.is https://gateway.umami.is; manifest-src 'self'; upgrade-insecure-requests"
+          },
+          // Stated rather than inherited: Hosting's own default for files with
+          // no Cache-Control is an hour, which would leave a deploy invisible
+          // for that long. This is what the site served from Cloudflare, and
+          // the blocks below override it for the assets that can be cached.
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=0, must-revalidate"
+          }
+        ]
+      },
+      // Favicons, social cards, fonts and the manifest keep stable URLs across
+      // deploys, so they get a day of caching rather than immutability —
+      // otherwise replacing one would never reach anyone who had loaded the
+      // old version. Nothing here is content-hashed (there's no build step),
+      // so nothing qualifies for `immutable`.
+      {
+        "source": "/assets/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=86400"
+          }
+        ]
+      },
+      // favicon.ico stays at the well-known root URL that browsers and crawlers
+      // request automatically, so it can't move under /assets/ — but it's stable
+      // across deploys, so give it the same day of caching.
+      {
+        "source": "/favicon.ico",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=86400"
+          }
+        ]
+      }
+    ]
+  },
+  // Pin the emulator port rather than relying on the CLI default, so the smoke
+  // test in ci.yml has a fixed address to curl against.
+  "emulators": {
+    "hosting": {
+      "port": 5000
+    },
+    "singleProjectMode": true
+  }
+}
