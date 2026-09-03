@@ -1,7 +1,7 @@
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
-import { themeInit } from "./vite/theme-init";
+import { themeInit } from "./vite/theme-init.js";
 
 export default defineConfig({
   plugins: [react(), tailwindcss(), themeInit()],
