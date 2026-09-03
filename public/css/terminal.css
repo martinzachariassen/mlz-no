@@ -1,0 +1,77 @@
+.terminal {
+  width: 100%;
+  max-width: min(440px, 90vw);
+  margin-inline: auto;
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 2px);
+  padding: 12px 16px;
+  font-family: var(--font-mono);
+  font-size: clamp(11px, 1.3vw, 13px);
+  line-height: 1.7;
+  transition: border-color 0.2s var(--ease);
+}
+
+.terminal:focus-within {
+  border-color: var(--accent-deep);
+}
+
+.terminal-log {
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.terminal-line {
+  display: flex;
+  align-items: baseline;
+  margin: 0;
+}
+
+.terminal-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--fg);
+  caret-color: var(--accent-deep);
+}
+
+.terminal-input::placeholder {
+  color: var(--fg-muted);
+}
+
+.terminal .hint {
+  color: var(--fg-muted);
+}
+
+.terminal .cmd {
+  color: var(--accent-deep);
+}
+
+.terminal p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.terminal .prompt-user {
+  color: var(--accent-deep);
+}
+
+.terminal .prompt-sep {
+  color: var(--fg-muted);
+}
+
+.terminal .no-such {
+  color: var(--fg-muted);
+}
+
+.terminal .quip {
+  color: var(--fg-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
