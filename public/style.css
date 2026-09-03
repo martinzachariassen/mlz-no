@@ -130,12 +130,6 @@ a {
 
 .brand-mark {
   display: block;
-  animation: pulse-soft 5.2s var(--ease) infinite;
-  transition: transform 0.3s var(--ease);
-}
-
-.brand:hover .brand-mark {
-  transform: rotate(45deg);
 }
 
 .brand-word {
@@ -308,16 +302,6 @@ a {
     text-shadow:
       1px 0 var(--accent),
       -1px 0 var(--glitch-2);
-  }
-}
-
-@keyframes pulse-soft {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.55;
   }
 }
 
