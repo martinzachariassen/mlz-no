@@ -32,3 +32,6 @@ Thumbs.db
 
 # Claude Code
 .claude/
+
+# Playwright MCP tool scratch output (console logs, page snapshots)
+.playwright-mcp/

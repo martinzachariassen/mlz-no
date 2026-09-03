@@ -56,7 +56,7 @@
           },
           {
             "key": "Content-Security-Policy",
-            "value": "default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'none'; img-src 'self' data:; font-src 'self'; style-src 'self'; script-src 'self' https://cloud.umami.is; connect-src 'self' https://cloud.umami.is; manifest-src 'self'; upgrade-insecure-requests"
+            "value": "default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'none'; img-src 'self' data:; font-src 'self'; style-src 'self'; script-src 'self' https://cloud.umami.is; connect-src 'self' https://cloud.umami.is https://gateway.umami.is; manifest-src 'self'; upgrade-insecure-requests"
           },
           // Stated rather than inherited: Hosting's own default for files with
           // no Cache-Control is an hour, which would leave a deploy invisible

@@ -37,7 +37,7 @@
       sizes="180x180"
       href="/assets/icons/apple-touch-icon.png"
     />
-    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="manifest" href="/assets/site.webmanifest" />
     <meta
       name="theme-color"
       media="(prefers-color-scheme: light)"
@@ -58,7 +58,7 @@
     ></script>
   </head>
   <body>
-    <header class="wrap topbar rise" style="animation-delay: 0.05s">
+    <header class="wrap topbar rise delay-50">
       <a href="/" aria-label="MLZ home" class="brand">
         <svg
           class="brand-mark"
@@ -101,18 +101,17 @@
     </header>
 
     <main class="wrap hero">
-      <h1 class="rise" style="animation-delay: 0.15s">
+      <h1 class="rise delay-150">
         <span class="glitch" data-glitch>4</span
-        ><span class="glitch" data-glitch style="color: var(--accent-deep)"
-          >0</span
+        ><span class="glitch glitch-accent" data-glitch>0</span
         ><span class="glitch" data-glitch>4</span>
       </h1>
 
-      <p class="eyebrow rise" style="animation-delay: 0.45s">
+      <p class="eyebrow rise delay-450">
         <span class="glitch" data-glitch>Page not found</span>
       </p>
 
-      <div class="terminal rise" style="animation-delay: 0.55s">
+      <div class="terminal rise delay-550">
         <p>
           <span class="prompt-user">guest@mlz.no</span
           ><span class="prompt-sep">:~$ </span>cd
@@ -123,11 +122,11 @@
         <p aria-hidden="true">
           <span class="prompt-user">guest@mlz.no</span
           ><span class="prompt-sep">:~$ </span
-          ><span class="cursor" style="color: var(--accent-deep)">▮</span>
+          ><span class="cursor glitch-accent">▮</span>
         </p>
       </div>
 
-      <nav class="links rise" style="animation-delay: 0.7s; max-width: 320px">
+      <nav class="links links-narrow rise delay-700">
         <a class="btn" href="/" data-umami-event="notfound-home">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M11 5l-7 7 7 7" /><path d="M4 12h16" /></svg>
           Back home
@@ -135,7 +134,7 @@
       </nav>
     </main>
 
-    <footer class="rise" style="animation-delay: 0.85s">
+    <footer class="rise delay-850">
       <div class="wrap footer-row">
         <span>© 2026 · Martin Zachariassen</span>
         <span>59°N · 10°E</span>
