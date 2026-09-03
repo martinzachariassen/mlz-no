@@ -3,25 +3,25 @@
    nothing to compile. */
 
 @font-face {
-  font-family: "Space Mono";
+  font-family: "IBM Plex Mono";
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url("/assets/fonts/space-mono-400.woff2") format("woff2");
+  src: url("/assets/fonts/ibm-plex-mono-400.woff2") format("woff2");
 }
 @font-face {
-  font-family: "Space Mono";
+  font-family: "IBM Plex Mono";
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url("/assets/fonts/space-mono-700.woff2") format("woff2");
+  src: url("/assets/fonts/ibm-plex-mono-700.woff2") format("woff2");
 }
 @font-face {
-  font-family: "Architects Daughter";
-  font-style: normal;
-  font-weight: 400;
+  font-family: "Fraunces";
+  font-style: italic;
+  font-weight: 100 900;
   font-display: swap;
-  src: url("/assets/fonts/architects-daughter-400.woff2") format("woff2");
+  src: url("/assets/fonts/fraunces-italic-variable.woff2") format("woff2");
 }
 
 :root {
@@ -35,8 +35,8 @@
   --glitch-2: oklch(0.58 0.17 40);
 
   --font-mono:
-    "Space Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-  --font-hand: "Architects Daughter", "Comic Sans MS", cursive;
+    "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
 
   --radius: 4px;
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
@@ -224,10 +224,13 @@ a {
 
 .hero h1 {
   margin: 0;
-  font-family: var(--font-hand);
-  font-weight: 400;
-  text-transform: uppercase;
-  line-height: 0.9;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 440;
+  font-variation-settings:
+    "SOFT" 60,
+    "opsz" 72;
+  line-height: 0.96;
   font-size: clamp(40px, 11vw, 57px);
 }
 
