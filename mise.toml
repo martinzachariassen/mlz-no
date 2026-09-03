@@ -1,2 +1,14 @@
 [tools]
 bun = "latest"
+
+[tasks.dev]
+description = "Serve public/ through the local Firebase Hosting emulator on http://127.0.0.1:5000 (applies firebase.json)"
+run = "bun run dev"
+
+[tasks.format]
+description = "Format and auto-fix with Biome"
+run = "bun run format"
+
+[tasks.lint]
+description = "Lint + format check with Biome (read-only)"
+run = "bun run lint"
