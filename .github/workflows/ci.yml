@@ -5,9 +5,8 @@ on:
     branches: [main]
   pull_request:
 
-# Read-only token is all this workflow needs. Every dependency comes from a
-# public source — @martinzachariassen/design from its public git repo, the rest
-# from the public npm registry — so the install needs no credential at all.
+# Read-only token is all this workflow needs — every dependency comes from the
+# public npm registry.
 permissions:
   contents: read
 
@@ -27,8 +26,9 @@ jobs:
           persist-credentials: false
 
       # Installs the Bun version pinned in mise.toml — single source of truth,
-      # no separate bun-version to keep in sync. Bun is the package manager and
-      # build runner only; nothing Bun-specific runs in production.
+      # no separate bun-version to keep in sync. Bun is the package manager
+      # only (biome, firebase-tools); the site itself is static files with no
+      # build step.
       - name: Set up mise (installs Bun from mise.toml)
         uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4
 
@@ -38,29 +38,23 @@ jobs:
       - name: Lint & format check
         run: mise run lint
 
-      - name: Type-check
-        run: mise run typecheck
-
-      - name: Build
-        run: mise run build
-
-      # Serves the dist/ just built through the Hosting emulator and asserts the
-      # parts of firebase.json that can fail silently. Runs in this job rather
-      # than a separate one so it tests the bundle already on disk — no artifact
-      # round-trip, no second checkout and install.
+      # Serves public/ as-is through the Hosting emulator and asserts the
+      # parts of firebase.json that can fail silently. There is nothing to
+      # build first — public/ is what gets deployed.
       #
       # Scope is deliberately narrow. firebase.json has no type checker and no
       # linter, and its `headers` array is *last match wins*, so reordering it
-      # makes the catch-all `max-age=0` clobber the bundle's immutable caching
-      # with no other signal. Everything below is a property of that ordering,
-      # of the hardening block, or of the 404.html filename contract.
+      # makes the catch-all `max-age=0` clobber a more specific cache rule
+      # with no other signal. Everything below is a property of that
+      # ordering, of the hardening block, or of the 404.html filename
+      # contract.
       #
-      # Not asserted, on purpose: that / and /robots.txt return 200 (the build
-      # fails first), how Hosting resolves traversal or handles non-GET (that is
-      # superstatic's behaviour, not this repo's config), and anything about
-      # compression (added at the CDN edge, invisible to the emulator).
-      # Emulator behaviour is not production behaviour — see #29 — so this only
-      # asserts what holds in both.
+      # Not asserted, on purpose: that / and /robots.txt return 200 (a missing
+      # file fails first), how Hosting resolves traversal or handles non-GET
+      # (that is superstatic's behaviour, not this repo's config), and
+      # anything about compression (added at the CDN edge, invisible to the
+      # emulator). Emulator behaviour is not production behaviour — see #29 —
+      # so this only asserts what holds in both.
       - name: Check firebase.json headers and cache policy
         env:
           # Matches firebase.json -> emulators.hosting.port.
@@ -96,12 +90,12 @@ jobs:
             fi
           done
 
-          # dist/404.html is served with a real 404 for unknown paths, and its
-          # body must be the custom page rather than Firebase's generic one.
-          # vite.config.ts builds that file; drop the input and this degrades
-          # silently, because the filename is the entire contract.
+          # public/404.html is served with a real 404 for unknown paths, and
+          # its body must be the custom page rather than Firebase's generic
+          # one. The filename is the entire contract, so a rename would
+          # degrade this silently.
           status="$(curl -s -o /dev/null -w '%{http_code}' "$base/nope")"
-          if [ "$status" = "404" ] && curl -s "$base/nope" | grep -q 'data-accent'; then
+          if [ "$status" = "404" ] && curl -s "$base/nope" | grep -q 'notfound-quip'; then
             ok "unknown path serves the custom 404 page"
           else
             bad "unknown path did not serve the custom 404 page (status $status)"
@@ -113,29 +107,6 @@ jobs:
             ok "firebase.json is not served"
           else
             bad "firebase.json is served"
-          fi
-
-          # Fingerprinted bundles must stay immutably cacheable. This is the
-          # check that catches a reordered headers array.
-          bundle="$(find dist/bundle -name '*.js' -print -quit)"
-          if [ -z "$bundle" ]; then
-            bad "no hashed bundle found in dist/bundle"
-          else
-            url="$base/bundle/$(basename "$bundle")"
-
-            if headers "$url" | grep -qi '^cache-control:.*immutable'; then
-              ok "bundle is immutably cacheable"
-            else
-              bad "bundle missing immutable Cache-Control"
-            fi
-
-            # Overriding Cache-Control must not drop the hardening: the override
-            # applies per-header, not per-block, and this proves it.
-            if headers "$url" | grep -qi '^content-security-policy:'; then
-              ok "bundle still carries the CSP"
-            else
-              bad "bundle lost the CSP to the cache override"
-            fi
           fi
 
           # HTML must stay revalidated, or a deploy is invisible for as long as

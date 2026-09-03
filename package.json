@@ -2,7 +2,7 @@
   "name": "mlz-no",
   "version": "1.0.0",
   "private": true,
-  "description": "Personal homepage for Martin Zachariassen — a Vite + React app served as static assets from Firebase Hosting.",
+  "description": "Personal homepage for Martin Zachariassen: a static site served from Firebase Hosting, no build step.",
   "homepage": "https://mlz.no",
   "author": "Martin Zachariassen <hi@mlz.no>",
   "license": "MIT",
@@ -13,29 +13,13 @@
   "type": "module",
   "scripts": {
     "prepare": "git config core.hooksPath .githooks || true",
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "preview:hosting": "firebase emulators:start --only hosting",
+    "dev": "firebase emulators:start --only hosting",
     "deploy": "firebase deploy --only hosting",
-    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
     "format": "biome check --write .",
     "lint": "biome ci ."
   },
-  "dependencies": {
-    "@martinzachariassen/design": "github:martinzachariassen/mlz-design#v0.8.0",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8"
-  },
   "devDependencies": {
     "@biomejs/biome": "^2.5.11",
-    "@tailwindcss/vite": "^4.3.3",
-    "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.5",
-    "@vitejs/plugin-react": "^6.1.1",
-    "firebase-tools": "^15.28.2",
-    "tailwindcss": "^4.3.3",
-    "typescript": "^7.0.2",
-    "vite": "^8.2.2"
+    "firebase-tools": "^15.28.2"
   }
 }

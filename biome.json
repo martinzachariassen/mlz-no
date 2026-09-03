@@ -6,7 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["src/**/*.{ts,tsx}", "vite.config.ts", "vite/**/*.ts"]
+    "includes": ["public/*.js"]
   },
   "formatter": {
     "enabled": true,
@@ -18,14 +18,6 @@
     "enabled": true,
     "rules": {
       "preset": "recommended"
-    }
-  },
-  "assist": {
-    "enabled": true,
-    "actions": {
-      "source": {
-        "organizeImports": "on"
-      }
     }
   },
   "javascript": {

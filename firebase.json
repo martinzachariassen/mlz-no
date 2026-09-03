@@ -1,27 +1,25 @@
 {
-  // Firebase Hosting serves dist/ as static files. There is no server: no Cloud
-  // Function, no rewrite to any backend, so nothing executes per request.
-  // Security hardening and cache policy therefore can't live in code — this file
-  // is the only place to apply them.
+  // Firebase Hosting serves public/ as static files, as-is — no build step.
+  // There is no server: no Cloud Function, no rewrite to any backend, so
+  // nothing executes per request. Security hardening and cache policy
+  // therefore can't live in code — this file is the only place to apply them.
   "hosting": {
-    "public": "dist",
-
+    "public": "public",
     // Hosting's default ignore list, spelled out rather than left implicit: this
     // file must never be uploaded, or it would be servable at /firebase.json.
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
     // The build emits real .html files at fixed paths and there is no
     // client-side router, so URLs are taken literally. Leaving both off keeps an
     // unknown path a genuine 404 rather than a redirect to a normalized form.
     "cleanUrls": false,
     "trailingSlash": false,
-
-    // dist/404.html is served with a real 404 status for unknown paths. That is
-    // Hosting's built-in behaviour for a 404.html in the deploy root — there is
-    // no config key for it, so the filename is the entire contract.
-    // vite.config.ts builds it; if that input is ever removed, unknown paths
-    // fall back to Firebase's generic 404 page.
-
+    // public/404.html is served with a real 404 status for unknown paths.
+    // That is Hosting's built-in behaviour for a 404.html in the deploy root —
+    // there is no config key for it, so the filename is the entire contract.
     // Order matters, and it is *last* match wins: every matching block is
     // applied in turn and a later one overwrites a header an earlier one set.
     // So the catch-all comes first and the path-specific Cache-Control rules
@@ -44,8 +42,14 @@
             "key": "Referrer-Policy",
             "value": "strict-origin-when-cross-origin"
           },
-          { "key": "X-Frame-Options", "value": "DENY" },
-          { "key": "X-Content-Type-Options", "value": "nosniff" },
+          {
+            "key": "X-Frame-Options",
+            "value": "DENY"
+          },
+          {
+            "key": "X-Content-Type-Options",
+            "value": "nosniff"
+          },
           {
             "key": "Permissions-Policy",
             "value": "geolocation=(), microphone=(), camera=()"
@@ -64,41 +68,40 @@
           }
         ]
       },
-
-      // Vite emits content-hashed filenames here (build.assetsDir), so a changed
-      // file is a changed URL and these can be cached permanently.
+      // Favicons, social cards, fonts and the manifest keep stable URLs across
+      // deploys, so they get a day of caching rather than immutability —
+      // otherwise replacing one would never reach anyone who had loaded the
+      // old version. Nothing here is content-hashed (there's no build step),
+      // so nothing qualifies for `immutable`.
       {
-        "source": "/bundle/**",
+        "source": "/assets/**",
         "headers": [
           {
             "key": "Cache-Control",
-            "value": "public, max-age=31536000, immutable"
+            "value": "public, max-age=86400"
           }
         ]
       },
-
-      // Favicons, social cards and the manifest keep stable URLs across deploys,
-      // so they get a day of caching rather than immutability — otherwise
-      // replacing a favicon would never reach anyone who had loaded the old one.
-      {
-        "source": "/assets/**",
-        "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400" }]
-      },
-
       // favicon.ico stays at the well-known root URL that browsers and crawlers
       // request automatically, so it can't move under /assets/ — but it's stable
       // across deploys, so give it the same day of caching.
       {
         "source": "/favicon.ico",
-        "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400" }]
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=86400"
+          }
+        ]
       }
     ]
   },
-
   // Pin the emulator port rather than relying on the CLI default, so the smoke
   // test in ci.yml has a fixed address to curl against.
   "emulators": {
-    "hosting": { "port": 5000 },
+    "hosting": {
+      "port": 5000
+    },
     "singleProjectMode": true
   }
 }

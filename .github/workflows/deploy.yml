@@ -1,6 +1,6 @@
 name: Deploy
 
-# Builds dist/ and publishes it to Firebase Hosting.
+# Publishes public/ to Firebase Hosting — there is no build step.
 #
 # Authentication to Google Cloud is keyless: GitHub mints an OIDC token, Workload
 # Identity Federation exchanges it for short-lived credentials, and those
@@ -45,9 +45,6 @@ jobs:
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
-
-      - name: Build
-        run: mise run build
 
       # Impersonates the deploy service account rather than using the federated
       # credential directly: firebase-tools consumes a plain OAuth access token
