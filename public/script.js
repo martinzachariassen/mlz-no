@@ -52,10 +52,14 @@
     });
 
     if (chars.length) {
-      const MIN_BURST_CHARS = 3;
-      const MAX_BURST_CHARS = 9;
-      const MIN_BURST_DELAY_MS = 1200;
-      const MAX_BURST_DELAY_MS = 4200;
+      // the glitch zones are now scattered across the whole page (header,
+      // eyebrow, nav, footer) instead of clustered in the hero, so bursts
+      // are smaller and rarer — a wide, simultaneous burst would read as
+      // several unrelated parts of the page flickering at once
+      const MIN_BURST_CHARS = 2;
+      const MAX_BURST_CHARS = 6;
+      const MIN_BURST_DELAY_MS = 1400;
+      const MAX_BURST_DELAY_MS = 5200;
 
       const burst = () => {
         const count =
