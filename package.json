@@ -14,7 +14,6 @@
   "scripts": {
     "prepare": "git config core.hooksPath .githooks || true",
     "dev": "firebase emulators:start --only hosting",
-    "deploy": "firebase deploy --only hosting",
     "format": "biome check --write .",
     "lint": "biome ci ."
   },
