@@ -5,12 +5,11 @@ on:
     branches: [main]
   pull_request:
 
-# Read-only token is all this workflow needs — every dependency comes from the
-# public npm registry.
+# Read-only: every dependency comes from the public npm registry.
 permissions:
   contents: read
 
-# A newer push to the same ref supersedes an in-flight run.
+# Newer pushes cancel in-flight runs.
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -25,10 +24,8 @@ jobs:
         with:
           persist-credentials: false
 
-      # Installs the Bun version pinned in mise.toml — single source of truth,
-      # no separate bun-version to keep in sync. Bun is the package manager
-      # only (biome, firebase-tools); the site itself is static files with no
-      # build step.
+      # Bun version comes from mise.toml — single source of truth. Bun is
+      # just the package manager here; the site is static files, no build.
       - name: Set up mise (installs Bun from mise.toml)
         uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4
 
@@ -38,23 +35,12 @@ jobs:
       - name: Lint & format check
         run: mise run lint
 
-      # Serves public/ as-is through the Hosting emulator and asserts the
-      # parts of firebase.json that can fail silently. There is nothing to
-      # build first — public/ is what gets deployed.
-      #
-      # Scope is deliberately narrow. firebase.json has no type checker and no
-      # linter, and its `headers` array is *last match wins*, so reordering it
-      # makes the catch-all `max-age=0` clobber a more specific cache rule
-      # with no other signal. Everything below is a property of that
-      # ordering, of the hardening block, or of the 404.html filename
-      # contract.
-      #
-      # Not asserted, on purpose: that / and /robots.txt return 200 (a missing
-      # file fails first), how Hosting resolves traversal or handles non-GET
-      # (that is superstatic's behaviour, not this repo's config), and
-      # anything about compression (added at the CDN edge, invisible to the
-      # emulator). Emulator behaviour is not production behaviour — see #29 —
-      # so this only asserts what holds in both.
+      # Serves public/ through the Hosting emulator and asserts what
+      # firebase.json can't check itself — notably that `headers` is
+      # last-match-wins, so a reorder could silently let the catch-all
+      # max-age=0 clobber a specific cache rule. Deliberately narrow: skips
+      # anything that's emulator-only behavior rather than this repo's
+      # config (traversal handling, compression, HTTPS) — see #29.
       - name: Check firebase.json headers and cache policy
         env:
           # Matches firebase.json -> emulators.hosting.port.
@@ -80,8 +66,7 @@ jobs:
           # Response headers for a URL, one per line.
           headers() { curl -s -D - -o /dev/null "$1"; }
 
-          # The hardening block must be on every response; a deleted block or a
-          # mistyped key is otherwise invisible until someone scans the site.
+          # Catches a deleted/mistyped header, otherwise invisible until someone scans the site.
           for header in content-security-policy strict-transport-security x-content-type-options x-frame-options referrer-policy permissions-policy; do
             if headers "$base/" | grep -qi "^$header:"; then
               ok "header $header present"
@@ -90,10 +75,7 @@ jobs:
             fi
           done
 
-          # public/404.html is served with a real 404 for unknown paths, and
-          # its body must be the custom page rather than Firebase's generic
-          # one. The filename is the entire contract, so a rename would
-          # degrade this silently.
+          # 404.html's filename is the whole contract with Hosting; a rename degrades silently.
           status="$(curl -s -o /dev/null -w '%{http_code}' "$base/nope")"
           if [ "$status" = "404" ] && curl -s "$base/nope" | grep -q 'notfound-quip'; then
             ok "unknown path serves the custom 404 page"
@@ -101,27 +83,22 @@ jobs:
             bad "unknown path did not serve the custom 404 page (status $status)"
           fi
 
-          # firebase.json configures the deployment; the explicit ignore list
-          # must keep it from ever being uploaded and served.
+          # Confirms firebase.json's ignore list keeps it from ever being served.
           if [ "$(curl -s -o /dev/null -w '%{http_code}' "$base/firebase.json")" = "404" ]; then
             ok "firebase.json is not served"
           else
             bad "firebase.json is served"
           fi
 
-          # HTML must stay revalidated, or a deploy is invisible for as long as
-          # Hosting's default hour of caching.
+          # Without revalidation, a deploy could stay invisible for Hosting's default hour of caching.
           if headers "$base/" | grep -qi '^cache-control:.*must-revalidate'; then
             ok "HTML is revalidated"
           else
             bad "HTML is not revalidated"
           fi
 
-          # A stable-URL favicon must NOT be immutable, or it could never be
-          # replaced for anyone who already loaded the old one. The 200 is
-          # asserted first because the rest is a negative check: a renamed or
-          # missing file would 404, carry no Cache-Control at all, and so pass
-          # the immutability test vacuously.
+          # Favicon has a stable URL, so it must not be immutable (200 checked
+          # first so a missing/renamed file can't pass this vacuously).
           favicon="$base/assets/icons/favicon.svg"
           if [ "$(curl -s -o /dev/null -w '%{http_code}' "$favicon")" != "200" ]; then
             bad "favicon is not served (cannot check its cache policy)"

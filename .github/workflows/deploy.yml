@@ -1,16 +1,12 @@
 name: Deploy
 
-# Publishes public/ to Firebase Hosting — there is no build step.
+# Publishes public/ to Firebase Hosting; no build step.
 #
-# Authentication to Google Cloud is keyless: GitHub mints an OIDC token, Workload
-# Identity Federation exchanges it for short-lived credentials, and those
-# impersonate the deploy service account. Nothing secret is stored in this repo,
-# so the two settings below are repository *variables*, not secrets:
-#   GCP_WORKLOAD_IDENTITY_PROVIDER — full provider resource path
-#   GCP_SERVICE_ACCOUNT            — gh-deploy@mlz-no.iam.gserviceaccount.com
-#
-# The provider is locked to this repository with an attribute condition, so no
-# other repo can exchange a token against the project.
+# Keyless auth: GitHub's OIDC token is exchanged via Workload Identity
+# Federation for short-lived credentials impersonating the deploy service
+# account, locked to this repo via an attribute condition. Nothing secret
+# lives here, so these are repo *variables*, not secrets:
+#   GCP_WORKLOAD_IDENTITY_PROVIDER, GCP_SERVICE_ACCOUNT
 on:
   push:
     branches: [main]
@@ -21,8 +17,7 @@ permissions:
   # Required for GitHub to mint the OIDC token that WIF exchanges.
   id-token: write
 
-# Never let two deploys race; the newest commit on main wins, but an in-flight
-# deploy is allowed to finish rather than shipping a half-uploaded asset set.
+# Newest commit wins, but an in-flight deploy finishes rather than shipping half-uploaded assets.
 concurrency:
   group: deploy-${{ github.workflow }}
   cancel-in-progress: false
@@ -46,11 +41,9 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      # Impersonates the deploy service account rather than using the federated
-      # credential directly: firebase-tools consumes a plain OAuth access token
-      # reliably, but has a history of failing on raw external_account files.
-      # create_credentials_file and export_environment_variables default to true,
-      # so GOOGLE_APPLICATION_CREDENTIALS is set for the step below.
+      # Impersonation gives a plain OAuth token; firebase-tools has a history
+      # of failing on raw external_account files. GOOGLE_APPLICATION_CREDENTIALS
+      # is set for the step below (create_credentials_file defaults to true).
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
         with:
@@ -58,8 +51,6 @@ jobs:
           workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
 
-      # firebase-tools is pinned as a devDependency, so the deploy uses the same
-      # version CI tested against rather than whatever a marketplace action
-      # resolves at run time.
+      # Uses the devDependency-pinned firebase-tools, same version CI tested — not a marketplace action's own resolution.
       - name: Deploy
         run: bunx firebase-tools deploy --only hosting --project mlz-no --non-interactive

@@ -1,9 +1,8 @@
 name: Dependency Review
 
 # Blocks a PR that pulls in a dependency with a known vulnerability (or an
-# incompatible licence) *before* it lands. Dependabot only reacts after a bad
-# version is already on main; CodeQL scans our code, not the dependency graph —
-# this closes that gap on the PR itself.
+# incompatible licence) *before* it lands — Dependabot only reacts after a
+# bad version is already on main.
 on:
   pull_request:
 
@@ -27,7 +26,5 @@ jobs:
       - name: Review dependency changes
         uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5
         with:
-          # Fail the check on anything moderate or worse.
           fail-on-severity: moderate
-          # Surface the findings as a comment on the PR for quick triage.
           comment-summary-in-pr: on-failure
