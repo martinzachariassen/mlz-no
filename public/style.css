@@ -34,8 +34,8 @@
   --accent-deep: oklch(0.47 0.078 195);
   --glitch-2: oklch(0.52 0.158 25);
 
-  --font-mono: "Space Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas,
-    monospace;
+  --font-mono:
+    "Space Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
   --font-hand: "Architects Daughter", "Comic Sans MS", cursive;
 
   --radius: 4px;
@@ -67,6 +67,7 @@ html {
 body {
   margin: 0;
   min-height: 100svh;
+  /* biome-ignore lint/suspicious/noDuplicateProperties: dvh overrides svh where supported; svh is the fallback */
   min-height: 100dvh;
   background: var(--bg);
   color: var(--fg);

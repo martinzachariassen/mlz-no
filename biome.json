@@ -6,7 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["public/*.js"]
+    "includes": ["public/*.js", "public/*.css"]
   },
   "formatter": {
     "enabled": true,
