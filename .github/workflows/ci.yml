@@ -33,7 +33,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Lint & format check
-        run: mise run lint
+        run: bun run lint
 
       # Serves public/ through the Hosting emulator and asserts what
       # firebase.json can't check itself — notably that `headers` is
