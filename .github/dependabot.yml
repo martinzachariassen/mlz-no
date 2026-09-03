@@ -9,6 +9,8 @@ updates:
     groups:
       bun:
         patterns: ["*"]
+    commit-message:
+      prefix: "chore"
 
   - package-ecosystem: "github-actions"
     directory: "/"
