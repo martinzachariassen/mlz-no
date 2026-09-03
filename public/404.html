@@ -111,18 +111,34 @@
         <span class="glitch" data-glitch>Page not found</span>
       </p>
 
-      <div class="terminal rise delay-550">
-        <p>
-          <span class="prompt-user">guest@mlz.no</span
-          ><span class="prompt-sep">:~$ </span>cd
-          <span data-notfound-path>/</span>
-        </p>
-        <p class="no-such">cd: no such file or directory</p>
-        <p class="quip" data-notfound-quip></p>
-        <p aria-hidden="true">
+      <div class="terminal rise delay-550" data-terminal>
+        <div class="terminal-log" data-terminal-log>
+          <p>
+            <span class="prompt-user">guest@mlz.no</span
+            ><span class="prompt-sep">:~$ </span>cd
+            <span data-notfound-path>/</span>
+          </p>
+          <p class="no-such">cd: no such file or directory</p>
+          <p class="quip" data-notfound-quip></p>
+          <p class="hint">
+            type <span class="cmd">help</span> to look around
+          </p>
+        </div>
+        <p class="terminal-line">
           <span class="prompt-user">guest@mlz.no</span
           ><span class="prompt-sep">:~$ </span
-          ><span class="cursor glitch-accent">▮</span>
+          ><input
+            id="terminal-input"
+            class="terminal-input"
+            type="text"
+            autocomplete="off"
+            autocapitalize="off"
+            autocorrect="off"
+            spellcheck="false"
+            placeholder="try 'help'"
+            aria-label="Terminal — type help for a list of commands"
+            data-terminal-input
+          />
         </p>
       </div>
 
