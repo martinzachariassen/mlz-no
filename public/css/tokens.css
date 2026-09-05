@@ -16,11 +16,11 @@
   src: url("/assets/fonts/ibm-plex-mono-700.woff2") format("woff2");
 }
 @font-face {
-  font-family: "Fraunces";
+  font-family: "Newsreader";
   font-style: italic;
-  font-weight: 100 900;
+  font-weight: 200 800;
   font-display: swap;
-  src: url("/assets/fonts/fraunces-italic-variable.woff2") format("woff2");
+  src: url("/assets/fonts/newsreader-italic-variable.woff2") format("woff2");
 }
 
 :root {
@@ -35,7 +35,7 @@
 
   --font-mono:
     "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-display: "Newsreader", Georgia, "Times New Roman", serif;
 
   --radius: 4px;
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
