@@ -10,7 +10,7 @@ served as-is by Firebase Hosting.
 ## Features
 
 - No build step — the files in `public/` are exactly what gets deployed
-- Dark/light theme toggle, a small terminal easter egg, and a glitch effect
+- Dark/light theme toggle and a glitch effect
 - Security headers (CSP, HSTS, and friends) and cache policy defined in
   [`firebase.json`](firebase.json), the only place that config can live for a
   purely static site
