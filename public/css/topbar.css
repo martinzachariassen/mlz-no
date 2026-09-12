@@ -78,39 +78,66 @@
   transform: scaleX(1);
 }
 
+/* A bordered 40px box made the toggle the heaviest thing in the topbar. It
+   is a bare 16px icon now; the hit area is kept at 40px by ::after, so the
+   touch target does not shrink with the visual weight. */
 .theme-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius);
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin-right: -4px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
   background: transparent;
-  color: var(--fg);
+  color: var(--fg-muted);
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   transition:
-    border-color 0.2s var(--ease),
-    transform 0.2s var(--ease);
+    color 0.2s var(--ease),
+    background-color 0.2s var(--ease);
 }
 
-.theme-toggle:hover {
-  border-color: var(--accent-deep);
+.theme-toggle::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
 }
 
+.theme-toggle:hover,
+.theme-toggle:focus-visible {
+  color: var(--fg);
+  background: color-mix(in oklch, var(--fg) 9%, transparent);
+}
+
+.theme-toggle:active {
+  background: color-mix(in oklch, var(--fg) 14%, transparent);
+}
+
+/* Both icons occupy the same cell and cross-rotate, so the swap reads as one
+   control changing state rather than two icons trading places. */
 .theme-toggle svg {
-  width: 18px;
-  height: 18px;
+  grid-area: 1 / 1;
+  width: 16px;
+  height: 16px;
+  transition:
+    opacity 0.2s var(--ease),
+    transform 0.35s var(--ease);
 }
 
 .theme-toggle .icon-sun {
-  display: none;
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.5);
 }
 
 [data-theme="dark"] .theme-toggle .icon-sun {
-  display: block;
+  opacity: 1;
+  transform: none;
 }
 
 [data-theme="dark"] .theme-toggle .icon-moon {
-  display: none;
+  opacity: 0;
+  transform: rotate(90deg) scale(0.5);
 }
