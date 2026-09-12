@@ -11,32 +11,220 @@
  * Adding a field to the site is therefore two edits, in this order: describe
  * it here, then render it in build-content.js. The spec is prose in
  * content/README.md; this file is the enforced version of it.
+ *
+ * Per-field shape and type checking is Zod's job (strict objects, enums,
+ * regex-validated strings). What's hand-rolled below is only the part Zod
+ * can't express: checks that span multiple files — a project's slug matching
+ * its filename, a figure block pointing at an SVG that exists, a palette
+ * token an SVG references but site.json never defines.
  */
 
-/* ----------------------------------------------------------- combinators */
+import { z } from "zod";
 
-/** A schema is `(value, path, errors) => void`, appending failures to errors. */
+/* --------------------------------------------------------------- formats */
 
-const report = (errors, path, message) =>
-  errors.push(`${path || "(root)"}: ${message}`);
+const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const DATE = /^\d{4}-\d{2}-\d{2}$/;
+const HEX = /^#[0-9a-f]{6}$/;
+const UUID = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/;
+const ORIGIN = /^https:\/\/[a-z0-9.-]+$/;
+const LOCALE = /^[a-z]{2}_[A-Z]{2}$/;
+const PRIORITY = /^(?:0\.\d|1\.0)$/;
+/** Root-relative, no trailing slash — these are concatenated, not joined. */
+const SITE_PATH = /^\/[a-z0-9][a-z0-9./-]*[a-z0-9]$/;
+/** Tile and link targets: off-site or a mail link, never a bare path. */
+const EXTERNAL_HREF = /^(?:https?:\/\/|mailto:)\S+$/;
+const PALETTE_TOKEN = /^[a-z][a-zA-Z]*$/;
+
+/**
+ * A string that isn't blank, with an optional format and a friendly hint.
+ * Every named pattern below already requires at least one character, so a
+ * pattern makes the separate blank check redundant — without this early
+ * return, a blank value fails both and reports the same field twice.
+ */
+function str({ pattern, hint, allowEmpty = false } = {}) {
+  if (pattern) return z.string().regex(pattern, hint);
+  if (allowEmpty) return z.string();
+  return z.string().refine((value) => value.trim() !== "", {
+    error: "expected a non-empty string",
+  });
+}
+
+/** content/ arrays are non-empty unless a call site says otherwise. */
+const arr = (item, { min = 1 } = {}) => z.array(item).min(min);
+
+const slug = str({
+  pattern: SLUG,
+  hint: 'expected a lowercase kebab-case slug, e.g. "event-pipeline"',
+});
+
+const date = str({
+  pattern: DATE,
+  hint: "expected a date as YYYY-MM-DD",
+});
+
+const sitePath = str({
+  pattern: SITE_PATH,
+  hint: 'expected a root-relative path with no trailing slash, e.g. "/projects"',
+});
+
+const externalHref = str({
+  pattern: EXTERNAL_HREF,
+  hint: "expected an http(s):// or mailto: link",
+});
+
+/**
+ * Tile widths are the `.b-*` classes bento.css actually defines. A size the
+ * stylesheet has no rule for renders as a full-width tile with no warning.
+ */
+const TILE_SIZES = ["flagship", "wide", "normal"];
+
+/* ------------------------------------------------------------ site.json */
+
+const palette = z.record(
+  z.string().regex(PALETTE_TOKEN, "expected a camelCase token name"),
+  str({ pattern: HEX, hint: 'expected a six-digit hex colour like "#101214"' }),
+);
+
+const changefreq = z.enum([
+  "always",
+  "hourly",
+  "daily",
+  "weekly",
+  "monthly",
+  "yearly",
+]);
+
+const priority = str({
+  pattern: PRIORITY,
+  hint: 'expected a priority from "0.0" to "1.0", one decimal',
+});
+
+const asideTile = z.strictObject({
+  size: z.enum(TILE_SIZES),
+  label: str(),
+  title: str(),
+  text: str(),
+  cta: str(),
+  href: externalHref,
+  umamiEvent: slug,
+});
+
+export const siteSchema = z.strictObject({
+  origin: str({
+    pattern: ORIGIN,
+    hint: 'expected an origin like "https://mlz.no", with no trailing slash',
+  }),
+  author: str(),
+  locale: str({ pattern: LOCALE, hint: 'expected a locale like "en_GB"' }),
+  umamiWebsiteId: str({ pattern: UUID, hint: "expected a UUID" }),
+  ogImage: sitePath,
+  basePath: sitePath,
+  figureDir: sitePath,
+  palette: z.strictObject({ light: palette, dark: palette }),
+  // lastmod is content, not a clock reading: the sitemap is committed, so a
+  // build-time `new Date()` would make every day's output differ from the
+  // checked-in copy and fail check:content. Projects carry their own.
+  sitemap: z.strictObject({
+    home: z.strictObject({ lastmod: date, changefreq, priority }),
+    index: z.strictObject({ lastmod: date, changefreq, priority }),
+    project: z.strictObject({ changefreq, priority }),
+  }),
+  index: z.strictObject({
+    title: str(),
+    description: str(),
+    eyebrow: str(),
+    heading: str(),
+    intro: str(),
+    asideTiles: arr(asideTile, { min: 0 }),
+  }),
+});
+
+/* --------------------------------------------------- content/projects/*.json */
+
+const block = z.discriminatedUnion("type", [
+  z.strictObject({
+    type: z.literal("text"),
+    value: str(),
+  }),
+
+  z.strictObject({
+    type: z.literal("list"),
+    title: str().optional(),
+    kind: z.enum(["bulleted", "numbered"]).optional(),
+    items: arr(str()),
+  }),
+
+  z.strictObject({
+    type: z.literal("figure"),
+    figure: slug,
+    alt: str(),
+    caption: str().optional(),
+  }),
+
+  z.strictObject({
+    type: z.literal("code"),
+    language: str(),
+    caption: str().optional(),
+    // Blank lines are meaningful inside a snippet, so "" is allowed here.
+    lines: arr(str({ allowEmpty: true })),
+  }),
+
+  z.strictObject({
+    type: z.literal("metrics"),
+    items: arr(z.strictObject({ value: str(), label: str() })),
+  }),
+
+  z.strictObject({
+    type: z.literal("quote"),
+    value: str(),
+    attribution: str().optional(),
+  }),
+
+  z.strictObject({
+    type: z.literal("note"),
+    title: str().optional(),
+    value: str(),
+  }),
+]);
+
+export const projectSchema = z.strictObject({
+  slug,
+  order: z.number().int().min(1),
+  size: z.enum(TILE_SIZES),
+  name: str(),
+  tagline: str(),
+  period: str(),
+  role: str().optional(),
+  team: str().optional(),
+  stack: arr(str()),
+  tags: arr(str()),
+  status: str(),
+  lastmod: date,
+  seo: z.strictObject({ title: str(), description: str() }),
+  cover: z.strictObject({
+    figure: slug,
+    alt: str(),
+    caption: str().optional(),
+  }),
+  summary: str(),
+  sections: arr(
+    z.strictObject({
+      label: str(),
+      heading: str(),
+      blocks: arr(block),
+    }),
+  ),
+});
+
+/* ---------------------------------------------------------- cross-checks */
 
 const isObject = (value) =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
-const typeName = (value) => {
-  if (value === null) return "null";
-  if (Array.isArray(value)) return "an array";
-  if (typeof value === "object") return "an object";
-  if (typeof value === "string") return "a string";
-  return `${value}`;
-};
-
-/** Mark a key as allowed to be absent. */
-const opt = (schema) => Object.assign(schema.bind(null), { optional: true });
-
 const quote = (value) => JSON.stringify(value);
 
-/** Edit distance, used only to guess which key someone meant. */
+/** Edit distance, used only to guess which palette token someone meant. */
 function distance(a, b) {
   const row = Array.from({ length: b.length + 1 }, (_, i) => i);
   for (let i = 1; i <= a.length; i++) {
@@ -79,297 +267,6 @@ const didYouMean = (key, candidates) => {
   const guess = nearest(key, candidates);
   return guess ? ` (did you mean ${quote(guess)}?)` : "";
 };
-
-function str({ pattern, hint, allowEmpty = false } = {}) {
-  return (value, path, errors) => {
-    if (typeof value !== "string") {
-      return report(errors, path, `expected a string, got ${typeName(value)}`);
-    }
-    if (!allowEmpty && value.trim() === "") {
-      return report(errors, path, "expected a non-empty string");
-    }
-    if (pattern && !pattern.test(value)) {
-      report(errors, path, hint ?? `${quote(value)} does not match ${pattern}`);
-    }
-  };
-}
-
-const oneOf =
-  (...allowed) =>
-  (value, path, errors) => {
-    if (allowed.includes(value)) return;
-    const suffix = typeof value === "string" ? didYouMean(value, allowed) : "";
-    report(
-      errors,
-      path,
-      `expected one of ${allowed.map(quote).join(", ")}, got ${quote(value)}${suffix}`,
-    );
-  };
-
-const int =
-  ({ min = Number.MIN_SAFE_INTEGER } = {}) =>
-  (value, path, errors) => {
-    if (!Number.isInteger(value)) {
-      return report(
-        errors,
-        path,
-        `expected an integer, got ${typeName(value)}`,
-      );
-    }
-    if (value < min)
-      report(errors, path, `expected at least ${min}, got ${value}`);
-  };
-
-const arr =
-  (item, { min = 1 } = {}) =>
-  (value, path, errors) => {
-    if (!Array.isArray(value)) {
-      return report(errors, path, `expected an array, got ${typeName(value)}`);
-    }
-    if (value.length < min) {
-      return report(
-        errors,
-        path,
-        `expected at least ${min} item${min === 1 ? "" : "s"}, got ${value.length}`,
-      );
-    }
-    value.forEach((entry, i) => {
-      item(entry, `${path}[${i}]`, errors);
-    });
-  };
-
-/** Strict: a key that isn't listed is a failure, not something to ignore. */
-const obj = (fields) => (value, path, errors) => {
-  if (!isObject(value)) {
-    return report(errors, path, `expected an object, got ${typeName(value)}`);
-  }
-  const known = Object.keys(fields);
-  for (const [key, schema] of Object.entries(fields)) {
-    const child = path ? `${path}.${key}` : key;
-    if (key in value) {
-      schema(value[key], child, errors);
-    } else if (!schema.optional) {
-      report(errors, child, "missing required key");
-    }
-  }
-  for (const key of Object.keys(value)) {
-    if (known.includes(key)) continue;
-    report(
-      errors,
-      path,
-      `unexpected key ${quote(key)}${didYouMean(key, known)}`,
-    );
-  }
-};
-
-/** An object whose keys are open but whose values all share one shape. */
-const record =
-  (valueSchema, { keyPattern }) =>
-  (value, path, errors) => {
-    if (!isObject(value)) {
-      return report(errors, path, `expected an object, got ${typeName(value)}`);
-    }
-    for (const [key, entry] of Object.entries(value)) {
-      const child = path ? `${path}.${key}` : key;
-      if (!keyPattern.test(key)) {
-        report(errors, child, `key ${quote(key)} does not match ${keyPattern}`);
-      }
-      valueSchema(entry, child, errors);
-    }
-  };
-
-/** Pick a shape by the value of a discriminating key, e.g. a block's `type`. */
-const variant = (key, shapes) => (value, path, errors) => {
-  if (!isObject(value)) {
-    return report(errors, path, `expected an object, got ${typeName(value)}`);
-  }
-  const tag = value[key];
-  const shape = shapes[tag];
-  if (shape) return shape(value, path, errors);
-  const known = Object.keys(shapes);
-  const suffix = typeof tag === "string" ? didYouMean(tag, known) : "";
-  report(
-    errors,
-    path,
-    `unknown ${key} ${quote(tag)}${suffix} — expected one of ${known.map(quote).join(", ")}`,
-  );
-};
-
-/* --------------------------------------------------------------- formats */
-
-const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const DATE = /^\d{4}-\d{2}-\d{2}$/;
-const HEX = /^#[0-9a-f]{6}$/;
-const UUID = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/;
-const ORIGIN = /^https:\/\/[a-z0-9.-]+$/;
-const LOCALE = /^[a-z]{2}_[A-Z]{2}$/;
-const PRIORITY = /^(?:0\.\d|1\.0)$/;
-/** Root-relative, no trailing slash — these are concatenated, not joined. */
-const SITE_PATH = /^\/[a-z0-9][a-z0-9./-]*[a-z0-9]$/;
-/** Tile and link targets: off-site or a mail link, never a bare path. */
-const EXTERNAL_HREF = /^(?:https?:\/\/|mailto:)\S+$/;
-
-const slug = str({
-  pattern: SLUG,
-  hint: 'expected a lowercase kebab-case slug, e.g. "event-pipeline"',
-});
-
-const date = str({
-  pattern: DATE,
-  hint: "expected a date as YYYY-MM-DD",
-});
-
-const sitePath = str({
-  pattern: SITE_PATH,
-  hint: 'expected a root-relative path with no trailing slash, e.g. "/projects"',
-});
-
-const externalHref = str({
-  pattern: EXTERNAL_HREF,
-  hint: "expected an http(s):// or mailto: link",
-});
-
-/**
- * Tile widths are the `.b-*` classes bento.css actually defines. A size the
- * stylesheet has no rule for renders as a full-width tile with no warning.
- */
-const TILE_SIZES = ["flagship", "wide", "normal"];
-
-/* ------------------------------------------------------------ site.json */
-
-const palette = record(
-  str({ pattern: HEX, hint: 'expected a six-digit hex colour like "#101214"' }),
-  { keyPattern: /^[a-z][a-zA-Z]*$/ },
-);
-
-const changefreq = oneOf(
-  "always",
-  "hourly",
-  "daily",
-  "weekly",
-  "monthly",
-  "yearly",
-);
-
-const priority = str({
-  pattern: PRIORITY,
-  hint: 'expected a priority from "0.0" to "1.0", one decimal',
-});
-
-const asideTile = obj({
-  size: oneOf(...TILE_SIZES),
-  label: str(),
-  title: str(),
-  text: str(),
-  cta: str(),
-  href: externalHref,
-  umamiEvent: slug,
-});
-
-export const siteSchema = obj({
-  origin: str({
-    pattern: ORIGIN,
-    hint: 'expected an origin like "https://mlz.no", with no trailing slash',
-  }),
-  author: str(),
-  locale: str({ pattern: LOCALE, hint: 'expected a locale like "en_GB"' }),
-  umamiWebsiteId: str({ pattern: UUID, hint: "expected a UUID" }),
-  ogImage: sitePath,
-  basePath: sitePath,
-  figureDir: sitePath,
-  palette: obj({ light: palette, dark: palette }),
-  // lastmod is content, not a clock reading: the sitemap is committed, so a
-  // build-time `new Date()` would make every day's output differ from the
-  // checked-in copy and fail check:content. Projects carry their own.
-  sitemap: obj({
-    home: obj({ lastmod: date, changefreq, priority }),
-    index: obj({ lastmod: date, changefreq, priority }),
-    project: obj({ changefreq, priority }),
-  }),
-  index: obj({
-    title: str(),
-    description: str(),
-    eyebrow: str(),
-    heading: str(),
-    intro: str(),
-    asideTiles: arr(asideTile, { min: 0 }),
-  }),
-});
-
-/* --------------------------------------------------- content/projects/*.json */
-
-const block = variant("type", {
-  text: obj({
-    type: oneOf("text"),
-    value: str(),
-  }),
-
-  list: obj({
-    type: oneOf("list"),
-    title: opt(str()),
-    kind: opt(oneOf("bulleted", "numbered")),
-    items: arr(str()),
-  }),
-
-  figure: obj({
-    type: oneOf("figure"),
-    figure: slug,
-    alt: str(),
-    caption: opt(str()),
-  }),
-
-  code: obj({
-    type: oneOf("code"),
-    language: str(),
-    caption: opt(str()),
-    // Blank lines are meaningful inside a snippet, so "" is allowed here.
-    lines: arr(str({ allowEmpty: true })),
-  }),
-
-  metrics: obj({
-    type: oneOf("metrics"),
-    items: arr(obj({ value: str(), label: str() })),
-  }),
-
-  quote: obj({
-    type: oneOf("quote"),
-    value: str(),
-    attribution: opt(str()),
-  }),
-
-  note: obj({
-    type: oneOf("note"),
-    title: opt(str()),
-    value: str(),
-  }),
-});
-
-export const projectSchema = obj({
-  slug,
-  order: int({ min: 1 }),
-  size: oneOf(...TILE_SIZES),
-  name: str(),
-  tagline: str(),
-  period: str(),
-  role: opt(str()),
-  team: opt(str()),
-  stack: arr(str()),
-  tags: arr(str()),
-  status: str(),
-  lastmod: date,
-  seo: obj({ title: str(), description: str() }),
-  cover: obj({ figure: slug, alt: str(), caption: opt(str()) }),
-  summary: str(),
-  sections: arr(
-    obj({
-      label: str(),
-      heading: str(),
-      blocks: arr(block),
-    }),
-  ),
-});
-
-/* ---------------------------------------------------------- cross-checks */
 
 /** Collect every figure name a project points at. */
 function figureRefs(project) {
@@ -470,6 +367,43 @@ function crossCheck({ site, projects, figures }, problems) {
 
 export class ContentError extends Error {}
 
+/** Turns a Zod issue path like ["sections", 0, "blocks"] into "sections[0].blocks". */
+function formatPath(path) {
+  return path.reduce((acc, segment) => {
+    if (typeof segment === "number") return `${acc}[${segment}]`;
+    return acc ? `${acc}.${segment}` : `${segment}`;
+  }, "");
+}
+
+/**
+ * Most issues carry their own message directly, but a few Zod issue types
+ * (a bad record key, among others) wrap the real failure in a nested
+ * `issues` array with its own path *relative to the wrapper*. Recursing
+ * finds the actual message instead of the wrapper's generic one, e.g.
+ * "Invalid key in record".
+ */
+function* flattenIssues(issues, prefix = []) {
+  for (const issue of issues) {
+    const path = [...prefix, ...issue.path];
+    if (issue.issues?.length) {
+      yield* flattenIssues(issue.issues, path);
+    } else {
+      yield { path, message: issue.message };
+    }
+  }
+}
+
+function collect(file, schema, value, problems) {
+  const result = schema.safeParse(value);
+  if (result.success) return;
+  for (const { path, message } of flattenIssues(result.error.issues)) {
+    problems.push({
+      file,
+      message: `${formatPath(path) || "(root)"}: ${message}`,
+    });
+  }
+}
+
 /**
  * Validates everything in one pass and throws once, so a broken file reports
  * all of its problems instead of one per run.
@@ -481,15 +415,10 @@ export class ContentError extends Error {}
  */
 export function validateContent({ site, projects, figures }) {
   const problems = [];
-  const collect = (file, schema, value) => {
-    const errors = [];
-    schema(value, "", errors);
-    for (const message of errors) problems.push({ file, message });
-  };
 
-  collect("content/site.json", siteSchema, site);
+  collect("content/site.json", siteSchema, site, problems);
   for (const { file, data } of projects) {
-    collect(file, projectSchema, data);
+    collect(file, projectSchema, data, problems);
   }
   crossCheck({ site, projects, figures }, problems);
 

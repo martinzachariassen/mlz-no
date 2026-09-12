@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.12",
-    "firebase-tools": "^15.29.0"
+    "firebase-tools": "^15.29.0",
+    "zod": "^4.6.2"
   }
 }
