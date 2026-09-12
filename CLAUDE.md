@@ -23,6 +23,14 @@ committed. Never hand-edit those files — edit `content/site.json`,
 `bun run build:content`. `bun run lint` also runs `check:content`, which fails
 if the committed output no longer matches `content/`.
 
+`content/` has a spec: `content/README.md` is the prose version and
+`scripts/content-schema.js` is the enforced one. The build validates every
+file against it before rendering anything, and **a key that isn't in the spec
+is an error** — that's the point of it. So adding a field to the site is two
+edits in this order: describe it in `scripts/content-schema.js`, then render
+it in `scripts/build-content.js`. Renderers downstream of validation assume
+the shape the spec guarantees and don't re-check it.
+
 The site itself still has no build step: `public/` is deployed exactly as it
 sits on disk. The generator only removes duplication between the bento tile,
 the case study, the `<head>` tags and the sitemap.

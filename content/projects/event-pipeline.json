@@ -16,6 +16,7 @@
     "Schema evolution"
   ],
   "status": "In production",
+  "lastmod": "2026-09-12",
   "seo": {
     "title": "Event Pipeline — Martin Zachariassen",
     "description": "Case study: replacing a nightly batch job with an append-only event log in Kotlin and Kafka — idempotent consumers, replayable offsets, and a cutover with no downtime."
@@ -26,13 +27,6 @@
     "caption": "The shape of the system after the rewrite. Every arrow is one direction, and every reader owns its own offset."
   },
   "summary": "A retail platform where the reporting, search and partner integrations all depended on a single nightly batch job. It had grown to seven hours, and any failure inside it meant a day of stale data across the whole product. I led the rewrite to an append-only event log: one write path, independent readers, and offsets that make replay a routine operation instead of an incident.",
-  "links": [
-    {
-      "label": "Architecture notes",
-      "href": "mailto:hi@mlz.no",
-      "note": "Happy to walk through the details"
-    }
-  ],
   "sections": [
     {
       "label": "Problem",

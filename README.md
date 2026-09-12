@@ -52,6 +52,12 @@ That writes `public/projects/**`, `public/assets/figures/**` and
 files should never be hand-edited — `bun run lint` fails if they drift from
 `content/`.
 
+[`content/README.md`](content/README.md) is the guide to writing that input —
+the pipeline, every field, every block type, every figure rule — and
+[`scripts/content-schema.js`](scripts/content-schema.js) enforces it: the
+build validates every file before rendering anything, and a key that isn't in
+the spec is an error rather than something quietly ignored.
+
 The site still has no build step: `public/` is deployed exactly as it sits on
 disk, and nothing is generated at request time. The generator exists so a
 project's prose lives in one place instead of being repeated across the

@@ -14,6 +14,10 @@
  * Nothing here emits inline <style>, inline <script> or onclick attributes —
  * firebase.json's CSP has no 'unsafe-inline', so generated markup has the
  * same constraints as the hand-written pages.
+ *
+ * Everything read from content/ is checked against scripts/content-schema.js
+ * before a single page is rendered, so the renderers below can assume the
+ * shape they were written for. A new field has to be described there first.
  */
 
 import {
@@ -25,6 +29,7 @@ import {
 } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { ContentError, validateContent } from "./content-schema.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const contentDir = join(root, "content");
@@ -44,36 +49,69 @@ const ESCAPES = {
 /** Escape a value for use in HTML text or a double-quoted attribute. */
 const esc = (value) => String(value).replace(/[&<>"]/g, (c) => ESCAPES[c]);
 
-const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
+const readJson = (path) => {
+  try {
+    return JSON.parse(readFileSync(path, "utf8"));
+  } catch (error) {
+    throw new ContentError(`${path.slice(root.length + 1)}: ${error.message}`);
+  }
+};
 
 /** Drop empty lines so template holes don't leave ragged blank runs. */
 const lines = (...parts) => parts.flat().filter(Boolean).join("\n");
 
 /* --------------------------------------------------------------- content */
 
-const site = readJson(join(contentDir, "site.json"));
+/**
+ * Read content/ and hand it to the spec before anything is rendered. Nothing
+ * below this point re-checks a field: if it got past validateContent it has
+ * the shape scripts/content-schema.js describes.
+ */
+function loadContent() {
+  const site = readJson(join(contentDir, "site.json"));
 
-const projects = readdirSync(join(contentDir, "projects"))
-  .filter((name) => name.endsWith(".json"))
-  .map((name) => readJson(join(contentDir, "projects", name)))
-  .sort((a, b) => a.order - b.order || a.slug.localeCompare(b.slug));
+  const files = readdirSync(join(contentDir, "projects"))
+    .filter((name) => name.endsWith(".json"))
+    .map((name) => ({
+      file: `content/projects/${name}`,
+      data: readJson(join(contentDir, "projects", name)),
+    }));
 
-const figureDir = join(contentDir, "figures");
-const figures = new Map(
-  readdirSync(figureDir)
-    .filter((name) => name.endsWith(".svg"))
-    .map((name) => {
-      const source = readFileSync(join(figureDir, name), "utf8");
-      const box = source.match(/viewBox="0 0 (\d+) (\d+)"/);
-      if (!box) {
-        throw new Error(`${name}: needs a viewBox="0 0 W H" to size the <img>`);
-      }
-      return [
+  const figureDir = join(contentDir, "figures");
+  const sources = new Map(
+    readdirSync(figureDir)
+      .filter((name) => name.endsWith(".svg"))
+      .map((name) => [
         name.replace(/\.svg$/, ""),
-        { source, width: box[1], height: box[2] },
-      ];
-    }),
-);
+        readFileSync(join(figureDir, name), "utf8"),
+      ]),
+  );
+
+  validateContent({ site, projects: files, figures: sources });
+
+  return {
+    site,
+    // `order` is unique and required, so this is a total ordering.
+    projects: files.map(({ data }) => data).sort((a, b) => a.order - b.order),
+    figures: new Map(
+      [...sources].map(([name, source]) => {
+        const [, width, height] = source.match(/viewBox="0 0 (\d+) (\d+)"/);
+        return [name, { source, width, height }];
+      }),
+    ),
+  };
+}
+
+let content;
+try {
+  content = loadContent();
+} catch (error) {
+  if (!(error instanceof ContentError)) throw error;
+  console.error(error.message);
+  process.exit(1);
+}
+
+const { site, projects, figures } = content;
 
 const projectUrl = (project) => `${site.basePath}/${project.slug}`;
 
@@ -89,12 +127,10 @@ function renderFigureAssets() {
   for (const [name, figure] of figures) {
     for (const theme of ["light", "dark"]) {
       const palette = site.palette[theme];
-      const svg = figure.source.replace(/\{\{(\w+)\}\}/g, (_, token) => {
-        if (!(token in palette)) {
-          throw new Error(`${name}.svg: unknown palette token {{${token}}}`);
-        }
-        return palette[token];
-      });
+      const svg = figure.source.replace(
+        /\{\{(\w+)\}\}/g,
+        (_, token) => palette[token],
+      );
       files.set(join(publicDir, site.figureDir, `${name}-${theme}.svg`), svg);
     }
   }
@@ -108,7 +144,6 @@ function renderFigureAssets() {
  */
 function figureImages(name, alt, { eager = false, frame = false } = {}) {
   const figure = figures.get(name);
-  if (!figure) throw new Error(`unknown figure "${name}"`);
   const loading = eager ? "eager" : "lazy";
   const shared =
     `alt="${esc(alt)}" width="${figure.width}" height="${figure.height}"` +
@@ -460,11 +495,8 @@ const blockRenderers = {
     ),
 };
 
-function renderBlock(block) {
-  const render = blockRenderers[block.type];
-  if (!render) throw new Error(`unknown block type "${block.type}"`);
-  return render(block);
-}
+/** One renderer per block type in the spec — the spec rejects any other. */
+const renderBlock = (block) => blockRenderers[block.type](block);
 
 function endNav(index) {
   const previous = projects[index - 1];
@@ -595,8 +627,12 @@ function casePage(project, index) {
 
 /* ------------------------------------------------------------ sitemap.xml */
 
+/**
+ * Every date here comes from content/, never from the clock: this file is
+ * committed, and a build-time `new Date()` would put the build out of date
+ * with itself the following day.
+ */
 function sitemap() {
-  const today = new Date().toISOString().slice(0, 10);
   const entry = ({ loc, lastmod, changefreq, priority }) =>
     lines(
       "  <url>",
@@ -611,15 +647,11 @@ function sitemap() {
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
     entry({ loc: `${site.origin}/`, ...site.sitemap.home }),
-    entry({
-      loc: `${site.origin}${site.basePath}`,
-      lastmod: site.index.lastmod ?? today,
-      ...site.sitemap.index,
-    }),
+    entry({ loc: `${site.origin}${site.basePath}`, ...site.sitemap.index }),
     projects.map((project) =>
       entry({
         loc: `${site.origin}${projectUrl(project)}`,
-        lastmod: project.lastmod ?? today,
+        lastmod: project.lastmod,
         ...site.sitemap.project,
       }),
     ),

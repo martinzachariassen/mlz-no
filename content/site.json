@@ -2,7 +2,6 @@
   "origin": "https://mlz.no",
   "author": "Martin Zachariassen",
   "locale": "en_GB",
-  "titleSuffix": "Martin Zachariassen",
   "umamiWebsiteId": "e73d093f-ea9e-4839-8c5f-3dd4888a3c36",
   "ogImage": "/assets/social/og.png",
   "basePath": "/projects",
@@ -40,6 +39,7 @@
       "priority": "1.0"
     },
     "index": {
+      "lastmod": "2026-09-12",
       "changefreq": "monthly",
       "priority": "0.8"
     },
@@ -57,7 +57,6 @@
     "asideTiles": [
       {
         "size": "normal",
-        "kind": "external",
         "label": "Code",
         "title": "GitHub",
         "text": "Smaller experiments, dotfiles and the source of this site.",
@@ -67,7 +66,6 @@
       },
       {
         "size": "normal",
-        "kind": "external",
         "label": "Contact",
         "title": "Get in touch",
         "text": "Happy to talk about backend architecture, event systems or hiring.",
