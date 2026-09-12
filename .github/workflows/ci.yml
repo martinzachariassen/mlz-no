@@ -77,7 +77,7 @@ jobs:
 
           # 404.html's filename is the whole contract with Hosting; a rename degrades silently.
           status="$(curl -s -o /dev/null -w '%{http_code}' "$base/nope")"
-          if [ "$status" = "404" ] && curl -s "$base/nope" | grep -q 'notfound-quip'; then
+          if [ "$status" = "404" ] && curl -s "$base/nope" | grep -q 'notfound-home'; then
             ok "unknown path serves the custom 404 page"
           else
             bad "unknown path did not serve the custom 404 page (status $status)"
