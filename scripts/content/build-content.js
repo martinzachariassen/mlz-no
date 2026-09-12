@@ -15,7 +15,7 @@
  * firebase.json's CSP has no 'unsafe-inline', so generated markup has the
  * same constraints as the hand-written pages.
  *
- * Everything read from content/ is checked against scripts/content-schema.js
+ * Everything read from content/ is checked against content-schema.js
  * before a single page is rendered, so the renderers below can assume the
  * shape they were written for. A new field has to be described there first.
  */
@@ -32,7 +32,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { ContentError, validateContent } from "./content-schema.js";
 
-const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const contentDir = join(root, "content");
 const publicDir = join(root, "public");
 
@@ -158,7 +158,7 @@ const unraw = (text) => text.split(RAW_NEWLINE).join("\n");
 /**
  * Read content/ and hand it to the spec before anything is rendered. Nothing
  * below this point re-checks a field: if it got past validateContent it has
- * the shape scripts/content-schema.js describes.
+ * the shape content-schema.js describes.
  */
 function loadContent() {
   const site = readJson(join(contentDir, "site.json"));

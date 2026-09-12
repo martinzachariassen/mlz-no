@@ -54,7 +54,7 @@ files should never be hand-edited — `bun run lint` fails if they drift from
 
 [`content/README.md`](content/README.md) is the guide to writing that input —
 the pipeline, every field, every block type, every figure rule — and
-[`scripts/content-schema.js`](scripts/content-schema.js) enforces it: the
+[`scripts/content/content-schema.js`](scripts/content/content-schema.js) enforces it: the
 build validates every file before rendering anything, and a key that isn't in
 the spec is an error rather than something quietly ignored.
 

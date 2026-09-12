@@ -1,7 +1,7 @@
 /**
  * The spec for everything under content/.
  *
- * scripts/build-content.js renders whatever it is handed, so without this file
+ * build-content.js renders whatever it is handed, so without this file
  * a typo is invisible: a misspelled key is silently ignored, a block type the
  * renderer has never heard of throws halfway through a page, and a field the
  * generator stopped reading lives on in the JSON looking meaningful. This

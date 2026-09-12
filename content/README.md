@@ -1,6 +1,6 @@
 # Writing content
 
-Everything under `content/` is input to `scripts/build-content.js`, which writes
+Everything under `content/` is input to `scripts/content/build-content.js`, which writes
 the projects section of the site into `public/`. This file explains how that
 works and how to write the input: what each file is for, every key it may
 contain, what each one renders, and what the build refuses to accept.
@@ -40,7 +40,7 @@ and so does the pre-commit hook, so forgetting the build fails before the
 commit lands.
 
 `bun run lint` also runs `bun test scripts`, which exercises
-`scripts/content-schema.js` itself — the cross-file checks below (slug and
+`scripts/content/content-schema.js` itself — the cross-file checks below (slug and
 figure references, palette parity, stray files) — against small fixtures, so
 a change to the spec's own logic that quietly stops catching something is
 caught too, not just a change to `content/`.
@@ -51,7 +51,7 @@ One command, four steps, and it stops at the first step that fails.
 
 1. **Read.** `content/site.json`, every `content/projects/*.json`, every
    `content/figures/*.svg`.
-2. **Validate.** All of it goes to `scripts/content-schema.js` at once. Every
+2. **Validate.** All of it goes to `scripts/content/content-schema.js` at once. Every
    problem in every file is reported together, each one naming the file and the
    path inside it. Nothing is rendered if anything failed.
 3. **Render.** The renderers assume the shape the spec guarantees and do not
@@ -435,8 +435,8 @@ output; the build deletes the leftovers as part of writing.
 
 Adding a field to the site is two edits, in this order:
 
-1. Describe it in `scripts/content-schema.js`.
-2. Render it in `scripts/build-content.js`.
+1. Describe it in `scripts/content/content-schema.js`.
+2. Render it in `scripts/content/build-content.js`.
 
 The other way round means the field is rejected before the renderer ever sees
 it. Removing a field is the same in reverse: drop the markup, drop the spec
@@ -447,7 +447,7 @@ schema, a renderer in `blockRenderers` in the build script, and whatever CSS it
 needs in `public/css/case-study.css`. A new **tile size** is a value in
 `TILE_SIZES` and a matching `.b-*` rule in `public/css/bento.css`.
 
-Keep this file in step with the schema. `scripts/content-schema.js` is the
+Keep this file in step with the schema. `scripts/content/content-schema.js` is the
 enforced version of the spec; this one is the readable version, and a spec that
 disagrees with itself is worse than one that is merely terse.
 

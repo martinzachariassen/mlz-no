@@ -17,24 +17,24 @@ Personal homepage (mlz.no) — a static site with no build step. Everything in
 ## Generated content
 
 `public/projects/**`, `public/assets/figures/**` and `public/sitemap.xml` are
-**generated** by `scripts/build-content.js` from `content/`, and the output is
+**generated** by `scripts/content/build-content.js` from `content/`, and the output is
 committed. Never hand-edit those files — edit `content/site.json`,
 `content/projects/<slug>.json` or `content/figures/<name>.svg`, then run
 `bun run build:content`. `bun run lint` also runs `check:content`, which fails
 if the committed output no longer matches `content/`.
 
 `content/` has a spec: `content/README.md` is the prose version and
-`scripts/content-schema.js` is the enforced one. The build validates every
+`scripts/content/content-schema.js` is the enforced one. The build validates every
 file against it before rendering anything, and **a key that isn't in the spec
 is an error** — that's the point of it. So adding a field to the site is two
-edits in this order: describe it in `scripts/content-schema.js`, then render
-it in `scripts/build-content.js`. Renderers downstream of validation assume
-the shape the spec guarantees and don't re-check it. `scripts/content-schema.test.js`
+edits in this order: describe it in `scripts/content/content-schema.js`, then render
+it in `scripts/content/build-content.js`. Renderers downstream of validation assume
+the shape the spec guarantees and don't re-check it. `scripts/content/content-schema.test.js`
 (`bun run test`, also run by `bun run lint`) exercises that spec's own
 cross-file checks against fixtures, so a regression there fails independently
 of whatever happens to be in `content/` at the time.
 
-After validation, `scripts/build-content.js` also checks that every
+After validation, `scripts/content/build-content.js` also checks that every
 root-relative `href`/`src`/`og:image` the generated pages emit resolves to a
 real file in `public/` — catching a typo in `ogImage`, a stylesheet name, or
 similar before it ships as a silent broken link.
@@ -49,7 +49,7 @@ generator writes a `-light` and a `-dark` file from `palette` in
 `[data-theme]`.
 
 The topbar and footer are copied into each generated page by
-`scripts/build-content.js`, and hand-written into `index.html` and
+`scripts/content/build-content.js`, and hand-written into `index.html` and
 `404.html` — keep all three in sync when that markup changes.
 - All hardening (CSP, HSTS, cache-control) is declared in `firebase.json`,
   not in code. The `headers` list there is last-match-wins — be careful with
