@@ -82,3 +82,31 @@
 .btn:focus-visible svg {
   transform: translate(-1px, 0) rotate(-4deg);
 }
+
+/* The one filled button on the page: projects is the primary CTA, so it
+   gets the inverted fill the outline .btn siblings don't, plus an arrow
+   that slides forward on hover instead of the rotate the others use. */
+.btn-primary {
+  background: var(--fg);
+  border-color: var(--fg);
+  color: var(--bg);
+}
+
+/* Fill stays var(--fg) on hover — .btn:hover already swaps the border to
+   var(--accent-deep) and draws the offset shadow in it; recoloring the
+   fill to that same accent-deep on top made the shadow vanish into the
+   button instead of reading as an offset. */
+.btn-primary:hover svg,
+.btn-primary:focus-visible svg {
+  transform: translateX(3px) rotate(0deg);
+}
+
+/* Override .btn:hover's border/shadow color: --accent-deep flips to a light
+   purple in dark mode, meant to pop against the dark surfaces the rest of
+   the site hovers to. This button's fill is the inverse (light in dark
+   mode), so that light-on-light pairing washed out instead of popping. */
+.btn-primary:hover,
+.btn-primary:focus-visible {
+  border-color: var(--accent-deep-on-fill);
+  box-shadow: 5px 5px 0 0 var(--accent-deep-on-fill);
+}
