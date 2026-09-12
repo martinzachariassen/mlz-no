@@ -46,9 +46,10 @@ The topbar and footer are copied into each generated page by
 - All hardening (CSP, HSTS, cache-control) is declared in `firebase.json`,
   not in code. The `headers` list there is last-match-wins — be careful with
   ordering.
-- Deploys happen automatically on push to `main`
-  (`.github/workflows/deploy.yml`). Don't push/merge to `main` unless the
-  user has asked for it.
+- Deploys happen automatically once CI passes on `main`
+  (`.github/workflows/deploy.yml` triggers on CI's `workflow_run`, never on
+  the push itself). Don't push/merge to `main` unless the user has asked for
+  it.
 
 ## Commits
 
@@ -65,7 +66,19 @@ there's no changesets/CONTRIBUTING.md flow here yet) before filling it in.
 
 ## CI
 
-`ci.yml` boots the Hosting emulator and verifies that security headers,
-cache policy, and the custom 404 page actually work in practice — not just
-that `firebase.json` is syntactically valid. Test changes to `firebase.json`
-or `public/404.html` against this CI job.
+`scripts/smoke.sh <base-url>` holds every assertion about a running
+deployment: security headers, cache policy, `cleanUrls`, the custom 404 page,
+and a byte-for-byte comparison of every file in `public/` against what the
+deployment serves. It runs twice, and it is one script so the two can't
+drift:
+
+- `ci.yml` boots the Hosting emulator and runs it against that, so
+  `firebase.json` is verified in practice and not just parsed. Test changes to
+  `firebase.json` or `public/404.html` here.
+- `deploy.yml`'s `verify` job runs it against `https://mlz.no` after
+  deploying, because `firebase deploy` succeeding only means the upload was
+  accepted. Run it locally the same way: `scripts/smoke.sh https://mlz.no`.
+
+Nothing reaches production without CI: `deploy.yml` is triggered by CI
+concluding successfully, and its one manual entry point
+(`workflow_dispatch`) refuses a commit that has no passing CI run.

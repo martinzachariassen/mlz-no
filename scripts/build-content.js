@@ -8,7 +8,7 @@
  * duplicated across the bento tile, the case study, the <head> tags and the
  * sitemap.
  *
- *   bun run build:content    write the generated files
+ *   bun run build:content    write the generated files, remove leftovers
  *   bun run check:content    fail if what's on disk differs (used by CI)
  *
  * Nothing here emits inline <style>, inline <script> or onclick attributes —
@@ -25,6 +25,7 @@ import {
   mkdirSync,
   readdirSync,
   readFileSync,
+  rmSync,
   writeFileSync,
 } from "node:fs";
 import { dirname, join } from "node:path";
@@ -671,24 +672,61 @@ const outputs = new Map([
   [join(publicDir, "sitemap.xml"), sitemap()],
 ]);
 
+/**
+ * Directories under public/ that belong entirely to this script: everything in
+ * them comes out of `outputs`, so a file that isn't in it is a leftover. The
+ * usual way to get one is renaming a project, which leaves the old case study
+ * on disk and therefore live at its old URL, missing from both the sitemap and
+ * the overview grid. Comparing only the expected paths can't see that, so the
+ * managed directories are listed rather than inferred. A generated file that
+ * sits among hand-written ones (`public/sitemap.xml`) can't be told apart by
+ * path, so its directory isn't listed and it is only ever overwritten.
+ */
+const generatedDirs = [
+  join(publicDir, "projects"),
+  join(publicDir, site.figureDir),
+];
+
+const strays = generatedDirs
+  .filter((dir) => existsSync(dir))
+  .flatMap((dir) =>
+    readdirSync(dir, { recursive: true, withFileTypes: true })
+      .filter((entry) => entry.isFile())
+      .map((entry) => join(entry.parentPath, entry.name)),
+  )
+  .filter((path) => !outputs.has(path))
+  .sort();
+
+const rel = (path) => path.slice(root.length + 1);
+
 if (check) {
-  const stale = [...outputs].filter(
-    ([path, content]) =>
-      !existsSync(path) || readFileSync(path, "utf8") !== content,
-  );
-  if (stale.length) {
+  const stale = [...outputs]
+    .filter(
+      ([path, content]) =>
+        !existsSync(path) || readFileSync(path, "utf8") !== content,
+    )
+    .map(([path]) => rel(path));
+
+  if (stale.length || strays.length) {
     console.error(
       "Generated files are out of date. Run: bun run build:content",
     );
-    for (const [path] of stale)
-      console.error(`  ${path.slice(root.length + 1)}`);
+    for (const path of stale) console.error(`  ${path}`);
+    for (const path of strays)
+      console.error(
+        `  ${rel(path)} — not generated from content/, would be removed`,
+      );
     process.exit(1);
   }
   console.log(`content up to date (${outputs.size} files)`);
 } else {
+  for (const path of strays) {
+    rmSync(path);
+    console.log(`removed ${rel(path)}`);
+  }
   for (const [path, content] of outputs) {
     mkdirSync(dirname(path), { recursive: true });
     writeFileSync(path, content);
-    console.log(`wrote ${path.slice(root.length + 1)}`);
+    console.log(`wrote ${rel(path)}`);
   }
 }

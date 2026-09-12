@@ -29,7 +29,7 @@ content/
 ```
 
 ```sh
-bun run build:content   # validate, then write the generated files
+bun run build:content   # validate, write the generated files, drop leftovers
 bun run check:content   # validate, then fail if what's on disk differs
 bun run dev             # serve public/ through the Firebase Hosting emulator
 ```
@@ -416,10 +416,11 @@ content/projects/event-pipeline.json
 | `palette.dark: missing token "x"`           | The two themes have drifted apart.                                    |
 | `needs a viewBox="0 0 W H"`                 | Add one, or the page reflows as the figure loads.                     |
 | `Generated files are out of date`           | You edited `content/` without running `bun run build:content`.        |
+| `not generated from content/, would be removed` | A leftover file in a generated directory. Usually a renamed slug.  |
 
-That last one is `check:content` rather than a validation failure, and it is
+The last two are `check:content` rather than validation failures, and they are
 what `bun run lint` and the pre-commit hook catch. Run the build and commit the
-output.
+output; the build deletes the leftovers as part of writing.
 
 ## Changing the spec itself
 
@@ -451,6 +452,10 @@ disagrees with itself is worse than one that is merely terse.
 - **Everything is escaped.** Content is text, never markup.
 - **The output is committed.** `public/` is deployed exactly as it sits on
   disk, so a build that isn't committed is a change that isn't deployed.
+- **`public/projects/` and `public/assets/figures/` belong to the generator.**
+  Nothing hand-written lives in either, so the build deletes anything in them
+  it didn't just write and `check:content` fails on it. Rename a project and
+  the old case study goes away instead of staying live at its old URL.
 - **Nothing reads the clock.** Every date in the output comes from `content/`,
   so two builds of the same input are byte-identical.
 - **The topbar and footer are copied into every generated page** by the build
