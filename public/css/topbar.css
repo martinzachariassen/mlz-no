@@ -34,39 +34,48 @@
 .topbar-right {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 14px;
 }
 
-.since {
-  display: none;
-  align-items: center;
-  gap: 10px;
-  font-size: 12px;
+/* Section navigation. Deliberately not a .btn: no border and no offset
+   shadow, so the topbar stays quieter than the hero's contact row. The
+   active state is written into each file by hand — there is no router to
+   compute it at runtime. */
+.nav-link {
+  position: relative;
+  padding: 6px 2px;
+  font-family: var(--font-mono);
+  font-size: 11px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--fg-secondary);
+  color: var(--fg-muted);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.2s var(--ease);
 }
 
-.since .cursor {
-  color: var(--accent-deep);
-  animation: blink 1.4s steps(1, end) infinite;
+.nav-link::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--accent-deep);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.26s var(--ease);
 }
 
-@media (min-width: 640px) {
-  .since {
-    display: inline-flex;
-  }
+.nav-link:hover,
+.nav-link:focus-visible,
+.nav-link.active {
+  color: var(--fg);
 }
 
-@keyframes blink {
-  0%,
-  55% {
-    opacity: 1;
-  }
-  56%,
-  100% {
-    opacity: 0;
-  }
+.nav-link:hover::after,
+.nav-link:focus-visible::after,
+.nav-link.active::after {
+  transform: scaleX(1);
 }
 
 .theme-toggle {

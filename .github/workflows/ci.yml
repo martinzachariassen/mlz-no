@@ -83,6 +83,15 @@ jobs:
             bad "unknown path did not serve the custom 404 page (status $status)"
           fi
 
+          # cleanUrls is load-bearing: every URL under /projects is
+          # extension-less, so a flipped flag would 404 the whole section.
+          if [ "$(curl -s -o /dev/null -w '%{http_code}' "$base/projects")" = "200" ] \
+            && [ "$(curl -s -o /dev/null -w '%{http_code}' "$base/index.html")" = "301" ]; then
+            ok "cleanUrls serves extension-less URLs"
+          else
+            bad "cleanUrls is not in effect"
+          fi
+
           # Confirms firebase.json's ignore list keeps it from ever being served.
           if [ "$(curl -s -o /dev/null -w '%{http_code}' "$base/firebase.json")" = "404" ]; then
             ok "firebase.json is not served"

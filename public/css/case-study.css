@@ -1,0 +1,376 @@
+/* Case study page: the facts strip, the Problem/Approach/Result fields and
+   their content blocks, and the previous/next cards. The cards reuse the
+   border and offset-shadow language of .b-tile in bento.css on purpose —
+   they are grid tiles, not a footer navigation row. */
+
+.case-facts {
+  margin: 0;
+  display: grid;
+  gap: 20px 32px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding-bottom: clamp(28px, 5vw, 44px);
+}
+
+@media (min-width: 720px) {
+  .case-facts {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.fact {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fact dt {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.fact dd {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.case-summary {
+  margin: 0;
+  max-width: 68ch;
+  padding-block: clamp(30px, 5vw, 52px);
+  font-size: clamp(16px, 2vw, 19px);
+  line-height: 1.65;
+}
+
+/* ------------------------------------------------------------- the fields */
+
+.field {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: minmax(0, 1fr);
+  padding-block: clamp(34px, 6vw, 60px);
+  border-top: 1px solid var(--border);
+}
+
+@media (min-width: 940px) {
+  .field {
+    grid-template-columns: 150px minmax(0, 1fr);
+    column-gap: 48px;
+  }
+
+  .field-label {
+    grid-column: 1;
+    grid-row: 1;
+    padding-top: 10px;
+  }
+
+  .field > :not(.field-label) {
+    grid-column: 2;
+  }
+}
+
+.field-label {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--accent-deep);
+}
+
+.field-heading {
+  margin: 0;
+  max-width: 22ch;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  font-variation-settings: "opsz" 40;
+  font-size: clamp(26px, 4.2vw, 40px);
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+}
+
+.prose {
+  margin: 0;
+  max-width: 68ch;
+  font-size: clamp(14px, 1.7vw, 16px);
+  line-height: 1.75;
+  color: var(--fg-secondary);
+}
+
+.block-title {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.prose-list {
+  margin: 0;
+  padding-left: 1.5em;
+  max-width: 66ch;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: clamp(14px, 1.7vw, 16px);
+  line-height: 1.7;
+  color: var(--fg-secondary);
+}
+
+.prose-list li::marker {
+  color: var(--accent-deep);
+}
+
+/* ------------------------------------------------------------------ media */
+
+.figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.figure-cover {
+  padding-bottom: clamp(4px, 2vw, 12px);
+}
+
+/* These are wide diagrams. Rather than let them shrink to an illegible strip
+   on a phone, they keep a readable minimum width and the frame scrolls. */
+.shot-frame {
+  display: block;
+  overflow-x: auto;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+}
+
+@media (max-width: 760px) {
+  .shot-frame .shot {
+    min-width: 620px;
+  }
+}
+
+.figure figcaption {
+  max-width: 62ch;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--fg-muted);
+}
+
+/* -------------------------------------------------------------- code block */
+
+.code {
+  margin: 0;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: color-mix(in oklch, var(--fg) 3%, transparent);
+}
+
+.code-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 14px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--fg-muted);
+}
+
+.code-lang {
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent-deep);
+}
+
+.code pre {
+  margin: 0;
+  padding: 16px;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.7;
+  tab-size: 2;
+}
+
+@media (min-width: 640px) {
+  .code pre {
+    padding: 20px 24px;
+    font-size: 13px;
+  }
+}
+
+/* ---------------------------------------------------------------- metrics */
+
+.metrics {
+  margin: 0;
+  display: grid;
+  gap: 1px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+@media (min-width: 760px) {
+  .metrics {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.metric {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 10px;
+  padding: 20px 18px;
+  background: var(--bg);
+}
+
+.metric dt {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.metric dd {
+  margin: 0;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  font-variation-settings: "opsz" 32;
+  font-size: clamp(24px, 3.4vw, 32px);
+  line-height: 1;
+}
+
+/* -------------------------------------------------------- quote and aside */
+
+.pull {
+  margin: 0;
+  max-width: 58ch;
+  padding-left: clamp(16px, 3vw, 28px);
+  border-left: 2px solid var(--accent-deep);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.pull p {
+  margin: 0;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-variation-settings: "opsz" 28;
+  font-size: clamp(19px, 2.6vw, 25px);
+  line-height: 1.4;
+}
+
+.pull cite {
+  font-style: normal;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.note {
+  max-width: 66ch;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: clamp(18px, 3vw, 26px);
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius);
+}
+
+.note p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--fg-secondary);
+}
+
+.note .note-title {
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent-deep);
+}
+
+/* ------------------------------------------------------------------- tags */
+
+.tag-list {
+  margin: 0;
+  padding: clamp(30px, 5vw, 46px) 0 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.tag-list li {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+/* --------------------------------------------------------- previous / next */
+
+.end-nav {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  padding-bottom: clamp(48px, 8vw, 88px);
+}
+
+.end-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: clamp(20px, 3vw, 28px);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--fg);
+  text-decoration: none;
+  transition:
+    transform 0.26s var(--ease),
+    box-shadow 0.26s var(--ease),
+    border-color 0.26s var(--ease);
+}
+
+.end-card:hover,
+.end-card:focus-visible {
+  border-color: var(--accent-deep);
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 0 var(--accent-deep);
+}
+
+.end-next {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.end-label {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.end-title {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  font-variation-settings: "opsz" 32;
+  font-size: clamp(20px, 3vw, 27px);
+  line-height: 1.1;
+}

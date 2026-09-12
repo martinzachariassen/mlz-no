@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="color-scheme" content="light dark" />
+    <script src="/theme-init.js"></script>
+    <meta name="format-detection" content="telephone=no" />
+    <title>Event Pipeline — Martin Zachariassen</title>
+    <meta
+      name="description"
+      content="Case study: replacing a nightly batch job with an append-only event log in Kotlin and Kafka — idempotent consumers, replayable offsets, and a cutover with no downtime."
+    />
+    <link rel="canonical" href="https://mlz.no/projects/event-pipeline" />
+    <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/assets/icons/favicon-32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="192x192"
+      href="/assets/icons/favicon-192.png"
+    />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/assets/icons/apple-touch-icon.png"
+    />
+    <link rel="manifest" href="/assets/site.webmanifest" />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: light)"
+      content="#ebeff2"
+    />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: dark)"
+      content="#151619"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Martin Zachariassen" />
+    <meta property="og:url" content="https://mlz.no/projects/event-pipeline" />
+    <meta property="og:title" content="Event Pipeline — Martin Zachariassen" />
+    <meta
+      property="og:description"
+      content="Case study: replacing a nightly batch job with an append-only event log in Kotlin and Kafka — idempotent consumers, replayable offsets, and a cutover with no downtime."
+    />
+    <meta property="og:locale" content="en_GB" />
+    <meta property="og:image" content="https://mlz.no/assets/social/og.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Martin Zachariassen — Senior Software Developer"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="stylesheet" href="/css/tokens.css" />
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/topbar.css" />
+    <link rel="stylesheet" href="/css/page-head.css" />
+    <link rel="stylesheet" href="/css/case-study.css" />
+    <link rel="stylesheet" href="/css/bento.css" />
+    <link rel="stylesheet" href="/css/footer.css" />
+    <link rel="stylesheet" href="/css/motion.css" />
+    <script
+      defer
+      src="https://cloud.umami.is/script.js"
+      data-website-id="e73d093f-ea9e-4839-8c5f-3dd4888a3c36"
+    ></script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "CreativeWork",
+        "name": "Event Pipeline",
+        "url": "https://mlz.no/projects/event-pipeline",
+        "abstract": "Replacing a nightly batch job with an append-only event log that any team can read from, replay and reason about.",
+        "description": "A retail platform where the reporting, search and partner integrations all depended on a single nightly batch job. It had grown to seven hours, and any failure inside it meant a day of stale data across the whole product. I led the rewrite to an append-only event log: one write path, independent readers, and offsets that make replay a routine operation instead of an incident.",
+        "author": {
+          "@type": "Person",
+          "name": "Martin Zachariassen",
+          "url": "https://mlz.no"
+        },
+        "keywords": "Event-driven, Distributed systems, Idempotency, Observability, Schema evolution",
+        "isPartOf": {
+          "@type": "CollectionPage",
+          "name": "Projects",
+          "url": "https://mlz.no/projects"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <header class="wrap topbar rise delay-50">
+      <a href="/" aria-label="MLZ home" class="brand">
+        <svg
+          class="brand-mark"
+          width="16"
+          height="16"
+          viewBox="0 0 32 32"
+          fill="none"
+          role="img"
+          aria-label="MLZ"
+        >
+          <rect x="1" y="1" width="30" height="30" rx="6" fill="var(--fg)" />
+          <polygon
+            points="7,25 7,7 11.5,7 16,18.5 20.5,7 25,7 25,25"
+            fill="var(--bg)"
+          />
+        </svg>
+        <span class="brand-word" data-glitch>mlz<span class="period">.</span></span>
+      </a>
+      <div class="topbar-right">
+        <a class="nav-link active" href="/projects" data-umami-event="nav-projects" data-glitch>Projects</a>
+        <button
+          type="button"
+          class="theme-toggle"
+          data-theme-toggle
+          aria-label="Toggle colour theme"
+        >
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+          </svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+          </svg>
+        </button>
+      </div>
+    </header>
+    <main class="wrap page case">
+      <header class="page-head rise delay-150">
+        <p class="page-eyebrow">
+          <span data-glitch>2023 — 2025</span>
+          <span class="sep" aria-hidden="true">/</span>
+          <span data-glitch>Kotlin</span>
+        </p>
+        <h1 class="page-title">Event Pipeline</h1>
+        <p class="page-intro">Replacing a nightly batch job with an append-only event log that any team can read from, replay and reason about.</p>
+      </header>
+      <dl class="case-facts rise delay-450">
+        <div class="fact">
+          <dt data-glitch>Role</dt>
+          <dd>Lead backend developer</dd>
+        </div>
+        <div class="fact">
+          <dt data-glitch>Team</dt>
+          <dd>4 engineers</dd>
+        </div>
+        <div class="fact">
+          <dt data-glitch>Status</dt>
+          <dd>In production</dd>
+        </div>
+        <div class="fact">
+          <dt data-glitch>Stack</dt>
+          <dd>Kotlin · Kafka · PostgreSQL · Kubernetes</dd>
+        </div>
+      </dl>
+      <figure class="figure figure-cover rise delay-600">
+        <span class="shot-frame">
+          <img class="shot shot-light" src="/assets/figures/architecture-light.svg"
+            alt="Architecture diagram: three source groups feed an ingest API, which writes to a four-partition event log; workers enrich, aggregate and fan out to a warehouse, a search index and customer webhooks, with a dashed replay path from the sinks back to the log." width="1600" height="620" loading="eager" decoding="async" />
+          <img class="shot shot-dark" src="/assets/figures/architecture-dark.svg"
+            alt="Architecture diagram: three source groups feed an ingest API, which writes to a four-partition event log; workers enrich, aggregate and fan out to a warehouse, a search index and customer webhooks, with a dashed replay path from the sinks back to the log." width="1600" height="620" loading="eager" decoding="async" />
+        </span>
+        <figcaption>The shape of the system after the rewrite. Every arrow is one direction, and every reader owns its own offset.</figcaption>
+      </figure>
+      <p class="case-summary">A retail platform where the reporting, search and partner integrations all depended on a single nightly batch job. It had grown to seven hours, and any failure inside it meant a day of stale data across the whole product. I led the rewrite to an append-only event log: one write path, independent readers, and offsets that make replay a routine operation instead of an incident.</p>
+      <section class="field">
+        <p class="field-label" data-glitch>Problem</p>
+        <h2 class="field-heading">The nightly batch had run out of night</h2>
+        <p class="prose">Every downstream system read from the same nightly job. It pulled the day's rows out of the operational database, transformed them, and pushed the results into the warehouse, the search index and a set of partner webhooks. When it was written it took forty minutes. By the time I picked it up it took a little over seven hours, and it had started colliding with the start of the European trading day.</p>
+        <p class="prose">The failure mode was the part that actually hurt. The job was one transaction-shaped unit of work with no checkpoints, so a timeout in the last step threw away the previous six hours. Reruns were manual, they ran during business hours, and they doubled the load on the same database the storefront was serving from. Twice that quarter partners received the previous day's prices.</p>
+        <p class="block-title" data-glitch>What was actually broken</p>
+        <ul class="prose-list">
+          <li>One shared failure domain: a slow search index could delay warehouse reporting by a full day.</li>
+          <li>No way to reprocess a subset. Fixing one bad transform meant rerunning everything.</li>
+          <li>Backfills competed with production traffic, because there was only one copy of the data.</li>
+          <li>Nobody could answer &quot;what did we know at 14:00 yesterday?&quot; — the job overwrote its own inputs.</li>
+        </ul>
+        <blockquote class="pull">
+          <p>We did not have a performance problem. We had a coupling problem that happened to show up as a performance problem.</p>
+          <cite>From the design review that started the rewrite</cite>
+        </blockquote>
+      </section>
+      <section class="field">
+        <p class="field-label" data-glitch>Approach</p>
+        <h2 class="field-heading">One append-only log, many independent readers</h2>
+        <p class="prose">The core decision was to stop moving data and start publishing facts. Services write immutable events to a partitioned log as things happen. Every consumer reads that log at its own pace and keeps its own offset, so a slow or broken reader falls behind on its own rather than holding up anyone else.</p>
+        <p class="prose">That only works if writers cannot corrupt the log and readers can safely see the same event twice. Both are solved at the edges rather than in the middle: a single ingest service validates every event against a schema registry before it is accepted, and every consumer is written to be idempotent on a deterministic key. The log itself stays boring.</p>
+        <p class="block-title" data-glitch>The decisions that mattered</p>
+        <ol class="prose-list">
+          <li>Partition by tenant, not by event type. Ordering guarantees are only useful where causality actually exists, and all of ours was per-tenant.</li>
+          <li>At-least-once delivery plus idempotent consumers, instead of chasing exactly-once. Cheaper to operate and far easier to explain during an incident.</li>
+          <li>Schema validation at ingest, with backward-compatible evolution enforced in CI. A producer cannot deploy a breaking change.</li>
+          <li>Seven days of retention on the raw topics. Long enough for every realistic replay, short enough to stay affordable.</li>
+        </ol>
+        <figure class="code">
+          <figcaption class="code-head">
+            <span class="code-lang" data-glitch>Kotlin</span>
+            <span>Consumers claim an event before doing work. The unique index does the deduplication, so a redelivery is a no-op rather than a second side effect.</span>
+          </figcaption>
+          <pre tabindex="0"><code>suspend fun handle(event: Envelope, sink: Sink) {
+    val claimed = transaction {
+        // INSERT ... ON CONFLICT DO NOTHING against a unique
+        // index on (consumer, event_id). Returns 0 on redelivery.
+        processed.insertIgnore {
+            it[consumer] = sink.name
+            it[eventId] = event.id
+            it[offset] = event.offset
+        }.insertedCount == 1
+    }
+
+    if (!claimed) {
+        metrics.duplicatesSuppressed.increment()
+        return
+    }
+
+    // Safe to run: at most one consumer instance reaches this.
+    sink.apply(event.payload)
+}</code></pre>
+        </figure>
+        <p class="prose">The claim table is the whole trick. It is a narrow table with one unique index, it lives in the consumer's own database rather than a shared one, and rows are pruned on the same schedule as the topic retention. It costs one extra write per event and it removes an entire category of duplicate-processing bugs.</p>
+      </section>
+      <section class="field">
+        <p class="field-label" data-glitch>Operations</p>
+        <h2 class="field-heading">Replay had to be routine, not heroic</h2>
+        <p class="prose">A pipeline that can only move forward is a pipeline you are afraid of. The point of keeping offsets per consumer is that reprocessing becomes a normal operation: pick a consumer, pick a point in time, let it catch up. No database restore, no coordination with other teams, no maintenance window.</p>
+        <figure class="code">
+          <figcaption class="code-head">
+            <span class="code-lang" data-glitch>Shell</span>
+            <span>Reprocessing one sink after a bad transform. Nothing else in the system notices.</span>
+          </figcaption>
+          <pre tabindex="0"><code># scale the consumer down so offsets can move safely
+kubectl scale deploy/fanout-search --replicas=0
+
+# rewind just this consumer group to a timestamp
+pipeline offsets reset \
+  --group fanout-search \
+  --topic events \
+  --to-datetime 2025-03-11T02:00:00Z
+
+kubectl scale deploy/fanout-search --replicas=6
+# catches up at ~4x live rate; other sinks are untouched</code></pre>
+        </figure>
+        <figure class="figure">
+          <span class="shot-frame">
+            <img class="shot shot-light" src="/assets/figures/console-light.svg"
+              alt="Operator console showing a log stream where the search index circuit opens, offsets are held, the sink recovers, and a backlog drains in four minutes and forty-five seconds, alongside a consumer lag panel with four partitions well under a five second service level objective." width="1600" height="600" loading="lazy" decoding="async" />
+            <img class="shot shot-dark" src="/assets/figures/console-dark.svg"
+              alt="Operator console showing a log stream where the search index circuit opens, offsets are held, the sink recovers, and a backlog drains in four minutes and forty-five seconds, alongside a consumer lag panel with four partitions well under a five second service level objective." width="1600" height="600" loading="lazy" decoding="async" />
+          </span>
+          <figcaption>A sink outage in production. The log keeps accepting writes, the affected consumer holds its offset, and the backlog drains on its own once the circuit closes.</figcaption>
+        </figure>
+        <aside class="note">
+          <p class="note-title" data-glitch>The part I got wrong first</p>
+          <p>The first version paused the whole fan-out worker when any single sink failed, because that seemed safer. It was not: a partner webhook being down stopped the warehouse from getting data, which is exactly the coupling we were trying to remove. Circuit breakers moved to per-sink, and the blast radius went with them.</p>
+        </aside>
+      </section>
+      <section class="field">
+        <p class="field-label" data-glitch>Result</p>
+        <h2 class="field-heading">Stale data stopped being a category of incident</h2>
+        <dl class="metrics">
+          <div class="metric">
+            <dt>Data freshness, p99</dt>
+            <dd>7h → 1.2s</dd>
+          </div>
+          <div class="metric">
+            <dt>Sustained throughput</dt>
+            <dd>18.4k/s</dd>
+          </div>
+          <div class="metric">
+            <dt>Stale-data incidents since cutover</dt>
+            <dd>0</dd>
+          </div>
+          <div class="metric">
+            <dt>Worst backlog drain</dt>
+            <dd>4m 45s</dd>
+          </div>
+        </dl>
+        <figure class="figure">
+          <span class="shot-frame">
+            <img class="shot shot-light" src="/assets/figures/throughput-light.svg"
+              alt="Line chart of events per second over sixteen weeks. Before the cutover the legacy batch line oscillates between roughly six and nine thousand events per second. After the cutover the streaming line climbs steadily to about eighteen and a half thousand and stays smooth." width="1600" height="590" loading="lazy" decoding="async" />
+            <img class="shot shot-dark" src="/assets/figures/throughput-dark.svg"
+              alt="Line chart of events per second over sixteen weeks. Before the cutover the legacy batch line oscillates between roughly six and nine thousand events per second. After the cutover the streaming line climbs steadily to about eighteen and a half thousand and stays smooth." width="1600" height="590" loading="lazy" decoding="async" />
+          </span>
+          <figcaption>The jagged half is the batch job competing with production traffic. The smooth half is the same work spread across the day.</figcaption>
+        </figure>
+        <p class="prose">Freshness went from a nightly cycle to just over a second at the ninety-ninth percentile, and it stayed there through two Black Fridays. The number I care about more is the second one: since the cutover there has not been a single incident caused by downstream systems disagreeing about the state of the world. That class of bug is gone, not reduced.</p>
+        <p class="prose">The migration itself ran both systems side by side for six weeks with a continuous diff between the two outputs. It surfaced eleven genuine discrepancies, nine of which turned out to be pre-existing bugs in the batch job that nobody had noticed. Cutover was a configuration change, and the batch job was deleted a month later.</p>
+        <p class="block-title" data-glitch>What I would do differently</p>
+        <ul class="prose-list">
+          <li>Introduce the schema registry first, as its own project. Retrofitting it while the pipeline was in flight cost us three weeks.</li>
+          <li>Write the replay tooling before the consumers, not after. We hand-rolled offset resets for the first two months and it made people nervous about using them.</li>
+          <li>Be stricter about payload size early. A handful of producers embedded documents that belonged behind a reference, and splitting them out later was tedious.</li>
+        </ul>
+      </section>
+      <ul class="tag-list" aria-label="Topics">
+        <li>Event-driven</li>
+        <li>Distributed systems</li>
+        <li>Idempotency</li>
+        <li>Observability</li>
+        <li>Schema evolution</li>
+      </ul>
+    </main>
+    <nav class="end-nav wrap" aria-label="More projects">
+      <a class="end-card" href="/projects">
+        <span class="end-label" data-glitch>Index</span>
+        <span class="end-title">All projects</span>
+      </a>
+    </nav>
+    <footer class="rise delay-750">
+      <div class="wrap footer-row">
+        <span data-glitch>© <span data-year>2026</span> · Martin Zachariassen</span>
+        <span data-glitch>59°N · 10°E</span>
+      </div>
+    </footer>
+    <script src="/js/theme-toggle.js" defer></script>
+    <script src="/js/year.js" defer></script>
+    <script src="/js/glitch.js" defer></script>
+  </body>
+</html>

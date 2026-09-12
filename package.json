@@ -14,8 +14,10 @@
   "scripts": {
     "prepare": "git config core.hooksPath .githooks || true",
     "dev": "firebase emulators:start --only hosting",
+    "build:content": "bun scripts/build-content.js",
+    "check:content": "bun scripts/build-content.js --check",
     "format": "biome check --write .",
-    "lint": "biome ci ."
+    "lint": "biome ci . && bun run check:content"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.12",

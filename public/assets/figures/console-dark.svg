@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 600" width="1600" height="600" role="img">
+  <rect width="1600" height="600" fill="#151619" />
+
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">
+    <text x="64" y="88" font-size="24" letter-spacing="4" fill="#e9ebef">OPERATOR VIEW</text>
+    <text x="1536" y="88" font-size="14" letter-spacing="3" fill="#9b9ea5" text-anchor="end">DRAINING A BACKLOG AFTER A SINK OUTAGE</text>
+    <line x1="64" y1="112" x2="1536" y2="112" stroke="#2e3034" stroke-width="2" />
+
+    <!-- window -->
+    <rect x="64" y="150" width="1472" height="400" rx="8" fill="#202225" stroke="#2e3034" stroke-width="2" />
+    <path d="M64 158 a8 8 0 0 1 8 -8 h1456 a8 8 0 0 1 8 8 v36 h-1472 z" fill="#0d0e11" />
+    <line x1="64" y1="194" x2="1536" y2="194" stroke="#2e3034" stroke-width="2" />
+    <g fill="#9b9ea5">
+      <circle cx="92" cy="172" r="5" />
+      <circle cx="112" cy="172" r="5" />
+      <circle cx="132" cy="172" r="5" />
+    </g>
+    <text x="800" y="178" font-size="14" letter-spacing="2" fill="#cfd1d5" text-anchor="middle">pipeline-ops · events.* · prod-eu</text>
+
+    <!-- divider -->
+    <line x1="1000" y1="194" x2="1000" y2="506" stroke="#2e3034" stroke-width="2" />
+
+    <!-- log stream -->
+    <g font-size="14">
+      <g fill="#9b9ea5">
+        <text x="92" y="228">09:41:02</text>
+        <text x="92" y="261">09:41:02</text>
+        <text x="92" y="294">09:41:07</text>
+        <text x="92" y="327">09:41:19</text>
+        <text x="92" y="360">09:42:44</text>
+        <text x="92" y="393">09:43:10</text>
+        <text x="92" y="426">09:47:55</text>
+        <text x="92" y="459">09:48:01</text>
+      </g>
+      <g letter-spacing="1">
+        <text x="196" y="228" fill="#ec6d3d">WARN </text>
+        <text x="196" y="261" fill="#ec6d3d">WARN </text>
+        <text x="196" y="294" fill="#9b9ea5">INFO </text>
+        <text x="196" y="327" fill="#9b9ea5">INFO </text>
+        <text x="196" y="360" fill="#9b9ea5">INFO </text>
+        <text x="196" y="393" fill="#9b9ea5">INFO </text>
+        <text x="196" y="426" fill="#a29aff">OK   </text>
+        <text x="196" y="459" fill="#a29aff">OK   </text>
+      </g>
+      <g fill="#cfd1d5">
+        <text x="272" y="228">sink=search-index circuit opened</text>
+        <text x="272" y="261">pausing fan-out, offsets held</text>
+        <text x="272" y="294">backlog growing 2.1k events/s</text>
+        <text x="272" y="327">sink=search-index probe failed (3/3)</text>
+        <text x="272" y="360">sink=search-index probe ok, half-open</text>
+        <text x="272" y="393">resuming from offset 8 812 447</text>
+        <text x="272" y="426">backlog drained in 4m 45s</text>
+        <text x="272" y="459">duplicates suppressed: 12 908</text>
+      </g>
+    </g>
+
+    <!-- consumer lag panel -->
+    <text x="1032" y="228" font-size="13" letter-spacing="3" fill="#9b9ea5">CONSUMER LAG</text>
+
+    <g font-size="14" fill="#e9ebef">
+      <text x="1032" y="272">events.p0</text>
+      <text x="1032" y="322">events.p1</text>
+      <text x="1032" y="372">events.p2</text>
+      <text x="1032" y="422">events.p3</text>
+    </g>
+    <g font-size="13" fill="#9b9ea5" text-anchor="end">
+      <text x="1504" y="272">0.4s</text>
+      <text x="1504" y="322">1.2s</text>
+      <text x="1504" y="372">0.6s</text>
+      <text x="1504" y="422">0.3s</text>
+    </g>
+    <g fill="#0d0e11">
+      <rect x="1032" y="284" width="380" height="8" rx="4" />
+      <rect x="1032" y="334" width="380" height="8" rx="4" />
+      <rect x="1032" y="384" width="380" height="8" rx="4" />
+      <rect x="1032" y="434" width="380" height="8" rx="4" />
+    </g>
+    <g fill="#a29aff">
+      <rect x="1032" y="284" width="72" height="8" rx="4" />
+      <rect x="1032" y="334" width="214" height="8" rx="4" />
+      <rect x="1032" y="384" width="108" height="8" rx="4" />
+      <rect x="1032" y="434" width="54" height="8" rx="4" />
+    </g>
+    <line x1="1355" y1="266" x2="1355" y2="452" stroke="#ec6d3d" stroke-width="2" stroke-dasharray="5 5" />
+    <text x="1355" y="478" font-size="12" letter-spacing="2" fill="#ec6d3d" text-anchor="middle">SLO 5s</text>
+
+    <!-- status strip -->
+    <line x1="64" y1="506" x2="1536" y2="506" stroke="#2e3034" stroke-width="2" />
+    <path d="M64 506 h1472 v36 a8 8 0 0 1 -8 8 h-1456 a8 8 0 0 1 -8 -8 z" fill="#0d0e11" />
+    <circle cx="96" cy="528" r="5" fill="#a29aff" />
+    <g font-size="13" letter-spacing="2" fill="#cfd1d5">
+      <text x="114" y="533">HEALTHY</text>
+      <text x="252" y="533" fill="#9b9ea5">P99 1.2S</text>
+      <text x="404" y="533" fill="#9b9ea5">18.4K EV/S</text>
+      <text x="572" y="533" fill="#9b9ea5">DLQ 0</text>
+    </g>
+    <text x="1504" y="533" font-size="13" letter-spacing="2" fill="#9b9ea5" text-anchor="end">NO PAGE RAISED</text>
+  </g>
+</svg>

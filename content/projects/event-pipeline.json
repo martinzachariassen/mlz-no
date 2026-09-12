@@ -1,0 +1,199 @@
+{
+  "slug": "event-pipeline",
+  "order": 1,
+  "size": "flagship",
+  "name": "Event Pipeline",
+  "tagline": "Replacing a nightly batch job with an append-only event log that any team can read from, replay and reason about.",
+  "period": "2023 — 2025",
+  "role": "Lead backend developer",
+  "team": "4 engineers",
+  "stack": ["Kotlin", "Kafka", "PostgreSQL", "Kubernetes"],
+  "tags": [
+    "Event-driven",
+    "Distributed systems",
+    "Idempotency",
+    "Observability",
+    "Schema evolution"
+  ],
+  "status": "In production",
+  "seo": {
+    "title": "Event Pipeline — Martin Zachariassen",
+    "description": "Case study: replacing a nightly batch job with an append-only event log in Kotlin and Kafka — idempotent consumers, replayable offsets, and a cutover with no downtime."
+  },
+  "cover": {
+    "figure": "architecture",
+    "alt": "Architecture diagram: three source groups feed an ingest API, which writes to a four-partition event log; workers enrich, aggregate and fan out to a warehouse, a search index and customer webhooks, with a dashed replay path from the sinks back to the log.",
+    "caption": "The shape of the system after the rewrite. Every arrow is one direction, and every reader owns its own offset."
+  },
+  "summary": "A retail platform where the reporting, search and partner integrations all depended on a single nightly batch job. It had grown to seven hours, and any failure inside it meant a day of stale data across the whole product. I led the rewrite to an append-only event log: one write path, independent readers, and offsets that make replay a routine operation instead of an incident.",
+  "links": [
+    {
+      "label": "Architecture notes",
+      "href": "mailto:hi@mlz.no",
+      "note": "Happy to walk through the details"
+    }
+  ],
+  "sections": [
+    {
+      "label": "Problem",
+      "heading": "The nightly batch had run out of night",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Every downstream system read from the same nightly job. It pulled the day's rows out of the operational database, transformed them, and pushed the results into the warehouse, the search index and a set of partner webhooks. When it was written it took forty minutes. By the time I picked it up it took a little over seven hours, and it had started colliding with the start of the European trading day."
+        },
+        {
+          "type": "text",
+          "value": "The failure mode was the part that actually hurt. The job was one transaction-shaped unit of work with no checkpoints, so a timeout in the last step threw away the previous six hours. Reruns were manual, they ran during business hours, and they doubled the load on the same database the storefront was serving from. Twice that quarter partners received the previous day's prices."
+        },
+        {
+          "type": "list",
+          "title": "What was actually broken",
+          "items": [
+            "One shared failure domain: a slow search index could delay warehouse reporting by a full day.",
+            "No way to reprocess a subset. Fixing one bad transform meant rerunning everything.",
+            "Backfills competed with production traffic, because there was only one copy of the data.",
+            "Nobody could answer \"what did we know at 14:00 yesterday?\" — the job overwrote its own inputs."
+          ]
+        },
+        {
+          "type": "quote",
+          "value": "We did not have a performance problem. We had a coupling problem that happened to show up as a performance problem.",
+          "attribution": "From the design review that started the rewrite"
+        }
+      ]
+    },
+    {
+      "label": "Approach",
+      "heading": "One append-only log, many independent readers",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "The core decision was to stop moving data and start publishing facts. Services write immutable events to a partitioned log as things happen. Every consumer reads that log at its own pace and keeps its own offset, so a slow or broken reader falls behind on its own rather than holding up anyone else."
+        },
+        {
+          "type": "text",
+          "value": "That only works if writers cannot corrupt the log and readers can safely see the same event twice. Both are solved at the edges rather than in the middle: a single ingest service validates every event against a schema registry before it is accepted, and every consumer is written to be idempotent on a deterministic key. The log itself stays boring."
+        },
+        {
+          "type": "list",
+          "title": "The decisions that mattered",
+          "kind": "numbered",
+          "items": [
+            "Partition by tenant, not by event type. Ordering guarantees are only useful where causality actually exists, and all of ours was per-tenant.",
+            "At-least-once delivery plus idempotent consumers, instead of chasing exactly-once. Cheaper to operate and far easier to explain during an incident.",
+            "Schema validation at ingest, with backward-compatible evolution enforced in CI. A producer cannot deploy a breaking change.",
+            "Seven days of retention on the raw topics. Long enough for every realistic replay, short enough to stay affordable."
+          ]
+        },
+        {
+          "type": "code",
+          "language": "Kotlin",
+          "caption": "Consumers claim an event before doing work. The unique index does the deduplication, so a redelivery is a no-op rather than a second side effect.",
+          "lines": [
+            "suspend fun handle(event: Envelope, sink: Sink) {",
+            "    val claimed = transaction {",
+            "        // INSERT ... ON CONFLICT DO NOTHING against a unique",
+            "        // index on (consumer, event_id). Returns 0 on redelivery.",
+            "        processed.insertIgnore {",
+            "            it[consumer] = sink.name",
+            "            it[eventId] = event.id",
+            "            it[offset] = event.offset",
+            "        }.insertedCount == 1",
+            "    }",
+            "",
+            "    if (!claimed) {",
+            "        metrics.duplicatesSuppressed.increment()",
+            "        return",
+            "    }",
+            "",
+            "    // Safe to run: at most one consumer instance reaches this.",
+            "    sink.apply(event.payload)",
+            "}"
+          ]
+        },
+        {
+          "type": "text",
+          "value": "The claim table is the whole trick. It is a narrow table with one unique index, it lives in the consumer's own database rather than a shared one, and rows are pruned on the same schedule as the topic retention. It costs one extra write per event and it removes an entire category of duplicate-processing bugs."
+        }
+      ]
+    },
+    {
+      "label": "Operations",
+      "heading": "Replay had to be routine, not heroic",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "A pipeline that can only move forward is a pipeline you are afraid of. The point of keeping offsets per consumer is that reprocessing becomes a normal operation: pick a consumer, pick a point in time, let it catch up. No database restore, no coordination with other teams, no maintenance window."
+        },
+        {
+          "type": "code",
+          "language": "Shell",
+          "caption": "Reprocessing one sink after a bad transform. Nothing else in the system notices.",
+          "lines": [
+            "# scale the consumer down so offsets can move safely",
+            "kubectl scale deploy/fanout-search --replicas=0",
+            "",
+            "# rewind just this consumer group to a timestamp",
+            "pipeline offsets reset \\",
+            "  --group fanout-search \\",
+            "  --topic events \\",
+            "  --to-datetime 2025-03-11T02:00:00Z",
+            "",
+            "kubectl scale deploy/fanout-search --replicas=6",
+            "# catches up at ~4x live rate; other sinks are untouched"
+          ]
+        },
+        {
+          "type": "figure",
+          "figure": "console",
+          "alt": "Operator console showing a log stream where the search index circuit opens, offsets are held, the sink recovers, and a backlog drains in four minutes and forty-five seconds, alongside a consumer lag panel with four partitions well under a five second service level objective.",
+          "caption": "A sink outage in production. The log keeps accepting writes, the affected consumer holds its offset, and the backlog drains on its own once the circuit closes."
+        },
+        {
+          "type": "note",
+          "title": "The part I got wrong first",
+          "value": "The first version paused the whole fan-out worker when any single sink failed, because that seemed safer. It was not: a partner webhook being down stopped the warehouse from getting data, which is exactly the coupling we were trying to remove. Circuit breakers moved to per-sink, and the blast radius went with them."
+        }
+      ]
+    },
+    {
+      "label": "Result",
+      "heading": "Stale data stopped being a category of incident",
+      "blocks": [
+        {
+          "type": "metrics",
+          "items": [
+            { "value": "7h → 1.2s", "label": "Data freshness, p99" },
+            { "value": "18.4k/s", "label": "Sustained throughput" },
+            { "value": "0", "label": "Stale-data incidents since cutover" },
+            { "value": "4m 45s", "label": "Worst backlog drain" }
+          ]
+        },
+        {
+          "type": "figure",
+          "figure": "throughput",
+          "alt": "Line chart of events per second over sixteen weeks. Before the cutover the legacy batch line oscillates between roughly six and nine thousand events per second. After the cutover the streaming line climbs steadily to about eighteen and a half thousand and stays smooth.",
+          "caption": "The jagged half is the batch job competing with production traffic. The smooth half is the same work spread across the day."
+        },
+        {
+          "type": "text",
+          "value": "Freshness went from a nightly cycle to just over a second at the ninety-ninth percentile, and it stayed there through two Black Fridays. The number I care about more is the second one: since the cutover there has not been a single incident caused by downstream systems disagreeing about the state of the world. That class of bug is gone, not reduced."
+        },
+        {
+          "type": "text",
+          "value": "The migration itself ran both systems side by side for six weeks with a continuous diff between the two outputs. It surfaced eleven genuine discrepancies, nine of which turned out to be pre-existing bugs in the batch job that nobody had noticed. Cutover was a configuration change, and the batch job was deleted a month later."
+        },
+        {
+          "type": "list",
+          "title": "What I would do differently",
+          "items": [
+            "Introduce the schema registry first, as its own project. Retrofitting it while the pipeline was in flight cost us three weeks.",
+            "Write the replay tooling before the consumers, not after. We hand-rolled offset resets for the first two months and it made people nervous about using them.",
+            "Be stricter about payload size early. A handful of producers embedded documents that belonged behind a reference, and splitting them out later was tedious."
+          ]
+        }
+      ]
+    }
+  ]
+}

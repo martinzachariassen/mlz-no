@@ -11,6 +11,30 @@ Personal homepage (mlz.no) — a static site with no build step. Everything in
 - A pre-commit hook (`.githooks/pre-commit`) runs `bun run lint` — don't
   bypass it with `--no-verify`.
 - No server, no client-side router: every page is its own `.html` file.
+- URLs are extension-less (`cleanUrls: true` in `firebase.json`), so link to
+  `/projects/<slug>`, never `/projects/<slug>.html`.
+
+## Generated content
+
+`public/projects/**`, `public/assets/figures/**` and `public/sitemap.xml` are
+**generated** by `scripts/build-content.js` from `content/`, and the output is
+committed. Never hand-edit those files — edit `content/site.json`,
+`content/projects/<slug>.json` or `content/figures/<name>.svg`, then run
+`bun run build:content`. `bun run lint` also runs `check:content`, which fails
+if the committed output no longer matches `content/`.
+
+The site itself still has no build step: `public/` is deployed exactly as it
+sits on disk. The generator only removes duplication between the bento tile,
+the case study, the `<head>` tags and the sitemap.
+
+Figures are one SVG per diagram with `{{token}}` colour placeholders; the
+generator writes a `-light` and a `-dark` file from `palette` in
+`content/site.json`, because an SVG loaded via `<img>` cannot see the page's
+`[data-theme]`.
+
+The topbar and footer are copied into each generated page by
+`scripts/build-content.js`, and hand-written into `index.html` and
+`404.html` — keep all three in sync when that markup changes.
 - All hardening (CSP, HSTS, cache-control) is declared in `firebase.json`,
   not in code. The `headers` list there is last-match-wins — be careful with
   ordering.

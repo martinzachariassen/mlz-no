@@ -10,6 +10,8 @@ served as-is by Firebase Hosting.
 ## Features
 
 - No build step — the files in `public/` are exactly what gets deployed
+- A projects section with per-project case studies, written as JSON in
+  `content/` and generated into `public/`
 - Dark/light theme toggle and a glitch effect
 - Security headers (CSP, HSTS, and friends) and cache policy defined in
   [`firebase.json`](firebase.json), the only place that config can live for a
@@ -31,9 +33,29 @@ bun run dev     # serves public/ via the Firebase Hosting emulator
 ```
 
 ```sh
-bun run lint    # biome ci .
+bun run lint    # biome ci . + check that generated content is in sync
 bun run format  # biome check --write .
 ```
+
+## Writing a project
+
+Projects live in `content/`, not in `public/`. Add or edit
+`content/projects/<slug>.json` (and any `content/figures/<name>.svg`
+diagram), then:
+
+```sh
+bun run build:content
+```
+
+That writes `public/projects/**`, `public/assets/figures/**` and
+`public/sitemap.xml`, which are committed alongside the JSON. Those generated
+files should never be hand-edited — `bun run lint` fails if they drift from
+`content/`.
+
+The site still has no build step: `public/` is deployed exactly as it sits on
+disk, and nothing is generated at request time. The generator exists so a
+project's prose lives in one place instead of being repeated across the
+overview tile, the case study, the `<head>` tags and the sitemap.
 
 A pre-commit hook (wired up by `bun install` via the `prepare` script) runs
 `bun run lint` before each commit.
@@ -42,9 +64,15 @@ A pre-commit hook (wired up by `bun install` via the `prepare` script) runs
 
 There's no server and no client-side router — every page is a real `.html`
 file at a fixed path, and `public/404.html` is served as an actual 404 for
-anything else. Because nothing executes per request, all hardening (CSP,
-HSTS, cache-control) is configured declaratively in `firebase.json` rather
-than in code.
+anything else. `cleanUrls` hides the `.html` suffix, so `/projects/<slug>` is
+the canonical URL and the `.html` form redirects to it. Because nothing
+executes per request, all hardening (CSP, HSTS, cache-control) is configured
+declaratively in `firebase.json` rather than in code.
+
+That CSP has no `unsafe-inline`, which shapes the markup: no inline
+`<style>`, no `style="…"`, no inline `<script>` and no `onclick`. Entrance
+delays and the bento stagger are CSS classes rather than inline styles for
+that reason.
 
 CI (`.github/workflows/ci.yml`) boots the Hosting emulator and asserts that
 those headers and cache rules actually take effect — `firebase.json`'s

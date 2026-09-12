@@ -1,0 +1,184 @@
+/* Bento grid for /projects, plus the light/dark image swap that case-study.css
+   also relies on — which is why a case study loads this file too. */
+
+.bento {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 720px) {
+  .bento {
+    gap: 20px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .b-flagship {
+    grid-column: span 4;
+  }
+
+  .b-wide {
+    grid-column: span 3;
+  }
+
+  .b-normal {
+    grid-column: span 2;
+  }
+}
+
+/* Staggered entrance as nth-child rules rather than inline styles or JS —
+   style-src is 'self' with no 'unsafe-inline'. */
+.bento > * {
+  animation: rise 0.9s var(--ease) backwards;
+}
+
+.bento > :nth-child(1) {
+  animation-delay: 0.45s;
+}
+.bento > :nth-child(2) {
+  animation-delay: 0.55s;
+}
+.bento > :nth-child(3) {
+  animation-delay: 0.65s;
+}
+.bento > :nth-child(n + 4) {
+  animation-delay: 0.75s;
+}
+
+.b-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 190px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--fg);
+  text-decoration: none;
+  overflow: hidden;
+  transition:
+    transform 0.26s var(--ease),
+    box-shadow 0.26s var(--ease),
+    border-color 0.26s var(--ease);
+}
+
+.b-tile:hover,
+.b-tile:focus-visible {
+  border-color: var(--accent-deep);
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 0 var(--accent-deep);
+}
+
+.b-media {
+  display: block;
+  border-bottom: 1.5px solid var(--border);
+  background: var(--bg);
+  transition: border-color 0.26s var(--ease);
+}
+
+.b-tile:hover .b-media,
+.b-tile:focus-visible .b-media {
+  border-color: var(--accent-deep);
+}
+
+.b-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  padding: clamp(18px, 3vw, 28px);
+}
+
+.b-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px 16px;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.b-status {
+  color: var(--accent-deep);
+}
+
+.b-label {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent-deep);
+}
+
+.b-title {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  font-variation-settings: "opsz" 40;
+  font-size: clamp(26px, 4.4vw, 40px);
+  line-height: 1.04;
+  letter-spacing: -0.01em;
+}
+
+.b-aside .b-title {
+  font-size: clamp(22px, 3vw, 28px);
+}
+
+.b-tagline {
+  max-width: 56ch;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--fg-secondary);
+}
+
+.b-stack {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.b-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 10px;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--fg);
+}
+
+.b-arrow {
+  color: var(--accent-deep);
+  transition: transform 0.26s var(--ease);
+}
+
+.b-tile:hover .b-arrow,
+.b-tile:focus-visible .b-arrow {
+  transform: translateX(4px);
+}
+
+/* An SVG loaded through <img> is its own document: it cannot read the page's
+   custom properties or [data-theme]. Each figure therefore ships as two files
+   and the page picks one. display:none also takes the hidden copy out of the
+   accessibility tree, so the alt text is announced once. */
+.shot {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.shot-dark {
+  display: none;
+}
+
+[data-theme="dark"] .shot-light {
+  display: none;
+}
+
+[data-theme="dark"] .shot-dark {
+  display: block;
+}
