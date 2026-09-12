@@ -171,8 +171,9 @@ function loadContent() {
     }));
 
   const figureDir = join(contentDir, "figures");
+  const figureFiles = readdirSync(figureDir);
   const sources = new Map(
-    readdirSync(figureDir)
+    figureFiles
       .filter((name) => name.endsWith(".svg"))
       .map((name) => [
         name.replace(/\.svg$/, ""),
@@ -180,7 +181,7 @@ function loadContent() {
       ]),
   );
 
-  validateContent({ site, projects: files, figures: sources });
+  validateContent({ site, projects: files, figures: sources, figureFiles });
 
   return {
     site,
@@ -690,6 +691,62 @@ function sitemap() {
     </urlset>`}\n`;
 }
 
+/* ------------------------------------------------------------ asset links */
+
+/**
+ * Every root-relative href/src/og:image the generated pages emit must
+ * resolve to a real file — either something this run writes (a figure, a
+ * case study page) or something already on disk (a stylesheet, an icon,
+ * the hand-written index.html). This isn't a content/ check: a broken link
+ * is just as likely to come from a typo in this file's own hardcoded
+ * <head>/<script> markup, which content-schema.js never sees, as from
+ * content/site.json's ogImage.
+ */
+const STATIC_EXTENSION = /\.[a-z0-9]+$/i;
+const REFERENCE =
+  /\s(?:href|src)="([^"]+)"|<loc>([^<]+)<\/loc>|property="og:image"\s+content="([^"]+)"/g;
+
+/** A root-relative site path from a ref, or null if it's not this site's. */
+function localAssetPath(ref) {
+  const path = ref.split("#")[0].split("?")[0];
+  if (path.startsWith(`${site.origin}/`)) return path.slice(site.origin.length);
+  if (path.startsWith("/")) return path;
+  return null; // external, mailto:, tel: — not something public/ can serve
+}
+
+/**
+ * Mirrors how `cleanUrls` in firebase.json actually resolves a path: a
+ * static asset needs the exact file, but a route like `/projects/foo` is
+ * served from either `foo.html` or `foo/index.html`, whichever exists.
+ */
+function resolvesToFile(path, outputs) {
+  const target = join(publicDir, path);
+  if (STATIC_EXTENSION.test(path)) {
+    return outputs.has(target) || existsSync(target);
+  }
+  return (
+    outputs.has(`${target}.html`) ||
+    existsSync(`${target}.html`) ||
+    outputs.has(join(target, "index.html")) ||
+    existsSync(join(target, "index.html"))
+  );
+}
+
+function checkAssetLinks(outputs) {
+  const broken = [];
+  for (const [path, source] of outputs) {
+    if (!/\.(?:html|xml)$/.test(path)) continue;
+    for (const match of source.matchAll(REFERENCE)) {
+      const ref = match[1] ?? match[2] ?? match[3];
+      const local = localAssetPath(ref);
+      if (local !== null && !resolvesToFile(local, outputs)) {
+        broken.push(`${rel(path)}: broken link to ${ref}`);
+      }
+    }
+  }
+  return broken;
+}
+
 /* ------------------------------------------------------------------ write */
 
 const outputs = new Map([
@@ -728,6 +785,13 @@ const strays = generatedDirs
   .sort();
 
 const rel = (path) => path.slice(root.length + 1);
+
+const brokenLinks = checkAssetLinks(outputs);
+if (brokenLinks.length) {
+  console.error("Generated pages link to files that don't exist:");
+  for (const line of brokenLinks) console.error(`  ${line}`);
+  process.exit(1);
+}
 
 if (check) {
   const stale = [...outputs]

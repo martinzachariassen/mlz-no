@@ -39,6 +39,12 @@ input and the generated output together. `bun run lint` runs `check:content`,
 and so does the pre-commit hook, so forgetting the build fails before the
 commit lands.
 
+`bun run lint` also runs `bun test scripts`, which exercises
+`scripts/content-schema.js` itself — the cross-file checks below (slug and
+figure references, palette parity, stray files) — against small fixtures, so
+a change to the spec's own logic that quietly stops catching something is
+caught too, not just a change to `content/`.
+
 ## How the build works
 
 One command, four steps, and it stops at the first step that fails.
@@ -197,8 +203,8 @@ The copy on the projects overview page.
 
 | Key           | Renders as                                            |
 | ------------- | ----------------------------------------------------- |
-| `title`       | `<title>` and `og:title`                              |
-| `description` | meta description, `og:description`, JSON-LD           |
+| `title`       | `<title>` and `og:title` — 60 characters or fewer      |
+| `description` | meta description, `og:description`, JSON-LD — 160 characters or fewer |
 | `eyebrow`     | the small kicker above the heading                    |
 | `heading`     | the `<h1>`                                            |
 | `intro`       | the paragraph under it                                |
@@ -226,7 +232,7 @@ need one — they get `project-<slug>` automatically.
 | `tags`     | list of topics, rendered as the tag row and as JSON-LD keywords  |
 | `status`   | free text, e.g. `In production` — on the tile and in the facts   |
 | `lastmod`  | `YYYY-MM-DD`, this page's sitemap date                           |
-| `seo`      | `title` and `description` for `<head>`                           |
+| `seo`      | `title` (≤60 chars) and `description` (≤160 chars) for `<head>` |
 | `cover`    | `figure`, `alt`, optional `caption`                              |
 | `summary`  | a paragraph, above the first section                             |
 | `sections` | the body — see below                                             |
@@ -415,6 +421,9 @@ content/projects/event-pipeline.json
 | `unknown palette token {{x}}`               | A figure uses a colour `palette` doesn't define.                      |
 | `palette.dark: missing token "x"`           | The two themes have drifted apart.                                    |
 | `needs a viewBox="0 0 W H"`                 | Add one, or the page reflows as the figure loads.                     |
+| `not a .svg file`                           | Something other than a figure landed in `content/figures/` — often a stray `.DS_Store`. Delete it. |
+| `search engines truncate this past N characters` | An `seo`/`index` title or description is longer than what shows up in a search result. Shorten it. |
+| `Generated pages link to files that don't exist` | A generated `href`/`src`/`og:image` points at a path with nothing behind it in `public/` — a typo in `ogImage`, a stylesheet name, or similar. |
 | `Generated files are out of date`           | You edited `content/` without running `bun run build:content`.        |
 | `not generated from content/, would be removed` | A leftover file in a generated directory. Usually a renamed slug.  |
 

@@ -19,7 +19,7 @@
   "lastmod": "2026-09-12",
   "seo": {
     "title": "Event Pipeline — Martin Zachariassen",
-    "description": "Case study: replacing a nightly batch job with an append-only event log in Kotlin and Kafka — idempotent consumers, replayable offsets, and a cutover with no downtime."
+    "description": "Replacing a nightly batch job with an append-only event log in Kotlin and Kafka — idempotent consumers, replayable offsets, and a cutover with no downtime."
   },
   "cover": {
     "figure": "architecture",

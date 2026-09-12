@@ -41,11 +41,22 @@ const PALETTE_TOKEN = /^[a-z][a-zA-Z]*$/;
  * Every named pattern below already requires at least one character, so a
  * pattern makes the separate blank check redundant — without this early
  * return, a blank value fails both and reports the same field twice.
+ *
+ * `maxLength` is separate from `pattern`: it's for prose fields (an SEO
+ * title or description) that have no fixed shape but do have a length a
+ * search result truncates past, silently, with no build failure to say so.
  */
-function str({ pattern, hint, allowEmpty = false } = {}) {
-  if (pattern) return z.string().regex(pattern, hint);
-  if (allowEmpty) return z.string();
-  return z.string().refine((value) => value.trim() !== "", {
+function str({ pattern, hint, allowEmpty = false, maxLength } = {}) {
+  let schema = z.string();
+  if (maxLength !== undefined) {
+    schema = schema.max(
+      maxLength,
+      `search engines truncate this past ${maxLength} characters — trim it`,
+    );
+  }
+  if (pattern) return schema.regex(pattern, hint);
+  if (allowEmpty) return schema;
+  return schema.refine((value) => value.trim() !== "", {
     error: "expected a non-empty string",
   });
 }
@@ -78,6 +89,16 @@ const externalHref = str({
  * stylesheet has no rule for renders as a full-width tile with no warning.
  */
 const TILE_SIZES = ["flagship", "wide", "normal"];
+
+/**
+ * Roughly where Google truncates a result's title and snippet. Approximate
+ * (it's actually pixel width, not a character count) but close enough to
+ * catch the real failure mode: copy that reads fine in the JSON and gets
+ * cut off with an ellipsis in search results, unnoticed until someone
+ * searches for the page.
+ */
+const SEO_TITLE_MAX = 60;
+const SEO_DESCRIPTION_MAX = 160;
 
 /* ------------------------------------------------------------ site.json */
 
@@ -131,8 +152,8 @@ export const siteSchema = z.strictObject({
     project: z.strictObject({ changefreq, priority }),
   }),
   index: z.strictObject({
-    title: str(),
-    description: str(),
+    title: str({ maxLength: SEO_TITLE_MAX }),
+    description: str({ maxLength: SEO_DESCRIPTION_MAX }),
     eyebrow: str(),
     heading: str(),
     intro: str(),
@@ -201,7 +222,10 @@ export const projectSchema = z.strictObject({
   tags: arr(str()),
   status: str(),
   lastmod: date,
-  seo: z.strictObject({ title: str(), description: str() }),
+  seo: z.strictObject({
+    title: str({ maxLength: SEO_TITLE_MAX }),
+    description: str({ maxLength: SEO_DESCRIPTION_MAX }),
+  }),
   cover: z.strictObject({
     figure: slug,
     alt: str(),
@@ -285,8 +309,21 @@ function figureRefs(project) {
  * Checks that span files: references that must resolve, values that must be
  * unique, and output that would be generated but never used.
  */
-function crossCheck({ site, projects, figures }, problems) {
+function crossCheck({ site, projects, figures, figureFiles }, problems) {
   const add = (file, message) => problems.push({ file, message });
+
+  // content/figures/ is read as a directory, so anything an editor or the OS
+  // drops in there (a stray .DS_Store, a half-renamed .svg.bak) is otherwise
+  // just silently skipped rather than flagged — the same way an unreferenced
+  // .svg is flagged below, not ignored.
+  for (const name of figureFiles) {
+    if (!name.endsWith(".svg")) {
+      add(
+        `content/figures/${name}`,
+        "not a .svg file — content/figures/ holds only figure sources",
+      );
+    }
+  }
 
   // A palette token missing from one theme renders that figure with a literal
   // {{token}} in place of a colour, in one theme only.
@@ -411,16 +448,17 @@ function collect(file, schema, value, problems) {
  * @param {object} input
  * @param {object} input.site         parsed content/site.json
  * @param {{file: string, data: object}[]} input.projects
- * @param {Map<string, string>} input.figures  name -> raw SVG source
+ * @param {Map<string, string>} input.figures  name -> raw SVG source, .svg files only
+ * @param {string[]} input.figureFiles every filename in content/figures/, unfiltered
  */
-export function validateContent({ site, projects, figures }) {
+export function validateContent({ site, projects, figures, figureFiles }) {
   const problems = [];
 
   collect("content/site.json", siteSchema, site, problems);
   for (const { file, data } of projects) {
     collect(file, projectSchema, data, problems);
   }
-  crossCheck({ site, projects, figures }, problems);
+  crossCheck({ site, projects, figures, figureFiles }, problems);
 
   if (!problems.length) return;
 

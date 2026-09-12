@@ -29,7 +29,15 @@ file against it before rendering anything, and **a key that isn't in the spec
 is an error** — that's the point of it. So adding a field to the site is two
 edits in this order: describe it in `scripts/content-schema.js`, then render
 it in `scripts/build-content.js`. Renderers downstream of validation assume
-the shape the spec guarantees and don't re-check it.
+the shape the spec guarantees and don't re-check it. `scripts/content-schema.test.js`
+(`bun run test`, also run by `bun run lint`) exercises that spec's own
+cross-file checks against fixtures, so a regression there fails independently
+of whatever happens to be in `content/` at the time.
+
+After validation, `scripts/build-content.js` also checks that every
+root-relative `href`/`src`/`og:image` the generated pages emit resolves to a
+real file in `public/` — catching a typo in `ogImage`, a stylesheet name, or
+similar before it ships as a silent broken link.
 
 The site itself still has no build step: `public/` is deployed exactly as it
 sits on disk. The generator only removes duplication between the bento tile,
