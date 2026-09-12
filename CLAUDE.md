@@ -44,9 +44,10 @@ sits on disk. The generator only removes duplication between the bento tile,
 the case study, the `<head>` tags and the sitemap.
 
 Figures are one SVG per diagram with `{{token}}` colour placeholders; the
-generator writes a `-light` and a `-dark` file from `palette` in
-`content/site.json`, because an SVG loaded via `<img>` cannot see the page's
-`[data-theme]`.
+generator writes a `-light` and a `-dark` file from the CSS custom properties
+in `public/css/tokens.css`, because an SVG loaded via `<img>` cannot see the
+page's `[data-theme]`. `content/site.json` carries no colour data — every
+colour on the site, figures included, has one source of truth.
 
 The topbar and footer are copied into each generated page by
 `scripts/content/build-content.js`, and hand-written into `index.html` and

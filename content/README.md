@@ -41,7 +41,7 @@ commit lands.
 
 `bun run lint` also runs `bun test scripts`, which exercises
 `scripts/content/content-schema.js` itself — the cross-file checks below (slug and
-figure references, palette parity, stray files) — against small fixtures, so
+figure references, stray files) — against small fixtures, so
 a change to the spec's own logic that quietly stops catching something is
 caught too, not just a change to `content/`.
 
@@ -50,7 +50,7 @@ caught too, not just a change to `content/`.
 One command, four steps, and it stops at the first step that fails.
 
 1. **Read.** `content/site.json`, every `content/projects/*.json`, every
-   `content/figures/*.svg`.
+   `content/figures/*.svg`, and the palette tokens in `public/css/tokens.css`.
 2. **Validate.** All of it goes to `scripts/content/content-schema.js` at once. Every
    problem in every file is reported together, each one naming the file and the
    path inside it. Nothing is rendered if anything failed.
@@ -64,8 +64,8 @@ What comes out, and what it is made from:
 | ------------------------------------------ | --------------------------------------------- |
 | `public/projects/index.html`               | `site.json` plus every project's tile fields  |
 | `public/projects/<slug>.html`              | `projects/<slug>.json` plus `site.json`       |
-| `public/assets/figures/<name>-light.svg`   | `figures/<name>.svg` + `palette.light`        |
-| `public/assets/figures/<name>-dark.svg`    | `figures/<name>.svg` + `palette.dark`         |
+| `public/assets/figures/<name>-light.svg`   | `figures/<name>.svg` + `public/css/tokens.css`'s `:root`            |
+| `public/assets/figures/<name>-dark.svg`    | `figures/<name>.svg` + `public/css/tokens.css`'s `[data-theme="dark"]` |
 | `public/sitemap.xml`                       | `site.json` origin and sitemap block, and each project's `lastmod` |
 
 The generator exists to remove duplication, not to add a build step. The site
@@ -154,27 +154,6 @@ Settings and copy shared by every generated page. One object, no optional keys.
 Both are root-relative with no trailing slash, because they are concatenated
 rather than joined. URLs are extension-less on this site, so a link is
 `/projects/<slug>`, never `/projects/<slug>.html`.
-
-### `palette`
-
-`light` and `dark`, each a map of token name → six-digit lowercase hex.
-
-```json
-"palette": {
-  "light": { "bg": "#ebeff2", "fg": "#101214", "accent": "#968dfd" },
-  "dark":  { "bg": "#151619", "fg": "#e9ebef", "accent": "#968dfd" }
-}
-```
-
-- Both themes must define **exactly the same token names**. A token present in
-  one theme only would render that figure with a literal `{{token}}` in the
-  other, and the build rejects it.
-- A `bg` token is required in practice: the generated `<head>` uses
-  `palette.light.bg` and `palette.dark.bg` for the `theme-color` meta tags.
-- These are the colours figures are painted with. They are deliberately a
-  mirror of the CSS custom properties in `public/css/tokens.css`, not a
-  replacement for them — an SVG loaded through `<img>` cannot read the page's
-  custom properties, so the values have to exist on both sides.
 
 ### `sitemap`
 
@@ -376,8 +355,27 @@ Three rules, all enforced:
 
 - **A `viewBox="0 0 W H"` is required.** That is where the `<img>` gets its
   `width` and `height`, and without them the page reflows as the diagram loads.
-- **Colours are `{{token}}` placeholders** naming a key from `palette`. An
+- **Colours are `{{token}}` placeholders**, resolved at build time from
+  `public/css/tokens.css` — the same custom properties the rest of the page is
+  themed with, so a figure can never drift from the page around it. An
   unknown token fails the build, with a guess at which one you meant.
+
+  | Token        | CSS custom property |
+  | ------------ | -------------------- |
+  | `bg`         | `--bg`               |
+  | `surface`    | `--surface`          |
+  | `sunken`     | `--sunken`           |
+  | `fg`         | `--fg`               |
+  | `fgSecondary`| `--fg-secondary`     |
+  | `muted`      | `--fg-muted`         |
+  | `border`     | `--border`           |
+  | `accent`     | `--accent`           |
+  | `accentDeep` | `--accent-deep`      |
+  | `warm`       | `--glitch-2`         |
+
+  A theme's value for a token is whatever `public/css/tokens.css` resolves it
+  to for that theme — `[data-theme="dark"]` inherits anything it doesn't
+  override, the same as the page itself does.
 - **Every figure must be referenced** by some project, as a `cover.figure` or a
   `figure` block. An unreferenced one is two committed files in `public/` that
   nothing links to.
@@ -418,8 +416,7 @@ content/projects/event-pipeline.json
 | `order: 2 is already used by …`             | Two projects want the same position on the grid.                      |
 | `no content/figures/x.svg`                  | A `figure` reference with no file behind it.                          |
 | `not referenced by any project`             | A figure file nothing points at. Reference it or delete it.           |
-| `unknown palette token {{x}}`               | A figure uses a colour `palette` doesn't define.                      |
-| `palette.dark: missing token "x"`           | The two themes have drifted apart.                                    |
+| `unknown palette token {{x}}`               | A figure uses a colour token `public/css/tokens.css` doesn't define.  |
 | `needs a viewBox="0 0 W H"`                 | Add one, or the page reflows as the figure loads.                     |
 | `not a .svg file`                           | Something other than a figure landed in `content/figures/` — often a stray `.DS_Store`. Delete it. |
 | `search engines truncate this past N characters` | An `seo`/`index` title or description is longer than what shows up in a search result. Shorten it. |

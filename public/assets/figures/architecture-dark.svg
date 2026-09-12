@@ -1,77 +1,77 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 620" width="1600" height="620" role="img">
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M0,0 L10,5 L0,10 z" fill="#9b9ea5" />
+      <path d="M0,0 L10,5 L0,10 z" fill="oklch(0.7 0.01 265)" />
     </marker>
     <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M0,0 L10,5 L0,10 z" fill="#a29aff" />
+      <path d="M0,0 L10,5 L0,10 z" fill="oklch(0.74 0.16 285)" />
     </marker>
   </defs>
 
-  <rect width="1600" height="620" fill="#151619" />
+  <rect width="1600" height="620" fill="oklch(0.2 0.006 265)" />
 
   <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">
-    <text x="64" y="88" font-size="24" letter-spacing="4" fill="#e9ebef">RUNTIME TOPOLOGY</text>
-    <text x="1536" y="88" font-size="14" letter-spacing="3" fill="#9b9ea5" text-anchor="end">AT-LEAST-ONCE · KEYED BY TENANT</text>
-    <line x1="64" y1="112" x2="1536" y2="112" stroke="#2e3034" stroke-width="2" />
+    <text x="64" y="88" font-size="24" letter-spacing="4" fill="oklch(0.94 0.006 265)">RUNTIME TOPOLOGY</text>
+    <text x="1536" y="88" font-size="14" letter-spacing="3" fill="oklch(0.7 0.01 265)" text-anchor="end">AT-LEAST-ONCE · KEYED BY TENANT</text>
+    <line x1="64" y1="112" x2="1536" y2="112" stroke="oklch(0.31 0.008 265)" stroke-width="2" />
 
     <!-- lane labels -->
-    <text x="64" y="160" font-size="13" letter-spacing="3" fill="#9b9ea5">01 · SOURCES</text>
-    <text x="370" y="160" font-size="13" letter-spacing="3" fill="#a29aff">02 · INGEST</text>
-    <text x="676" y="160" font-size="13" letter-spacing="3" fill="#9b9ea5">03 · LOG</text>
-    <text x="982" y="160" font-size="13" letter-spacing="3" fill="#9b9ea5">04 · WORKERS</text>
-    <text x="1288" y="160" font-size="13" letter-spacing="3" fill="#9b9ea5">05 · SINKS</text>
+    <text x="64" y="160" font-size="13" letter-spacing="3" fill="oklch(0.7 0.01 265)">01 · SOURCES</text>
+    <text x="370" y="160" font-size="13" letter-spacing="3" fill="oklch(0.74 0.16 285)">02 · INGEST</text>
+    <text x="676" y="160" font-size="13" letter-spacing="3" fill="oklch(0.7 0.01 265)">03 · LOG</text>
+    <text x="982" y="160" font-size="13" letter-spacing="3" fill="oklch(0.7 0.01 265)">04 · WORKERS</text>
+    <text x="1288" y="160" font-size="13" letter-spacing="3" fill="oklch(0.7 0.01 265)">05 · SINKS</text>
 
     <!-- 01 sources -->
-    <g fill="#202225" stroke="#2e3034" stroke-width="2">
+    <g fill="oklch(0.25 0.006 265)" stroke="oklch(0.31 0.008 265)" stroke-width="2">
       <rect x="64" y="186" width="248" height="76" rx="6" />
       <rect x="64" y="282" width="248" height="76" rx="6" />
       <rect x="64" y="378" width="248" height="76" rx="6" />
     </g>
-    <g font-size="17" fill="#e9ebef">
+    <g font-size="17" fill="oklch(0.94 0.006 265)">
       <text x="88" y="222">checkout</text>
       <text x="88" y="318">catalog</text>
       <text x="88" y="414">payments</text>
     </g>
-    <g font-size="13" fill="#9b9ea5">
+    <g font-size="13" fill="oklch(0.7 0.01 265)">
       <text x="88" y="243">14 svc · http</text>
       <text x="88" y="339">6 svc · http</text>
       <text x="88" y="435">3 svc · webhook</text>
     </g>
 
     <!-- 02 ingest -->
-    <rect x="370" y="186" width="248" height="268" rx="6" fill="#202225" stroke="#a29aff" stroke-width="3" />
-    <rect x="370" y="186" width="6" height="268" rx="3" fill="#a29aff" />
-    <text x="398" y="228" font-size="18" fill="#e9ebef">ingest-api</text>
-    <line x1="398" y1="248" x2="594" y2="248" stroke="#2e3034" stroke-width="2" />
-    <g font-size="14" fill="#cfd1d5">
+    <rect x="370" y="186" width="248" height="268" rx="6" fill="oklch(0.25 0.006 265)" stroke="oklch(0.74 0.16 285)" stroke-width="3" />
+    <rect x="370" y="186" width="6" height="268" rx="3" fill="oklch(0.74 0.16 285)" />
+    <text x="398" y="228" font-size="18" fill="oklch(0.94 0.006 265)">ingest-api</text>
+    <line x1="398" y1="248" x2="594" y2="248" stroke="oklch(0.31 0.008 265)" stroke-width="2" />
+    <g font-size="14" fill="oklch(0.86 0.006 265)">
       <text x="398" y="284">schema registry</text>
       <text x="398" y="316">idempotency key</text>
       <text x="398" y="348">tenant partition</text>
       <text x="398" y="380">envelope + trace id</text>
     </g>
-    <text x="398" y="424" font-size="13" letter-spacing="2" fill="#a29aff">REJECT → DLQ</text>
+    <text x="398" y="424" font-size="13" letter-spacing="2" fill="oklch(0.74 0.16 285)">REJECT → DLQ</text>
 
     <!-- 03 log -->
-    <g stroke="#2e3034" stroke-width="2">
-      <rect x="676" y="186" width="248" height="58" rx="6" fill="#0d0e11" />
-      <rect x="676" y="256" width="248" height="58" rx="6" fill="#0d0e11" />
-      <rect x="676" y="326" width="248" height="58" rx="6" fill="#0d0e11" />
-      <rect x="676" y="396" width="248" height="58" rx="6" fill="#0d0e11" />
+    <g stroke="oklch(0.31 0.008 265)" stroke-width="2">
+      <rect x="676" y="186" width="248" height="58" rx="6" fill="oklch(0.16 0.007 265)" />
+      <rect x="676" y="256" width="248" height="58" rx="6" fill="oklch(0.16 0.007 265)" />
+      <rect x="676" y="326" width="248" height="58" rx="6" fill="oklch(0.16 0.007 265)" />
+      <rect x="676" y="396" width="248" height="58" rx="6" fill="oklch(0.16 0.007 265)" />
     </g>
-    <g fill="#968dfd">
+    <g fill="oklch(0.7 0.16 285)">
       <rect x="676" y="186" width="6" height="58" rx="3" />
       <rect x="676" y="256" width="6" height="58" rx="3" />
       <rect x="676" y="326" width="6" height="58" rx="3" />
       <rect x="676" y="396" width="6" height="58" rx="3" />
     </g>
-    <g font-size="15" fill="#e9ebef">
+    <g font-size="15" fill="oklch(0.94 0.006 265)">
       <text x="702" y="221">events.p0</text>
       <text x="702" y="291">events.p1</text>
       <text x="702" y="361">events.p2</text>
       <text x="702" y="431">events.p3</text>
     </g>
-    <g font-size="13" fill="#9b9ea5" text-anchor="end">
+    <g font-size="13" fill="oklch(0.7 0.01 265)" text-anchor="end">
       <text x="900" y="221">7d</text>
       <text x="900" y="291">7d</text>
       <text x="900" y="361">7d</text>
@@ -79,41 +79,41 @@
     </g>
 
     <!-- 04 workers -->
-    <g fill="#202225" stroke="#2e3034" stroke-width="2">
+    <g fill="oklch(0.25 0.006 265)" stroke="oklch(0.31 0.008 265)" stroke-width="2">
       <rect x="982" y="186" width="248" height="76" rx="6" />
       <rect x="982" y="282" width="248" height="76" rx="6" />
       <rect x="982" y="378" width="248" height="76" rx="6" />
     </g>
-    <g font-size="17" fill="#e9ebef">
+    <g font-size="17" fill="oklch(0.94 0.006 265)">
       <text x="1006" y="222">enrich</text>
       <text x="1006" y="318">aggregate</text>
       <text x="1006" y="414">fan-out</text>
     </g>
-    <g font-size="13" fill="#9b9ea5">
+    <g font-size="13" fill="oklch(0.7 0.01 265)">
       <text x="1006" y="243">stateless · 12 pods</text>
       <text x="1006" y="339">windowed · rocksdb</text>
       <text x="1006" y="435">retry w/ backoff</text>
     </g>
 
     <!-- 05 sinks -->
-    <g fill="#202225" stroke="#2e3034" stroke-width="2">
+    <g fill="oklch(0.25 0.006 265)" stroke="oklch(0.31 0.008 265)" stroke-width="2">
       <rect x="1288" y="186" width="248" height="76" rx="6" />
       <rect x="1288" y="282" width="248" height="76" rx="6" />
       <rect x="1288" y="378" width="248" height="76" rx="6" />
     </g>
-    <g font-size="17" fill="#e9ebef">
+    <g font-size="17" fill="oklch(0.94 0.006 265)">
       <text x="1312" y="222">warehouse</text>
       <text x="1312" y="318">search index</text>
       <text x="1312" y="414">webhooks</text>
     </g>
-    <g font-size="13" fill="#9b9ea5">
+    <g font-size="13" fill="oklch(0.7 0.01 265)">
       <text x="1312" y="243">hourly batch</text>
       <text x="1312" y="339">near real-time</text>
       <text x="1312" y="435">customer facing</text>
     </g>
 
     <!-- flow -->
-    <g stroke="#9b9ea5" stroke-width="2" marker-end="url(#arrow)">
+    <g stroke="oklch(0.7 0.01 265)" stroke-width="2" marker-end="url(#arrow)">
       <line x1="316" y1="320" x2="362" y2="320" />
       <line x1="622" y1="320" x2="668" y2="320" />
       <line x1="928" y1="320" x2="974" y2="320" />
@@ -121,7 +121,7 @@
     </g>
 
     <!-- replay -->
-    <path d="M1412 454 L1412 528 L800 528 L800 462" fill="none" stroke="#a29aff" stroke-width="2" stroke-dasharray="8 8" marker-end="url(#arrow-accent)" />
-    <text x="1106" y="558" font-size="14" letter-spacing="3" fill="#a29aff" text-anchor="middle">REPLAY FROM STORED OFFSET</text>
+    <path d="M1412 454 L1412 528 L800 528 L800 462" fill="none" stroke="oklch(0.74 0.16 285)" stroke-width="2" stroke-dasharray="8 8" marker-end="url(#arrow-accent)" />
+    <text x="1106" y="558" font-size="14" letter-spacing="3" fill="oklch(0.74 0.16 285)" text-anchor="middle">REPLAY FROM STORED OFFSET</text>
   </g>
 </svg>

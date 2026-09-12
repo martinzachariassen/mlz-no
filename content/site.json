@@ -6,32 +6,6 @@
   "ogImage": "/assets/social/og.png",
   "basePath": "/projects",
   "figureDir": "/assets/figures",
-  "palette": {
-    "light": {
-      "bg": "#ebeff2",
-      "surface": "#f8fafd",
-      "sunken": "#dfe3e7",
-      "border": "#caced3",
-      "fg": "#101214",
-      "fgSecondary": "#3b3d40",
-      "muted": "#5c6166",
-      "accent": "#968dfd",
-      "accentDeep": "#4d4691",
-      "warm": "#c94c18"
-    },
-    "dark": {
-      "bg": "#151619",
-      "surface": "#202225",
-      "sunken": "#0d0e11",
-      "border": "#2e3034",
-      "fg": "#e9ebef",
-      "fgSecondary": "#cfd1d5",
-      "muted": "#9b9ea5",
-      "accent": "#968dfd",
-      "accentDeep": "#a29aff",
-      "warm": "#ec6d3d"
-    }
-  },
   "sitemap": {
     "home": {
       "lastmod": "2026-07-26",

@@ -16,7 +16,7 @@
  * regex-validated strings). What's hand-rolled below is only the part Zod
  * can't express: checks that span multiple files — a project's slug matching
  * its filename, a figure block pointing at an SVG that exists, a palette
- * token an SVG references but site.json never defines.
+ * token an SVG references but public/css/tokens.css never defines.
  */
 
 import { z } from "zod";
@@ -25,7 +25,6 @@ import { z } from "zod";
 
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
-const HEX = /^#[0-9a-f]{6}$/;
 const UUID = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/;
 const ORIGIN = /^https:\/\/[a-z0-9.-]+$/;
 const LOCALE = /^[a-z]{2}_[A-Z]{2}$/;
@@ -34,7 +33,6 @@ const PRIORITY = /^(?:0\.\d|1\.0)$/;
 const SITE_PATH = /^\/[a-z0-9][a-z0-9./-]*[a-z0-9]$/;
 /** Tile and link targets: off-site or a mail link, never a bare path. */
 const EXTERNAL_HREF = /^(?:https?:\/\/|mailto:)\S+$/;
-const PALETTE_TOKEN = /^[a-z][a-zA-Z]*$/;
 
 /**
  * A string that isn't blank, with an optional format and a friendly hint.
@@ -102,11 +100,6 @@ const SEO_DESCRIPTION_MAX = 160;
 
 /* ------------------------------------------------------------ site.json */
 
-const palette = z.record(
-  z.string().regex(PALETTE_TOKEN, "expected a camelCase token name"),
-  str({ pattern: HEX, hint: 'expected a six-digit hex colour like "#101214"' }),
-);
-
 const changefreq = z.enum([
   "always",
   "hourly",
@@ -142,7 +135,6 @@ export const siteSchema = z.strictObject({
   ogImage: sitePath,
   basePath: sitePath,
   figureDir: sitePath,
-  palette: z.strictObject({ light: palette, dark: palette }),
   // lastmod is content, not a clock reading: the sitemap is committed, so a
   // build-time `new Date()` would make every day's output differ from the
   // checked-in copy and fail check:content. Projects carry their own.
@@ -243,9 +235,6 @@ export const projectSchema = z.strictObject({
 
 /* ---------------------------------------------------------- cross-checks */
 
-const isObject = (value) =>
-  typeof value === "object" && value !== null && !Array.isArray(value);
-
 const quote = (value) => JSON.stringify(value);
 
 /** Edit distance, used only to guess which palette token someone meant. */
@@ -309,7 +298,7 @@ function figureRefs(project) {
  * Checks that span files: references that must resolve, values that must be
  * unique, and output that would be generated but never used.
  */
-function crossCheck({ site, projects, figures, figureFiles }, problems) {
+function crossCheck({ site, projects, figures, figureFiles, tokens }, problems) {
   const add = (file, message) => problems.push({ file, message });
 
   // content/figures/ is read as a directory, so anything an editor or the OS
@@ -325,20 +314,7 @@ function crossCheck({ site, projects, figures, figureFiles }, problems) {
     }
   }
 
-  // A palette token missing from one theme renders that figure with a literal
-  // {{token}} in place of a colour, in one theme only.
-  if (isObject(site.palette?.light) && isObject(site.palette?.dark)) {
-    const light = Object.keys(site.palette.light);
-    const dark = Object.keys(site.palette.dark);
-    for (const token of light.filter((t) => !dark.includes(t))) {
-      add("content/site.json", `palette.dark: missing token ${quote(token)}`);
-    }
-    for (const token of dark.filter((t) => !light.includes(t))) {
-      add("content/site.json", `palette.light: missing token ${quote(token)}`);
-    }
-  }
-
-  const tokens = new Set(Object.keys(site.palette?.light ?? {}));
+  const knownTokens = new Set(Object.keys(tokens?.light ?? {}));
   const referenced = new Set();
 
   for (const [name, source] of figures) {
@@ -353,10 +329,10 @@ function crossCheck({ site, projects, figures, figureFiles }, problems) {
       [...source.matchAll(/\{\{(\w+)\}\}/g)].map(([, token]) => token),
     );
     for (const token of used) {
-      if (!tokens.has(token)) {
+      if (!knownTokens.has(token)) {
         add(
           file,
-          `unknown palette token {{${token}}}${didYouMean(token, [...tokens])}`,
+          `unknown palette token {{${token}}}${didYouMean(token, [...knownTokens])}`,
         );
       }
     }
@@ -450,15 +426,22 @@ function collect(file, schema, value, problems) {
  * @param {{file: string, data: object}[]} input.projects
  * @param {Map<string, string>} input.figures  name -> raw SVG source, .svg files only
  * @param {string[]} input.figureFiles every filename in content/figures/, unfiltered
+ * @param {{light: object, dark: object}} input.tokens palette tokens parsed from public/css/tokens.css
  */
-export function validateContent({ site, projects, figures, figureFiles }) {
+export function validateContent({
+  site,
+  projects,
+  figures,
+  figureFiles,
+  tokens,
+}) {
   const problems = [];
 
   collect("content/site.json", siteSchema, site, problems);
   for (const { file, data } of projects) {
     collect(file, projectSchema, data, problems);
   }
-  crossCheck({ site, projects, figures, figureFiles }, problems);
+  crossCheck({ site, projects, figures, figureFiles, tokens }, problems);
 
   if (!problems.length) return;
 

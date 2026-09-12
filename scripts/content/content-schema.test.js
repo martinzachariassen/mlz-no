@@ -9,7 +9,7 @@ import { ContentError, validateContent } from "./content-schema.js";
  *
  * This file exercises the hand-rolled parts of content-schema.js — the
  * cross-file checks Zod can't express on its own (slug/filename agreement,
- * figure references, palette parity, stray files) — since those are the
+ * figure references, stray files) — since those are the
  * parts most likely to silently break under a refactor. Per-field shape
  * (regexes, enums, `strictObject`) is Zod's own behaviour, exercised only
  * where it interacts with those checks.
@@ -23,10 +23,6 @@ const validSite = {
   ogImage: "/og.png",
   basePath: "/projects",
   figureDir: "/assets/figures",
-  palette: {
-    light: { bg: "#ffffff" },
-    dark: { bg: "#000000" },
-  },
   sitemap: {
     home: { lastmod: "2026-01-01", changefreq: "weekly", priority: "1.0" },
     index: { lastmod: "2026-01-01", changefreq: "weekly", priority: "0.9" },
@@ -68,8 +64,13 @@ const validProject = {
 const validFigureSource =
   '<svg viewBox="0 0 100 100"><rect fill="{{bg}}" /></svg>';
 
+const validTokens = {
+  light: { bg: "#ffffff" },
+  dark: { bg: "#000000" },
+};
+
 /** Runs validateContent against the fixtures with the given overrides. */
-function validate({ site, project, figures, figureFiles } = {}) {
+function validate({ site, project, figures, figureFiles, tokens } = {}) {
   const resolvedFigures = figures ?? new Map([["diagram", validFigureSource]]);
   validateContent({
     site: site ?? validSite,
@@ -79,6 +80,7 @@ function validate({ site, project, figures, figureFiles } = {}) {
     figures: resolvedFigures,
     figureFiles:
       figureFiles ?? [...resolvedFigures.keys()].map((n) => `${n}.svg`),
+    tokens: tokens ?? validTokens,
   });
 }
 
@@ -148,6 +150,7 @@ describe("validateContent", () => {
           projects,
           figures: new Map([["diagram", validFigureSource]]),
           figureFiles: ["diagram.svg"],
+          tokens: validTokens,
         });
       } catch (error) {
         message = error.message;
@@ -200,21 +203,6 @@ describe("validateContent", () => {
       const message = messageFor({ figureFiles: ["diagram.svg", ".DS_Store"] });
       expect(message).toContain("content/figures/.DS_Store");
       expect(message).toContain("not a .svg file");
-    });
-  });
-
-  describe("palette", () => {
-    test("rejects a token defined in one theme but not the other", () => {
-      const message = messageFor({
-        site: {
-          ...validSite,
-          palette: {
-            light: { bg: "#ffffff", accent: "#ff0000" },
-            dark: { bg: "#000000" },
-          },
-        },
-      });
-      expect(message).toContain('palette.dark: missing token "accent"');
     });
   });
 

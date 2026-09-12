@@ -156,12 +156,79 @@ const unraw = (text) => text.split(RAW_NEWLINE).join("\n");
 /* --------------------------------------------------------------- content */
 
 /**
+ * Figures use `{{camelCaseToken}}` placeholders naming a colour; this maps
+ * each one to the `--kebab-case` custom property it reads from
+ * public/css/tokens.css. Kept as an explicit table (rather than mechanically
+ * deriving the name) so a figure's token names stay meaningful on their own
+ * — "warm" reads better than "glitch2" to someone drawing a diagram, even
+ * though the colour is also used for the hero's glitch effect.
+ */
+const TOKEN_ALIASES = {
+  bg: "bg",
+  surface: "surface",
+  sunken: "sunken",
+  fg: "fg",
+  "fg-secondary": "fgSecondary",
+  "fg-muted": "muted",
+  border: "border",
+  accent: "accent",
+  "accent-deep": "accentDeep",
+  "glitch-2": "warm",
+};
+
+/**
+ * Parses the `:root` and `[data-theme="dark"]` custom properties straight
+ * out of public/css/tokens.css, so the figures (which can't see the page's
+ * own CSS — see renderFigureAssets) are always painted with the same colours
+ * as the page itself, instead of a hand-maintained copy that can drift.
+ * Dark values that aren't overridden inherit from light, the same way the
+ * real cascade works.
+ */
+function readTokens() {
+  const path = join(publicDir, "css", "tokens.css");
+  const css = readFileSync(path, "utf8");
+  const rel = path.slice(root.length + 1);
+
+  const block = (label, pattern) => {
+    const match = css.match(pattern);
+    if (!match) throw new ContentError(`${rel}: no ${label} block found`);
+    const vars = {};
+    for (const [, name, value] of match[1].matchAll(/--([\w-]+):\s*([^;]+);/g)) {
+      vars[name] = value.trim();
+    }
+    return vars;
+  };
+
+  const rootVars = block(":root", /:root\s*{([^}]*)}/);
+  const darkVars = {
+    ...rootVars,
+    ...block('[data-theme="dark"]', /\[data-theme="dark"\]\s*{([^}]*)}/),
+  };
+
+  const alias = (vars) => {
+    const out = {};
+    for (const [kebab, token] of Object.entries(TOKEN_ALIASES)) {
+      if (vars[kebab] === undefined) {
+        throw new ContentError(
+          `${rel}: missing --${kebab} (needed for palette token "${token}")`,
+        );
+      }
+      out[token] = vars[kebab];
+    }
+    return out;
+  };
+
+  return { light: alias(rootVars), dark: alias(darkVars) };
+}
+
+/**
  * Read content/ and hand it to the spec before anything is rendered. Nothing
  * below this point re-checks a field: if it got past validateContent it has
  * the shape content-schema.js describes.
  */
 function loadContent() {
   const site = readJson(join(contentDir, "site.json"));
+  const tokens = readTokens();
 
   const files = readdirSync(join(contentDir, "projects"))
     .filter((name) => name.endsWith(".json"))
@@ -181,10 +248,17 @@ function loadContent() {
       ]),
   );
 
-  validateContent({ site, projects: files, figures: sources, figureFiles });
+  validateContent({
+    site,
+    projects: files,
+    figures: sources,
+    figureFiles,
+    tokens,
+  });
 
   return {
     site,
+    tokens,
     // `order` is unique and required, so this is a total ordering.
     projects: files.map(({ data }) => data).sort((a, b) => a.order - b.order),
     figures: new Map(
@@ -205,7 +279,7 @@ try {
   process.exit(1);
 }
 
-const { site, projects, figures } = content;
+const { site, projects, figures, tokens } = content;
 
 const projectUrl = (project) => `${site.basePath}/${project.slug}`;
 
@@ -220,7 +294,7 @@ function renderFigureAssets() {
   const files = new Map();
   for (const [name, figure] of figures) {
     for (const theme of ["light", "dark"]) {
-      const palette = site.palette[theme];
+      const palette = tokens[theme];
       const svg = figure.source.replace(
         /\{\{(\w+)\}\}/g,
         (_, token) => palette[token],
@@ -294,12 +368,12 @@ function head({ title, description, canonical, styles }) {
     <meta
       name="theme-color"
       media="(prefers-color-scheme: light)"
-      content="${site.palette.light.bg}"
+      content="${tokens.light.bg}"
     />
     <meta
       name="theme-color"
       media="(prefers-color-scheme: dark)"
-      content="${site.palette.dark.bg}"
+      content="${tokens.dark.bg}"
     />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="${esc(site.author)}" />
