@@ -88,6 +88,48 @@
             "name": "Event Pipeline",
             "url": "https://mlz.no/projects/event-pipeline",
             "abstract": "Replacing a nightly batch job with an append-only event log that any team can read from, replay and reason about."
+          },
+          {
+            "@type": "CreativeWork",
+            "name": "Config Service",
+            "url": "https://mlz.no/projects/config-service",
+            "abstract": "A typed, versioned configuration store that replaced a shared YAML file and its merge conflicts."
+          },
+          {
+            "@type": "CreativeWork",
+            "name": "Internal CLI",
+            "url": "https://mlz.no/projects/internal-cli",
+            "abstract": "A single onboarding-to-deploy CLI that replaced a wiki page of copy-pasted shell commands."
+          },
+          {
+            "@type": "CreativeWork",
+            "name": "Search Relevance Service",
+            "url": "https://mlz.no/projects/search-relevance",
+            "abstract": "A standalone ranking service that took relevance tuning out of a monolith and into something product could iterate on weekly."
+          },
+          {
+            "@type": "CreativeWork",
+            "name": "Audit Trail",
+            "url": "https://mlz.no/projects/audit-trail",
+            "abstract": "A hash-linked record of every privileged action, cheap enough to write on the hot path and hard enough to argue with in an audit."
+          },
+          {
+            "@type": "CreativeWork",
+            "name": "Tenant Isolation",
+            "url": "https://mlz.no/projects/tenant-isolation",
+            "abstract": "Moving a shared-everything multi-tenant platform onto per-tenant pools, so one customer's bad afternoon stops being everyone's."
+          },
+          {
+            "@type": "CreativeWork",
+            "name": "Release Train",
+            "url": "https://mlz.no/projects/release-train",
+            "abstract": "Turning a fortnightly release window that four people had to be awake for into a progressive rollout nobody has to attend."
+          },
+          {
+            "@type": "CreativeWork",
+            "name": "Cost Attribution",
+            "url": "https://mlz.no/projects/cost-attribution",
+            "abstract": "Giving every request, job and query an owner, so an infrastructure bill stops being one number nobody can act on."
           }
         ]
       }
@@ -138,7 +180,7 @@
         <p class="page-intro">Backend systems and the infrastructure around them. Each entry is a short case study — what the problem actually was, what I chose to build, and what changed once it shipped.</p>
       </header>
       <section class="bento" aria-label="Projects">
-        <a class="b-tile b-flagship" href="/projects/event-pipeline"
+        <a class="b-tile b-md-6 b-lg-6" href="/projects/event-pipeline"
           data-umami-event="project-event-pipeline">
           <span class="b-media">
             <img class="shot shot-light" src="/assets/figures/architecture-light.svg"
@@ -157,22 +199,137 @@
             <span class="b-cta"><span data-glitch>Read case study</span><span class="b-arrow" aria-hidden="true">→</span></span>
           </span>
         </a>
-        <a class="b-tile b-normal b-aside" href="https://github.com/martinzachariassen" target="_blank" rel="noopener noreferrer"
-          data-umami-event="projects-github">
+        <a class="b-tile b-md-3 b-lg-3" href="/projects/config-service"
+          data-umami-event="project-config-service">
+          <span class="b-media">
+            <img class="shot shot-light" src="/assets/figures/config-diff-light.svg"
+              alt="A config publish view showing a timeout and retry value changed and validated against a schema before publishing." width="900" height="620" loading="lazy" decoding="async" />
+            <img class="shot shot-dark" src="/assets/figures/config-diff-dark.svg"
+              alt="A config publish view showing a timeout and retry value changed and validated against a schema before publishing." width="900" height="620" loading="lazy" decoding="async" />
+          </span>
           <span class="b-body">
-            <span class="b-label" data-glitch>Code</span>
-            <span class="b-title">GitHub</span>
-            <span class="b-tagline">Smaller experiments, dotfiles and the source of this site.</span>
-            <span class="b-cta"><span data-glitch>Open profile</span><span class="b-arrow" aria-hidden="true">↗</span></span>
+            <span class="b-meta">
+              <span data-glitch>2021 — 2022</span>
+              <span class="b-status">In production</span>
+            </span>
+            <span class="b-title">Config Service</span>
+            <span class="b-tagline">A typed, versioned configuration store that replaced a shared YAML file and its merge conflicts.</span>
+            <span class="b-stack">Go · PostgreSQL</span>
+            <span class="b-cta"><span data-glitch>Read case study</span><span class="b-arrow" aria-hidden="true">→</span></span>
           </span>
         </a>
-        <a class="b-tile b-normal b-aside" href="mailto:hi@mlz.no"
-          data-umami-event="projects-email">
+        <a class="b-tile b-md-3 b-lg-3" href="/projects/internal-cli"
+          data-umami-event="project-internal-cli">
+          <span class="b-media">
+            <img class="shot shot-light" src="/assets/figures/cli-session-light.svg"
+              alt="A terminal session running dev up, dev deploy --local and dev doctor, each completing in under twenty seconds." width="900" height="620" loading="lazy" decoding="async" />
+            <img class="shot shot-dark" src="/assets/figures/cli-session-dark.svg"
+              alt="A terminal session running dev up, dev deploy --local and dev doctor, each completing in under twenty seconds." width="900" height="620" loading="lazy" decoding="async" />
+          </span>
           <span class="b-body">
-            <span class="b-label" data-glitch>Contact</span>
-            <span class="b-title">Get in touch</span>
-            <span class="b-tagline">Happy to talk about backend architecture, event systems or hiring.</span>
-            <span class="b-cta"><span data-glitch>hi@mlz.no</span><span class="b-arrow" aria-hidden="true">↗</span></span>
+            <span class="b-meta">
+              <span data-glitch>2020 — 2021</span>
+              <span class="b-status">In production</span>
+            </span>
+            <span class="b-title">Internal CLI</span>
+            <span class="b-tagline">A single onboarding-to-deploy CLI that replaced a wiki page of copy-pasted shell commands.</span>
+            <span class="b-stack">Rust</span>
+            <span class="b-cta"><span data-glitch>Read case study</span><span class="b-arrow" aria-hidden="true">→</span></span>
+          </span>
+        </a>
+        <a class="b-tile b-md-3 b-lg-4" href="/projects/search-relevance"
+          data-umami-event="project-search-relevance">
+          <span class="b-media">
+            <img class="shot shot-light" src="/assets/figures/ranking-flow-light.svg"
+              alt="Diagram of a search request flowing through a scoring step driven by a published config version, split across an A/B variant, into ranked results." width="1300" height="460" loading="lazy" decoding="async" />
+            <img class="shot shot-dark" src="/assets/figures/ranking-flow-dark.svg"
+              alt="Diagram of a search request flowing through a scoring step driven by a published config version, split across an A/B variant, into ranked results." width="1300" height="460" loading="lazy" decoding="async" />
+          </span>
+          <span class="b-body">
+            <span class="b-meta">
+              <span data-glitch>2022 — 2023</span>
+              <span class="b-status">In production</span>
+            </span>
+            <span class="b-title">Search Relevance Service</span>
+            <span class="b-tagline">A standalone ranking service that took relevance tuning out of a monolith and into something product could iterate on weekly.</span>
+            <span class="b-stack">Kotlin · Elasticsearch · gRPC</span>
+            <span class="b-cta"><span data-glitch>Read case study</span><span class="b-arrow" aria-hidden="true">→</span></span>
+          </span>
+        </a>
+        <a class="b-tile b-md-3 b-lg-2 b-lg-compact" href="/projects/audit-trail"
+          data-umami-event="project-audit-trail">
+          <span class="b-media">
+            <img class="shot shot-light" src="/assets/figures/audit-chain-light.svg"
+              alt="Four stacked audit records, each naming the hash of the one before it, ending in a daily seal record that anchors the chain." width="1000" height="640" loading="lazy" decoding="async" />
+            <img class="shot shot-dark" src="/assets/figures/audit-chain-dark.svg"
+              alt="Four stacked audit records, each naming the hash of the one before it, ending in a daily seal record that anchors the chain." width="1000" height="640" loading="lazy" decoding="async" />
+          </span>
+          <span class="b-body">
+            <span class="b-meta">
+              <span data-glitch>2022</span>
+              <span class="b-status">In production</span>
+            </span>
+            <span class="b-title">Audit Trail</span>
+            <span class="b-tagline">A hash-linked record of every privileged action, cheap enough to write on the hot path and hard enough to argue with in an audit.</span>
+            <span class="b-stack">Go · PostgreSQL</span>
+            <span class="b-cta"><span data-glitch>Read case study</span><span class="b-arrow" aria-hidden="true">→</span></span>
+          </span>
+        </a>
+        <a class="b-tile b-md-3 b-lg-3" href="/projects/tenant-isolation"
+          data-umami-event="project-tenant-isolation">
+          <span class="b-media">
+            <img class="shot shot-light" src="/assets/figures/tenant-routing-light.svg"
+              alt="A request carrying a tenant identifier passes through a router that resolves a pool, a quota and an encryption key, then reaches one of three isolated pools; a saturated pool leaves the other tenants unaffected." width="1500" height="560" loading="lazy" decoding="async" />
+            <img class="shot shot-dark" src="/assets/figures/tenant-routing-dark.svg"
+              alt="A request carrying a tenant identifier passes through a router that resolves a pool, a quota and an encryption key, then reaches one of three isolated pools; a saturated pool leaves the other tenants unaffected." width="1500" height="560" loading="lazy" decoding="async" />
+          </span>
+          <span class="b-body">
+            <span class="b-meta">
+              <span data-glitch>2023 — 2024</span>
+              <span class="b-status">In production</span>
+            </span>
+            <span class="b-title">Tenant Isolation</span>
+            <span class="b-tagline">Moving a shared-everything multi-tenant platform onto per-tenant pools, so one customer's bad afternoon stops being everyone's.</span>
+            <span class="b-stack">Kotlin · PostgreSQL · Kubernetes</span>
+            <span class="b-cta"><span data-glitch>Read case study</span><span class="b-arrow" aria-hidden="true">→</span></span>
+          </span>
+        </a>
+        <a class="b-tile b-md-3 b-lg-3" href="/projects/release-train"
+          data-umami-event="project-release-train">
+          <span class="b-media">
+            <img class="shot shot-light" src="/assets/figures/release-train-light.svg"
+              alt="A timeline from merge through build and test, a one percent canary and a twenty-five percent ramp to the full fleet at thirty-one hours, with a dashed automatic rollback arc from the ramp back to the canary stage." width="1400" height="520" loading="lazy" decoding="async" />
+            <img class="shot shot-dark" src="/assets/figures/release-train-dark.svg"
+              alt="A timeline from merge through build and test, a one percent canary and a twenty-five percent ramp to the full fleet at thirty-one hours, with a dashed automatic rollback arc from the ramp back to the canary stage." width="1400" height="520" loading="lazy" decoding="async" />
+          </span>
+          <span class="b-body">
+            <span class="b-meta">
+              <span data-glitch>2021 — 2022</span>
+              <span class="b-status">In production</span>
+            </span>
+            <span class="b-title">Release Train</span>
+            <span class="b-tagline">Turning a fortnightly release window that four people had to be awake for into a progressive rollout nobody has to attend.</span>
+            <span class="b-stack">Go · Kubernetes · Terraform</span>
+            <span class="b-cta"><span data-glitch>Read case study</span><span class="b-arrow" aria-hidden="true">→</span></span>
+          </span>
+        </a>
+        <a class="b-tile b-md-6 b-lg-6" href="/projects/cost-attribution"
+          data-umami-event="project-cost-attribution">
+          <span class="b-media">
+            <img class="shot shot-light" src="/assets/figures/cost-breakdown-light.svg"
+              alt="Grouped bar chart of monthly cost per service before and after attribution: search down thirty-seven percent, ingest thirty-one, warehouse eleven, batch jobs forty-six, and observability up forty-one percent." width="1600" height="600" loading="lazy" decoding="async" />
+            <img class="shot shot-dark" src="/assets/figures/cost-breakdown-dark.svg"
+              alt="Grouped bar chart of monthly cost per service before and after attribution: search down thirty-seven percent, ingest thirty-one, warehouse eleven, batch jobs forty-six, and observability up forty-one percent." width="1600" height="600" loading="lazy" decoding="async" />
+          </span>
+          <span class="b-body">
+            <span class="b-meta">
+              <span data-glitch>2024 — 2025</span>
+              <span class="b-status">In production</span>
+            </span>
+            <span class="b-title">Cost Attribution</span>
+            <span class="b-tagline">Giving every request, job and query an owner, so an infrastructure bill stops being one number nobody can act on.</span>
+            <span class="b-stack">Kotlin · ClickHouse · Terraform</span>
+            <span class="b-cta"><span data-glitch>Read case study</span><span class="b-arrow" aria-hidden="true">→</span></span>
           </span>
         </a>
       </section>

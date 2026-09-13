@@ -1,0 +1,35 @@
+{
+  "slug": "config-service",
+  "order": 2,
+  "size": "normal",
+  "name": "Config Service",
+  "tagline": "A typed, versioned configuration store that replaced a shared YAML file and its merge conflicts.",
+  "period": "2021 — 2022",
+  "role": "Backend developer",
+  "stack": ["Go", "PostgreSQL"],
+  "tags": ["Developer tooling", "Config management"],
+  "status": "In production",
+  "lastmod": "2026-09-13",
+  "seo": {
+    "title": "Config Service — Martin Zachariassen",
+    "description": "A typed, versioned configuration store built in Go and PostgreSQL, replacing a shared YAML file across services."
+  },
+  "cover": {
+    "figure": "config-diff",
+    "alt": "A config publish view showing a timeout and retry value changed and validated against a schema before publishing.",
+    "caption": "A config change is validated and published, not merged and deployed."
+  },
+  "summary": "A dozen services shared one YAML file in a config repo, edited by hand and deployed by CI. Merge conflicts and silent typos were routine. I built a small typed config service with schema validation and an audit log, so a bad value fails at publish time instead of at runtime in a service nobody was watching.",
+  "sections": [
+    {
+      "label": "Result",
+      "heading": "Config errors caught before rollout, not after",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Every config change is validated against the owning service's schema before it publishes, and every publish is attributed and reversible. The class of incident caused by a bad config value reaching production dropped to zero in the following year."
+        }
+      ]
+    }
+  ]
+}

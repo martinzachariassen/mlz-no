@@ -1,0 +1,35 @@
+{
+  "slug": "internal-cli",
+  "order": 3,
+  "size": "normal",
+  "name": "Internal CLI",
+  "tagline": "A single onboarding-to-deploy CLI that replaced a wiki page of copy-pasted shell commands.",
+  "period": "2020 — 2021",
+  "role": "Backend developer",
+  "stack": ["Rust"],
+  "tags": ["Developer tooling", "CLI"],
+  "status": "In production",
+  "lastmod": "2026-09-13",
+  "seo": {
+    "title": "Internal CLI — Martin Zachariassen",
+    "description": "A single onboarding-to-deploy CLI, built in Rust, that replaced a wiki page of copy-pasted shell commands."
+  },
+  "cover": {
+    "figure": "cli-session",
+    "alt": "A terminal session running dev up, dev deploy --local and dev doctor, each completing in under twenty seconds.",
+    "caption": "One command instead of a wiki page."
+  },
+  "summary": "New engineers spent their first week running commands copied from a wiki page that was out of date as often as not. I built a single CLI covering environment setup, local services and deploys, versioned alongside the infrastructure it drove so it could never drift from what the wiki described.",
+  "sections": [
+    {
+      "label": "Result",
+      "heading": "One command instead of a wiki page",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Time to a first local build for a new engineer went from roughly a day of following stale instructions to under twenty minutes, and the tool itself became the source of truth the wiki page used to be."
+        }
+      ]
+    }
+  ]
+}

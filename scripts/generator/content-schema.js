@@ -25,8 +25,8 @@
  * content files still carry it. A new block type is three edits: a variant in
  * the `block` union below, a renderer in render.js's `blockRenderers`, and
  * whatever CSS it needs in public/css/case-study.css.
- * A new tile size is a value in TILE_SIZES and a matching `.b-*` rule in
- * public/css/bento.css.
+ * A new tile size is one value in bento.js's TILE_WEIGHTS and nothing else —
+ * the spans it can produce already have rules in public/css/bento.css.
  *
  * Adding a project, start to finish:
  *   1. Pick the slug — the filename is the URL, and `slug` inside the file
@@ -62,6 +62,7 @@
  */
 
 import { z } from "zod";
+import { TILE_SIZES } from "./bento.js";
 
 /* --------------------------------------------------------------- formats */
 
@@ -123,12 +124,6 @@ const externalHref = str({
   pattern: EXTERNAL_HREF,
   hint: "expected an http(s):// or mailto: link",
 });
-
-/**
- * Tile widths are the `.b-*` classes bento.css actually defines. A size the
- * stylesheet has no rule for renders as a full-width tile with no warning.
- */
-const TILE_SIZES = ["flagship", "wide", "normal"];
 
 /**
  * The shape of any reference to a figure: which SVG under content/figures/
@@ -302,8 +297,14 @@ const block = z.discriminatedUnion("type", [
  * content/projects/<slug>.json — one case study, one tile on the overview
  * grid. `slug` must match the filename (the URL) and `order` must be unique
  * (position on the grid, and the previous/next order at the foot of each
- * case study). `size` is a TILE_SIZES value; the stylesheet has no rule for
- * anything else, which is why the list is closed.
+ * case study).
+ *
+ * `size` is how much of a row this tile wants relative to the ones beside it,
+ * not a column count — see bento.js, which packs the run of sizes into rows
+ * that fill the grid exactly. A `normal` in a row of three and a `normal` in
+ * a row of two are different widths, and a tile that ends up under half the
+ * grid drops its cover figure, because there is no width at which one of
+ * these diagrams reads as a thumbnail.
  *
  * What ends up where:
  *   tile         cover, period, status, name, tagline, stack

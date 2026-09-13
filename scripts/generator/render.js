@@ -16,6 +16,7 @@
  * constraints as the hand-written pages.
  */
 
+import { tileClasses } from "./bento.js";
 import { projectEventName } from "./content-schema.js";
 import { esc, html, raw, unraw } from "./html.js";
 
@@ -295,12 +296,24 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
 
   /* ------------------------------------------------------- page: index */
 
-  function bentoTile(project) {
+  /**
+   * A tile's width is not its `size` — bento.js packs the whole run of sizes
+   * into rows that fill the grid, and hands back the class that carries the
+   * result. Everything that varies with width (the cover figure, the stack
+   * line, the type scale) is a rule on that class in public/css/bento.css,
+   * not a branch here: the same tile is a different width at each breakpoint,
+   * and only CSS knows which one is in force.
+   *
+   * `first` is the one tile whose figure is worth blocking on — it is the
+   * largest thing above the fold at every width, so it is eager where the
+   * rest are lazy.
+   */
+  function bentoTile(project, className, first) {
     return html`
-      <a class="b-tile b-${esc(project.size)}" href="${projectUrl(project)}"
+      <a class="b-tile ${className}" href="${projectUrl(project)}"
         data-umami-event="${esc(projectEventName(project.slug))}">
         <span class="b-media">
-          ${figureImages(project.cover.figure, project.cover.alt, { eager: true })}
+          ${figureImages(project.cover.figure, project.cover.alt, { eager: first })}
         </span>
         <span class="b-body">
           <span class="b-meta">
@@ -315,11 +328,11 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
       </a>`;
   }
 
-  function asideTile(tile) {
+  function asideTile(tile, className) {
     const external = tile.href.startsWith("http");
     const rel = external ? ' target="_blank" rel="noopener noreferrer"' : "";
     return html`
-      <a class="b-tile b-${esc(tile.size)} b-aside" href="${esc(tile.href)}"${rel}
+      <a class="b-tile b-aside ${className}" href="${esc(tile.href)}"${rel}
         data-umami-event="${esc(tile.umamiEvent)}">
         <span class="b-body">
           <span class="b-label" data-glitch>${esc(tile.label)}</span>
@@ -332,6 +345,13 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
 
   function indexPage() {
     const config = site.index;
+    // Projects and aside tiles are one run through the packer, in the order
+    // they are rendered — an aside tile is a tile on the same grid, and a row
+    // it shares with a project has to add up like any other.
+    const classes = tileClasses([
+      ...projects.map((project) => project.size),
+      ...config.asideTiles.map((tile) => tile.size),
+    ]);
     return page({
       current: "page",
       meta: {
@@ -369,8 +389,8 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
             <p class="page-intro">${esc(config.intro)}</p>
           </header>
           <section class="bento" aria-label="Projects">
-            ${projects.map(bentoTile)}
-            ${config.asideTiles.map(asideTile)}
+            ${projects.map((project, i) => bentoTile(project, classes[i], i === 0))}
+            ${config.asideTiles.map((tile, i) => asideTile(tile, classes[projects.length + i]))}
           </section>
         </main>`,
     });

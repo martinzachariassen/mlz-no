@@ -1,0 +1,52 @@
+{
+  "slug": "search-relevance",
+  "order": 4,
+  "size": "wide",
+  "name": "Search Relevance Service",
+  "tagline": "A standalone ranking service that took relevance tuning out of a monolith and into something product could iterate on weekly.",
+  "period": "2022 — 2023",
+  "role": "Backend developer",
+  "team": "2 engineers",
+  "stack": ["Kotlin", "Elasticsearch", "gRPC"],
+  "tags": ["Search", "Ranking", "A/B testing"],
+  "status": "In production",
+  "lastmod": "2026-09-13",
+  "seo": {
+    "title": "Search Relevance Service — Martin Zachariassen",
+    "description": "A standalone ranking service that took relevance tuning out of a monolith, built in Kotlin and Elasticsearch."
+  },
+  "cover": {
+    "figure": "ranking-flow",
+    "alt": "Diagram of a search request flowing through a scoring step driven by a published config version, split across an A/B variant, into ranked results.",
+    "caption": "A ranking change is a config publish, not a deploy."
+  },
+  "summary": "Ranking logic lived inline in the search endpoint of the main monolith, so every relevance change needed a full deploy and a release owner. I extracted it into its own gRPC service with a config-driven scoring pipeline, so product and search specialists could ship ranking changes without engineering in the loop.",
+  "sections": [
+    {
+      "label": "Approach",
+      "heading": "Scoring as configuration, not code",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "The new service reads a versioned scoring config at request time, so a ranking change is a config publish rather than a deploy. Every request also logs which config version scored it, which made the A/B rollout of new ranking strategies straightforward to attribute."
+        }
+      ]
+    },
+    {
+      "label": "Result",
+      "heading": "Weekly ranking iteration instead of quarterly",
+      "blocks": [
+        {
+          "type": "metrics",
+          "items": [
+            { "value": "6x", "label": "Faster relevance iteration cycle" },
+            {
+              "value": "0",
+              "label": "Engineering deploys needed for a ranking change"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

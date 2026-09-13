@@ -1,0 +1,103 @@
+{
+  "slug": "tenant-isolation",
+  "order": 6,
+  "size": "wide",
+  "name": "Tenant Isolation",
+  "tagline": "Moving a shared-everything multi-tenant platform onto per-tenant pools, so one customer's bad afternoon stops being everyone's.",
+  "period": "2023 — 2024",
+  "role": "Backend developer",
+  "team": "3 engineers",
+  "stack": ["Kotlin", "PostgreSQL", "Kubernetes"],
+  "tags": ["Multi-tenancy", "Reliability", "Capacity"],
+  "status": "In production",
+  "lastmod": "2026-09-13",
+  "seo": {
+    "title": "Tenant Isolation — Martin Zachariassen",
+    "description": "Moving a shared-everything multi-tenant platform onto per-tenant pools, quotas and keys — so one customer's load stops being everyone's outage."
+  },
+  "cover": {
+    "figure": "tenant-routing",
+    "alt": "A request carrying a tenant identifier passes through a router that resolves a pool, a quota and an encryption key, then reaches one of three isolated pools; a saturated pool leaves the other tenants unaffected.",
+    "caption": "One lookup at the edge decides pool, quota and key. Everything downstream is single-tenant by construction."
+  },
+  "summary": "Every tenant shared one connection pool, one worker fleet and one rate limit, so a single customer running a bulk import could push the whole platform past its latency objective. I introduced a tenant resolution step at the edge and moved the blast radius from the platform to the pool.",
+  "sections": [
+    {
+      "label": "Problem",
+      "heading": "One tenant, everyone's outage",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "The platform was shared-everything, which had been exactly right when it had eleven customers and was increasingly wrong at four hundred. Capacity was provisioned for the aggregate, and the aggregate was dominated by whoever happened to be doing something unusual that afternoon."
+        },
+        {
+          "type": "quote",
+          "value": "We were not over capacity. We were over capacity for ninety seconds a day, in a different place each time.",
+          "attribution": "From the postmortem that funded the work"
+        },
+        {
+          "type": "list",
+          "title": "What shared-everything actually cost us",
+          "items": [
+            "A bulk import from one tenant exhausted the connection pool for all of them.",
+            "Rate limits were global, so protecting the platform meant throttling innocent traffic.",
+            "Two enterprise deals stalled on a question about key separation that we could not answer honestly.",
+            "Capacity planning was a single number nobody could attribute to anything."
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Approach",
+      "heading": "Resolve the tenant once, at the edge",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Every request already carried a tenant identifier; nothing downstream did anything with it. The change was to resolve it exactly once, at the edge, into the three things that had been global — which pool serves this tenant, what quota it has, and which key its data is encrypted with — and to make every component below that point single-tenant by construction."
+        },
+        {
+          "type": "list",
+          "title": "The decisions that mattered",
+          "kind": "numbered",
+          "items": [
+            "Pools, not databases. Physical separation per tenant was unaffordable at four hundred; a pool of tenants sized to a known worst case was not.",
+            "Quota at the edge, enforced before the work is queued. Throttling after a request has taken a connection defeats the point.",
+            "Dedicated pools as a product tier rather than an exception, so the two tenants who needed one stopped being a special case in the code.",
+            "Migration one pool at a time, with the router able to send a tenant back to the shared fleet on a config change."
+          ]
+        },
+        {
+          "type": "note",
+          "title": "The part I got wrong first",
+          "value": "The first resolver hit the database on every request and cached nothing, on the theory that tenant configuration changes should take effect immediately. It added 6 ms to the p50 of every call on the platform. A sixty-second cache with an explicit invalidation on publish gave back all of it and nobody has ever noticed the delay."
+        }
+      ]
+    },
+    {
+      "label": "Result",
+      "heading": "The blast radius has a name now",
+      "blocks": [
+        {
+          "type": "metrics",
+          "items": [
+            { "value": "84 ms", "label": "p99 during a saturated pool" },
+            {
+              "value": "1 of 17",
+              "label": "Pools affected by the worst incident"
+            },
+            { "value": "6 ms → 0", "label": "Resolver cost after caching" },
+            { "value": "2", "label": "Enterprise deals unblocked" }
+          ]
+        },
+        {
+          "type": "text",
+          "value": "The number I care about is the second one. Incidents did not stop — a tenant can still saturate the pool it sits in — but an incident now has a boundary you can name in the first minute, and the other sixteen pools carry on without anybody paging them."
+        },
+        {
+          "type": "text",
+          "value": "The unplanned benefit was capacity planning. Cost and load are attributable per pool, and per pool means per tenant, which turned a single unexplainable infrastructure line into a number the commercial side could actually use."
+        }
+      ]
+    }
+  ]
+}

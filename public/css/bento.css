@@ -1,5 +1,12 @@
 /* Bento grid for /projects, plus the light/dark image swap that case-study.css
-   also relies on — which is why a case study loads this file too. */
+   also relies on — which is why a case study loads this file too.
+
+   The grid is six columns and nothing here chooses a tile's width: the spans
+   are solved at build time by scripts/generator/bento.js, which packs the run
+   of sizes in content/ into rows that fill all six columns, and writes the
+   answer out as a `b-lg-<n>`/`b-md-<n>` class per tile. This file only has to
+   turn those into `grid-column`, and react to how wide a tile turned out —
+   which is what `--span` below is for. */
 
 .bento {
   display: grid;
@@ -7,22 +14,77 @@
   grid-template-columns: minmax(0, 1fr);
 }
 
+/* Every tile is full width until a grid with columns exists to say otherwise,
+   so this is also the value the single-column layout below 720px uses. */
+.b-tile {
+  --span: 6;
+}
+
 @media (min-width: 720px) {
   .bento {
     gap: 20px;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
   }
+}
 
-  .b-flagship {
-    grid-column: span 4;
+/* Two breakpoints, two packings: six columns split three ways is a ~300px
+   tile, which is under the width a display-face title and a diagram both
+   need, so the narrow grid fits two tiles to a row and the wide one three.
+   The ranges don't overlap, so neither block ever has to override the other. */
+@media (min-width: 720px) and (max-width: 1023.98px) {
+  .b-md-1 {
+    --span: 1;
+    grid-column: span 1;
   }
-
-  .b-wide {
+  .b-md-2 {
+    --span: 2;
+    grid-column: span 2;
+  }
+  .b-md-3 {
+    --span: 3;
     grid-column: span 3;
   }
+  .b-md-4 {
+    --span: 4;
+    grid-column: span 4;
+  }
+  .b-md-5 {
+    --span: 5;
+    grid-column: span 5;
+  }
+  .b-md-6 {
+    --span: 6;
+    grid-column: span 6;
+  }
+}
 
-  .b-normal {
+@media (min-width: 1024px) {
+  .bento {
+    gap: 22px;
+  }
+  .b-lg-1 {
+    --span: 1;
+    grid-column: span 1;
+  }
+  .b-lg-2 {
+    --span: 2;
     grid-column: span 2;
+  }
+  .b-lg-3 {
+    --span: 3;
+    grid-column: span 3;
+  }
+  .b-lg-4 {
+    --span: 4;
+    grid-column: span 4;
+  }
+  .b-lg-5 {
+    --span: 5;
+    grid-column: span 5;
+  }
+  .b-lg-6 {
+    --span: 6;
+    grid-column: span 6;
   }
 }
 
@@ -62,6 +124,13 @@
     border-color 0.26s var(--ease);
 }
 
+/* The off-site cards never carry a figure, so without this they read as a
+   project tile that happens to be missing its image. A filled ground says
+   "different kind of thing" without another border or a second accent. */
+.b-aside {
+  background: var(--surface);
+}
+
 .b-tile:hover,
 .b-tile:focus-visible {
   border-color: var(--accent-deep);
@@ -69,11 +138,83 @@
   box-shadow: 6px 6px 0 0 var(--accent-deep);
 }
 
-.b-media {
+/* An SVG loaded through <img> is its own document: it cannot read the page's
+   custom properties or [data-theme]. Each figure therefore ships as two files
+   and the page picks one. display:none also takes the hidden copy out of the
+   accessibility tree, so the alt text is announced once. */
+.shot {
   display: block;
+  width: 100%;
+  height: auto;
+}
+
+.shot-dark {
+  display: none;
+}
+
+[data-theme="dark"] .shot-light {
+  display: none;
+}
+
+[data-theme="dark"] .shot-dark {
+  display: block;
+}
+
+/* A band of a fixed shape rather than the figure's own. These diagrams range
+   from 1.4:1 to 2.8:1, and letting each tile take its cover's aspect ratio
+   means the bodies of two tiles in the same row start at different heights —
+   the one thing that makes a bento grid look like an accident.
+
+   The ratio is on the image, not on this box: an `aspect-ratio` here would
+   give the box a definite height that the image's own `height: 100%` could
+   not resolve against (the grid row it sits in is still content-sized), so
+   the image would keep its intrinsic height and get clipped by the band it
+   was supposed to fit inside.
+
+   `contain` means a diagram is never cropped — an edge cut off is worse than
+   air — and the air is invisible because every figure paints `{{bg}}` as its
+   own background and this band is the same colour. */
+.b-media {
+  /* The single-column layout, where the tile is a phone wide and the two
+     families of figure — the ~2.6:1 diagrams and the ~1.45:1 panels — are
+     both a long way from it. Halfway between them costs each a little air
+     and leaves neither looking like a mistake. */
+  --media-ratio: 16 / 9;
+  display: block;
+  padding: clamp(10px, 1.6vw, 20px);
   border-bottom: 1.5px solid var(--border);
   background: var(--bg);
   transition: border-color 0.26s var(--ease);
+}
+
+.b-media .shot {
+  width: 100%;
+  height: auto;
+  aspect-ratio: var(--media-ratio);
+  object-fit: contain;
+}
+
+/* Wider tile, wider band. A full-width cover at 5/2 is close enough to what
+   most of these diagrams already are that they nearly fill it; a half-width
+   one is squarer, because the same diagram at ~460px across needs the height
+   back to stay readable. */
+@media (min-width: 720px) and (max-width: 1023.98px) {
+  .b-md-6 .b-media {
+    --media-ratio: 5 / 2;
+  }
+}
+
+@media (min-width: 1024px) {
+  .b-lg-6 .b-media {
+    --media-ratio: 5 / 2;
+  }
+  .b-lg-5 .b-media,
+  .b-lg-4 .b-media {
+    --media-ratio: 9 / 4;
+  }
+  .b-lg-3 .b-media {
+    --media-ratio: 16 / 9;
+  }
 }
 
 .b-tile:hover .b-media,
@@ -81,12 +222,16 @@
   border-color: var(--accent-deep);
 }
 
+/* Padding and type scale off how wide the tile actually ended up, so a
+   two-column tile isn't a six-column tile with the words wrapped tighter.
+   The vw term is the single-column layout, where --span is 6 but the tile is
+   a phone wide. */
 .b-body {
   display: flex;
   flex: 1;
   flex-direction: column;
   gap: 10px;
-  padding: clamp(18px, 3vw, 28px);
+  padding: min(calc(10px + var(--span) * 3px), 6vw);
 }
 
 .b-meta {
@@ -116,13 +261,9 @@
   font-style: italic;
   font-weight: 500;
   font-variation-settings: "opsz" 40;
-  font-size: clamp(26px, 4.4vw, 40px);
+  font-size: min(calc(14px + var(--span) * 4px), 8.5vw);
   line-height: 1.04;
   letter-spacing: -0.01em;
-}
-
-.b-aside .b-title {
-  font-size: clamp(22px, 3vw, 28px);
 }
 
 .b-tagline {
@@ -161,24 +302,33 @@
   transform: translateX(4px);
 }
 
-/* An SVG loaded through <img> is its own document: it cannot read the page's
-   custom properties or [data-theme]. Each figure therefore ships as two files
-   and the page picks one. display:none also takes the hidden copy out of the
-   accessibility tree, so the alt text is announced once. */
-.shot {
-  display: block;
-  width: 100%;
-  height: auto;
-}
+/* Everything that depends on how wide the tile actually turned out, last,
+   so each of these refines a rule that has already been stated.
 
-.shot-dark {
+   Under half the grid there is no width at which one of these diagrams reads
+   as anything but a strip, so the tile drops to copy only and spends the room
+   on the title instead — and `space-between` stops reading as a header's two
+   ends and starts reading as two words pinned apart. bento.js owns the
+   threshold and marks the tile per breakpoint; this is the whole of what the
+   mark means. */
+.b-lg-compact .b-stack,
+.b-md-compact .b-stack {
   display: none;
 }
 
-[data-theme="dark"] .shot-light {
-  display: none;
+.b-lg-compact .b-meta,
+.b-md-compact .b-meta {
+  justify-content: flex-start;
 }
 
-[data-theme="dark"] .shot-dark {
-  display: block;
+@media (min-width: 720px) and (max-width: 1023.98px) {
+  .b-md-compact .b-media {
+    display: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .b-lg-compact .b-media {
+    display: none;
+  }
 }

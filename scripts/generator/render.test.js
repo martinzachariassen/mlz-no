@@ -389,11 +389,90 @@ describe("end navigation", () => {
 describe("overview page", () => {
   test("renders a tile per project plus the aside tiles from site.json", () => {
     expect(indexPage).toContain(
-      '<a class="b-tile b-flagship" href="/projects/demo"',
+      '<a class="b-tile b-md-6 b-lg-6" href="/projects/demo"',
     );
     expect(indexPage).toContain('data-umami-event="project-demo"');
-    expect(indexPage).toContain('<a class="b-tile b-normal b-aside"');
+    expect(indexPage).toContain('<a class="b-tile b-aside b-md-6 b-lg-6"');
     expect(indexPage).toContain('data-umami-event="aside-github"');
+  });
+
+  /**
+   * The tiling itself is bento.test.js's subject; what matters here is that
+   * the overview page hands the packer one run covering both kinds of tile.
+   * An aside tile left out of it would be laid out against a different row
+   * plan from the projects it sits beside, and the grid would have a hole.
+   */
+  test("packs projects and aside tiles as one run, in render order", () => {
+    const twoNormals = [
+      { ...project, slug: "a", order: 1, size: "normal" },
+      { ...project, slug: "b", order: 2, size: "normal" },
+    ];
+    const classesOf = (asideTiles) => {
+      const page = createRenderer({
+        site: { ...site, index: { ...site.index, asideTiles } },
+        projects: twoNormals,
+        figures,
+        tokens,
+      })
+        .files()
+        .find((f) => f.path === "/projects/index.html").content;
+      return [...page.matchAll(/<a class="b-tile ([^"]+)"/g)].map(
+        ([, value]) => value,
+      );
+    };
+
+    // Two projects alone take half the desktop grid each.
+    expect(classesOf([])).toEqual(["b-md-3 b-lg-3", "b-md-3 b-lg-3"]);
+
+    // The aside tile joins their row rather than starting one of its own, and
+    // all three narrow to a third — which is only true if it went through the
+    // packer with them.
+    expect(classesOf(site.index.asideTiles)).toEqual([
+      "b-md-3 b-lg-2 b-lg-compact",
+      "b-md-3 b-lg-2 b-lg-compact",
+      "b-aside b-md-6 b-lg-2 b-lg-compact",
+    ]);
+  });
+
+  /**
+   * Width is decided by the packer, so nothing about the tile's copy can be:
+   * the same tile is three columns on one grid and two on another, and only
+   * CSS knows which. Every tile therefore carries the whole of its content
+   * and lets the stylesheet drop what does not fit.
+   */
+  test("gives every tile its figure and stack, whatever width it ends up", () => {
+    const page = createRenderer({
+      site: { ...site, index: { ...site.index, asideTiles: [] } },
+      projects: [
+        { ...project, slug: "a", order: 1, size: "normal" },
+        { ...project, slug: "b", order: 2, size: "normal" },
+        { ...project, slug: "c", order: 3, size: "normal" },
+      ],
+      figures,
+      tokens,
+    })
+      .files()
+      .find((f) => f.path === "/projects/index.html").content;
+    // Three normals: two columns each on the desktop grid — too narrow for a
+    // figure, so all three are compact, and all three still carry one.
+    expect(page.match(/b-lg-compact/g)).toHaveLength(3);
+    expect(page.match(/<span class="b-media">/g)).toHaveLength(3);
+    expect(page.match(/<span class="b-stack">/g)).toHaveLength(3);
+  });
+
+  /**
+   * The first tile is the largest thing above the fold at every width, so it
+   * is the one figure worth blocking the render on. Everything below it waits
+   * until it is scrolled to.
+   */
+  test("loads only the first tile's cover eagerly", () => {
+    expect(indexPage.match(/loading="eager"/g)).toHaveLength(2); // light + dark
+    const twoProjects = filesOf([
+      { ...project, slug: "a", order: 1 },
+      { ...project, slug: "b", order: 2 },
+    ]).get("/projects/index.html");
+    expect(twoProjects.match(/loading="eager"/g)).toHaveLength(2);
+    expect(twoProjects.match(/loading="lazy"/g)).toHaveLength(2);
   });
 
   test("opens an off-site aside tile in a new tab, safely", () => {

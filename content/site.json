@@ -28,25 +28,6 @@
     "eyebrow": "Selected work",
     "heading": "Projects",
     "intro": "Backend systems and the infrastructure around them. Each entry is a short case study — what the problem actually was, what I chose to build, and what changed once it shipped.",
-    "asideTiles": [
-      {
-        "size": "normal",
-        "label": "Code",
-        "title": "GitHub",
-        "text": "Smaller experiments, dotfiles and the source of this site.",
-        "cta": "Open profile",
-        "href": "https://github.com/martinzachariassen",
-        "umamiEvent": "projects-github"
-      },
-      {
-        "size": "normal",
-        "label": "Contact",
-        "title": "Get in touch",
-        "text": "Happy to talk about backend architecture, event systems or hiring.",
-        "cta": "hi@mlz.no",
-        "href": "mailto:hi@mlz.no",
-        "umamiEvent": "projects-email"
-      }
-    ]
+    "asideTiles": []
   }
 }

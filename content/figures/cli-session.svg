@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620" width="900" height="620" role="img">
+  <rect width="900" height="620" fill="{{bg}}" />
+
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">
+    <text x="48" y="76" font-size="24" letter-spacing="3" fill="{{fg}}">ONBOARDING SESSION</text>
+    <line x1="48" y1="98" x2="852" y2="98" stroke="{{border}}" stroke-width="2" />
+
+    <rect x="48" y="140" width="804" height="380" rx="10" fill="{{surface}}" stroke="{{border}}" stroke-width="2" />
+    <g fill="{{muted}}">
+      <circle cx="80" cy="172" r="7" />
+      <circle cx="108" cy="172" r="7" />
+      <circle cx="136" cy="172" r="7" />
+    </g>
+    <line x1="48" y1="196" x2="852" y2="196" stroke="{{border}}" stroke-width="2" />
+
+    <g font-size="19">
+      <text x="80" y="244" fill="{{accentDeep}}">$ dev up</text>
+      <text x="80" y="284" fill="{{muted}}">&#8594; environment ready</text>
+      <text x="80" y="324" fill="{{accentDeep}}">$ dev deploy --local</text>
+      <text x="80" y="364" fill="{{muted}}">&#8594; built in 18s, running</text>
+      <text x="80" y="404" fill="{{accentDeep}}">$ dev doctor</text>
+      <text x="80" y="444" fill="{{muted}}">&#8594; all checks passed</text>
+    </g>
+
+    <line x1="80" y1="480" x2="820" y2="480" stroke="{{border}}" stroke-width="1.5" />
+    <text x="80" y="500" font-size="16" fill="{{fgSecondary}}">first local build: 18 min &#8594; under 20 min</text>
+  </g>
+</svg>

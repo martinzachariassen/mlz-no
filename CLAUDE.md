@@ -31,6 +31,7 @@ you're changing:
 | --- | --- |
 | `content-schema.js` | the spec every file under `content/` is validated against |
 | `render.js` | content in, finished page strings out — no filesystem access |
+| `bento.js` | which tile is how wide on the overview grid, per breakpoint |
 | `html.js` | the `html\`\`` template engine the renderers are written with |
 | `build-content.js` | reading `content/`, writing `public/`, `--check` |
 | `tokens.js` | the palette, parsed out of `public/css/tokens.css` |
@@ -54,8 +55,27 @@ of whatever happens to be in `content/` at the time; `html.test.js` pins the
 template engine's indentation and empty-value rules, which otherwise only show
 up as a committed file that looks slightly wrong; `render.test.js` renders
 fixtures covering every block type and asserts escaping, ordering and optional
-fields; `tokens.test.js` also pins the two files under `public/` that carry a
-hand-written copy of the palette. Add a source file, add its test file.
+fields; `bento.test.js` checks exhaustively — every mix of sizes up to six
+tiles — that each grid row is filled exactly and no tile is narrower than its
+breakpoint allows, which is the failure a hole in the grid would otherwise only
+show as a gap on the page; `tokens.test.js` also pins the two files under
+`public/` that carry a hand-written copy of the palette. Add a source file, add
+its test file.
+
+A project's `size` is what its tile **asks for**, not a column count.
+`scripts/generator/bento.js` cuts the run of tiles into rows and shares each
+row's six columns out in proportion to the asking, so a row always fills
+exactly whatever mix of sizes `content/` contains — the answer is a
+`b-lg-<n> b-md-<n>` class per tile, and `public/css/bento.css` only turns that
+into `grid-column`. Two consequences worth knowing before you change either:
+
+- Nothing in `render.js` may branch on `size`. The same tile is a different
+  width at each breakpoint and only CSS knows which, so every tile carries its
+  whole content and the stylesheet drops what does not fit — a cover figure on
+  a tile under half the grid, for instance, which `bento.js` marks `-compact`.
+- The spans cannot be inline styles (`firebase.json`'s CSP has no
+  `'unsafe-inline'`) and cannot be left to `grid-auto-flow: dense`, which fills
+  holes by reordering tiles out of step with the tab order. Hence the class.
 
 After validation, `scripts/generator/check-links.js` checks that every
 root-relative `href`/`src`/`og:image` the generated pages emit resolves to a

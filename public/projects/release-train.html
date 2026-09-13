@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="color-scheme" content="light dark" />
+    <script src="/theme-init.js"></script>
+    <meta name="format-detection" content="telephone=no" />
+    <title>Release Train — Martin Zachariassen</title>
+    <meta
+      name="description"
+      content="Replacing a fortnightly release window with a progressive rollout: canary, ramp, and an automatic rollback tied to the error budget."
+    />
+    <link rel="canonical" href="https://mlz.no/projects/release-train" />
+    <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/assets/icons/favicon-32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="192x192"
+      href="/assets/icons/favicon-192.png"
+    />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/assets/icons/apple-touch-icon.png"
+    />
+    <link rel="manifest" href="/assets/site.webmanifest" />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: light)"
+      content="oklch(0.95 0.006 250)"
+    />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: dark)"
+      content="oklch(0.2 0.006 265)"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Martin Zachariassen" />
+    <meta property="og:url" content="https://mlz.no/projects/release-train" />
+    <meta property="og:title" content="Release Train — Martin Zachariassen" />
+    <meta
+      property="og:description"
+      content="Replacing a fortnightly release window with a progressive rollout: canary, ramp, and an automatic rollback tied to the error budget."
+    />
+    <meta property="og:locale" content="en_GB" />
+    <meta property="og:image" content="https://mlz.no/assets/social/og.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Martin Zachariassen — Senior Software Developer"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="stylesheet" href="/css/tokens.css" />
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/topbar.css" />
+    <link rel="stylesheet" href="/css/page-head.css" />
+    <link rel="stylesheet" href="/css/case-study.css" />
+    <link rel="stylesheet" href="/css/bento.css" />
+    <link rel="stylesheet" href="/css/footer.css" />
+    <link rel="stylesheet" href="/css/motion.css" />
+    <script
+      defer
+      src="https://cloud.umami.is/script.js"
+      data-website-id="e73d093f-ea9e-4839-8c5f-3dd4888a3c36"
+    ></script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "CreativeWork",
+        "name": "Release Train",
+        "url": "https://mlz.no/projects/release-train",
+        "abstract": "Turning a fortnightly release window that four people had to be awake for into a progressive rollout nobody has to attend.",
+        "description": "Releases went out every second Thursday evening, by hand, with a rollback plan that was a document rather than a command. I replaced the window with a pipeline that ships continuously through a canary and a ramp, and rolls itself back when the error budget starts burning.",
+        "author": {
+          "@type": "Person",
+          "name": "Martin Zachariassen",
+          "url": "https://mlz.no"
+        },
+        "keywords": "Delivery, Progressive rollout, Reliability",
+        "isPartOf": {
+          "@type": "CollectionPage",
+          "name": "Projects",
+          "url": "https://mlz.no/projects"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <header class="wrap topbar rise delay-50">
+      <a href="/" aria-label="MLZ home" class="brand">
+        <svg
+          class="brand-mark"
+          width="16"
+          height="16"
+          viewBox="0 0 32 32"
+          fill="none"
+          role="img"
+          aria-label="MLZ"
+        >
+          <rect x="1" y="1" width="30" height="30" rx="6" fill="var(--fg)" />
+          <polygon
+            points="7,25 7,7 11.5,7 16,18.5 20.5,7 25,7 25,25"
+            fill="var(--bg)"
+          />
+        </svg>
+        <span class="brand-word" data-glitch>mlz<span class="period">.</span></span>
+      </a>
+      <div class="topbar-right">
+        <a class="nav-link active" href="/projects" data-umami-event="nav-projects" data-glitch>Projects</a>
+        <button
+          type="button"
+          class="theme-toggle"
+          data-theme-toggle
+          aria-label="Toggle colour theme"
+        >
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+          </svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+          </svg>
+        </button>
+      </div>
+    </header>
+    <main class="wrap page">
+      <header class="page-head rise delay-150">
+        <p class="page-eyebrow">
+          <span data-glitch>2021 — 2022</span>
+          <span class="sep" aria-hidden="true">/</span>
+          <span data-glitch>Go</span>
+        </p>
+        <h1 class="page-title">Release Train</h1>
+        <p class="page-intro">Turning a fortnightly release window that four people had to be awake for into a progressive rollout nobody has to attend.</p>
+      </header>
+      <dl class="case-facts rise delay-450">
+        <div class="fact">
+          <dt data-glitch>Role</dt>
+          <dd>Backend developer</dd>
+        </div>
+        <div class="fact">
+          <dt data-glitch>Status</dt>
+          <dd>In production</dd>
+        </div>
+        <div class="fact">
+          <dt data-glitch>Stack</dt>
+          <dd>Go · Kubernetes · Terraform</dd>
+        </div>
+      </dl>
+      <figure class="figure figure-cover rise delay-600">
+        <span class="shot-frame">
+          <img class="shot shot-light" src="/assets/figures/release-train-light.svg"
+            alt="A timeline from merge through build and test, a one percent canary and a twenty-five percent ramp to the full fleet at thirty-one hours, with a dashed automatic rollback arc from the ramp back to the canary stage." width="1400" height="520" loading="eager" decoding="async" />
+          <img class="shot shot-dark" src="/assets/figures/release-train-dark.svg"
+            alt="A timeline from merge through build and test, a one percent canary and a twenty-five percent ramp to the full fleet at thirty-one hours, with a dashed automatic rollback arc from the ramp back to the canary stage." width="1400" height="520" loading="eager" decoding="async" />
+        </span>
+        <figcaption>Every stage can stop the train. Only the last one needs a human, and only to notice it already happened.</figcaption>
+      </figure>
+      <p class="case-summary">Releases went out every second Thursday evening, by hand, with a rollback plan that was a document rather than a command. I replaced the window with a pipeline that ships continuously through a canary and a ramp, and rolls itself back when the error budget starts burning.</p>
+      <section class="field">
+        <p class="field-label" data-glitch>Problem</p>
+        <h2 class="field-heading">The window was the risk</h2>
+        <p class="prose">A fortnightly window meant a fortnight of changes went out at once, which meant that when something broke there were sixty commits to bisect and four people on a call at nine in the evening doing it. The window existed to make releases safe and was the single largest thing making them dangerous.</p>
+        <p class="block-title" data-glitch>What the window was really buying</p>
+        <ul class="prose-list">
+          <li>A moment when everyone who might be needed was already awake.</li>
+          <li>A rollback story: redeploy the previous tag, by hand, and hope nothing had migrated.</li>
+          <li>A batch large enough that nobody could say which change caused which graph to move.</li>
+        </ul>
+      </section>
+      <section class="field">
+        <p class="field-label" data-glitch>Approach</p>
+        <h2 class="field-heading">Ship small, watch, and let it undo itself</h2>
+        <p class="prose">The pipeline takes a merged commit to one percent of traffic, holds it there while a fixed set of signals is compared against the incumbent, then ramps. Nothing about that needs a human: the decision at each gate is arithmetic on the error budget, and the interesting outcome — stop and revert — is the one that happens automatically.</p>
+        <figure class="code">
+          <figcaption class="code-head">
+            <span class="code-lang" data-glitch>YAML</span>
+            <span>The gate between canary and ramp. The same file is the rollback policy, which is what stops the two from drifting.</span>
+          </figcaption>
+          <pre tabindex="0"><code>canary:
+  weight: 1
+  hold: 90m
+  compare:
+    - metric: http_error_rate
+      against: incumbent
+      max_delta: 0.2%
+    - metric: latency_p99
+      against: incumbent
+      max_delta: 15ms
+  on_breach: rollback      # not 'pause' — see the note below
+  rollback_within: 90s</code></pre>
+        </figure>
+        <aside class="note">
+          <p class="note-title" data-glitch>on_breach: rollback, not pause</p>
+          <p>The first version paused and paged, because reverting automatically felt reckless. In practice the page arrived, a sleepy person read a dashboard for four minutes, and then reverted anyway. Reverting first and paging afterwards has never once been the wrong call, and it turned a four-minute decision into a ninety-second one.</p>
+        </aside>
+      </section>
+      <section class="field">
+        <p class="field-label" data-glitch>Result</p>
+        <h2 class="field-heading">Nobody attends a release any more</h2>
+        <dl class="metrics">
+          <div class="metric">
+            <dt>Merge to full fleet</dt>
+            <dd>14d → 31h</dd>
+          </div>
+          <div class="metric">
+            <dt>Automatic rollback</dt>
+            <dd>90s</dd>
+          </div>
+          <div class="metric">
+            <dt>Scheduled release evenings</dt>
+            <dd>0</dd>
+          </div>
+        </dl>
+        <p class="prose">Thirty-one hours sounds slow for continuous delivery, and it is — deliberately. Most of it is the canary hold, which is the part that does the work. The change that matters is not the number but that it is the same number every time, and that nobody has to be present for any of it.</p>
+        <p class="block-title" data-glitch>What I would do differently</p>
+        <ul class="prose-list">
+          <li>Make database migrations a first-class stage from the start. Treating them as &quot;just another deploy&quot; cost us the only rollback the pipeline could not perform.</li>
+          <li>Agree the comparison metrics with the teams before building the gates, not after. Two services needed a signal we had not thought to collect.</li>
+        </ul>
+      </section>
+      <ul class="tag-list" aria-label="Topics">
+        <li>Delivery</li>
+        <li>Progressive rollout</li>
+        <li>Reliability</li>
+      </ul>
+    </main>
+    <nav class="end-nav wrap" aria-label="More projects">
+      <a class="end-card" href="/projects/tenant-isolation">
+        <span class="end-label" data-glitch>← Previous</span>
+        <span class="end-title">Tenant Isolation</span>
+      </a>
+      <a class="end-card end-next" href="/projects/cost-attribution">
+        <span class="end-label" data-glitch>Next →</span>
+        <span class="end-title">Cost Attribution</span>
+      </a>
+    </nav>
+    <footer class="rise delay-750">
+      <div class="wrap footer-row">
+        <span data-glitch>© <span data-year>2026</span> · Martin Zachariassen</span>
+        <span data-glitch>59°N · 10°E</span>
+      </div>
+    </footer>
+    <script src="/js/theme-toggle.js" defer></script>
+    <script src="/js/year.js" defer></script>
+    <script src="/js/glitch.js" defer></script>
+  </body>
+</html>
