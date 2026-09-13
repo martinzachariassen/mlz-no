@@ -31,6 +31,11 @@
   --fg-secondary: oklch(0.36 0.006 250);
   --fg-muted: oklch(0.49 0.01 250);
   --border: oklch(0.85 0.008 250);
+  /* Deliberately not redefined in the dark block below: at L=0.7 it already
+     reads clearly on both the light and dark --bg, and it's one of the two
+     glitch text-shadow colors (paired with --glitch-2, which does flip) —
+     flipping it too would converge both shadow layers toward the same
+     lightness in dark mode and wash out the chromatic-aberration effect. */
   --accent: oklch(0.7 0.16 285);
   --accent-deep: oklch(0.44 0.12 285);
   /* Deliberately not redefined in the dark block below: .btn-primary's fill

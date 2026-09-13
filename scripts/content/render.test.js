@@ -402,6 +402,35 @@ describe("overview page", () => {
     );
   });
 
+  test("does not open a mailto: aside tile in a new tab", () => {
+    const withMailto = createRenderer({
+      site: {
+        ...site,
+        index: {
+          ...site.index,
+          asideTiles: [
+            {
+              size: "normal",
+              label: "Say hello",
+              title: "Email",
+              text: "Get in touch.",
+              cta: "Write",
+              href: "mailto:hi@example.com",
+              umamiEvent: "aside-email",
+            },
+          ],
+        },
+      },
+      projects: [project],
+      figures,
+      tokens,
+    })
+      .files()
+      .find((f) => f.path === "/projects/index.html").content;
+    expect(withMailto).toContain('href="mailto:hi@example.com"');
+    expect(withMailto).not.toContain('target="_blank"');
+  });
+
   test("works with no aside tiles at all", () => {
     const bare = createRenderer({
       site: { ...site, index: { ...site.index, asideTiles: [] } },

@@ -81,8 +81,7 @@ const TOKEN_ALIASES = {
  * drift. Dark values that aren't overridden inherit from light, the same way
  * the real cascade works.
  */
-function readTokens() {
-  const path = join(publicDir, "css", "tokens.css");
+export function readTokens(path = join(publicDir, "css", "tokens.css")) {
   // Stripped before the block regexes run: a `}` inside a comment would
   // otherwise truncate the [^}]* capture right there.
   const css = readFileSync(path, "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
@@ -216,7 +215,7 @@ const REGION =
  * block with no region means that page silently stopped receiving updates to
  * markup it still displays.
  */
-function spliceChrome(source, blocks, file) {
+export function spliceChrome(source, blocks, file) {
   const seen = new Set();
 
   const out = source.replace(REGION, (_match, indent, name) => {
@@ -334,7 +333,7 @@ export function checkAssetLinks(outputs, site, strays = new Set()) {
  * chrome is spliced) can't be told apart by path, so its directory isn't
  * listed and it is only ever overwritten.
  */
-function findStrays(outputs, site) {
+export function findStrays(outputs, site) {
   return [join(publicDir, site.basePath), join(publicDir, site.figureDir)]
     .filter((dir) => existsSync(dir))
     .flatMap((dir) =>

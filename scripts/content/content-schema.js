@@ -178,9 +178,11 @@ const priority = str({
 
 /**
  * A non-project card on the overview grid — off-site by construction, so
- * `href` must be http(s):// or mailto:, and it renders with target="_blank"
- * and a ↗. `umamiEvent` is the analytics event name; project tiles don't
- * need one, they get `project-<slug>` automatically.
+ * `href` must be http(s):// or mailto:, and it always renders with a ↗.
+ * `target="_blank" rel="noopener noreferrer"` is added only for http(s)
+ * hrefs — a `mailto:` opens the user's mail client in place, not a new tab.
+ * `umamiEvent` is the analytics event name; project tiles don't need one,
+ * they get `project-<slug>` automatically.
  */
 const asideTile = z.strictObject({
   size: z.enum(TILE_SIZES),

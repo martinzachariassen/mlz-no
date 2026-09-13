@@ -83,9 +83,10 @@ that reason.
 CI (`.github/workflows/ci.yml`) boots the Hosting emulator and asserts that
 those headers and cache rules actually take effect — `firebase.json`'s
 `headers` list is last-match-wins, so a reorder could silently break a rule.
-Deploys (`.github/workflows/deploy.yml`) run on every push to `main`,
-authenticating to Google Cloud via Workload Identity Federation — no
-long-lived secrets stored in the repo.
+Deploys (`.github/workflows/deploy.yml`) trigger on CI concluding
+successfully on `main`, never on the push itself, and authenticate to Google
+Cloud via Workload Identity Federation — no long-lived secrets stored in the
+repo.
 
 ## Contributing
 
