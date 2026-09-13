@@ -1,7 +1,6 @@
 {
   "slug": "tenant-isolation",
   "order": 6,
-  "size": "wide",
   "name": "Tenant Isolation",
   "tagline": "Moving a shared-everything multi-tenant platform onto per-tenant pools, so one customer's bad afternoon stops being everyone's.",
   "period": "2023 — 2024",

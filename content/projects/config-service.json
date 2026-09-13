@@ -1,7 +1,6 @@
 {
   "slug": "config-service",
   "order": 2,
-  "size": "normal",
   "name": "Config Service",
   "tagline": "A typed, versioned configuration store that replaced a shared YAML file and its merge conflicts.",
   "period": "2021 — 2022",

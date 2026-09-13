@@ -25,8 +25,6 @@
  * content files still carry it. A new block type is three edits: a variant in
  * the `block` union below, a renderer in render.js's `blockRenderers`, and
  * whatever CSS it needs in public/css/case-study.css.
- * A new tile size is one value in bento.js's TILE_WEIGHTS and nothing else —
- * the spans it can produce already have rules in public/css/bento.css.
  *
  * Adding a project, start to finish:
  *   1. Pick the slug — the filename is the URL, and `slug` inside the file
@@ -36,14 +34,15 @@
  *   3. Write the file (a minimal one that builds is below), or copy an
  *      existing project and replace it section by section.
  *   4. Pick `order` — position on the overview grid, unique, and also the
- *      previous/next order at the foot of each case study.
+ *      previous/next order at the foot of each case study. It is the only
+ *      thing that decides how big the tile is: see scripts/generator/bento.js.
  *   5. `bun run build:content` and fix whatever it reports.
  *   6. `bun run dev`, then look at /projects and /projects/<slug> in both
  *      themes.
  *   7. Commit content/ and the generated files under public/ together.
  *
  *   {
- *     "slug": "my-project", "order": 2, "size": "normal",
+ *     "slug": "my-project", "order": 2,
  *     "name": "My Project", "tagline": "One sentence, tile + heading.",
  *     "period": "2024 — 2025", "stack": ["Kotlin", "PostgreSQL"],
  *     "tags": ["Backend"], "status": "In production", "lastmod": "2026-09-12",
@@ -62,7 +61,6 @@
  */
 
 import { z } from "zod";
-import { TILE_SIZES } from "./bento.js";
 
 /* --------------------------------------------------------------- formats */
 
@@ -180,7 +178,6 @@ const priority = str({
  * they get `project-<slug>` automatically.
  */
 const asideTile = z.strictObject({
-  size: z.enum(TILE_SIZES),
   label: str(),
   title: str(),
   text: str(),
@@ -299,12 +296,11 @@ const block = z.discriminatedUnion("type", [
  * (position on the grid, and the previous/next order at the foot of each
  * case study).
  *
- * `size` is how much of a row this tile wants relative to the ones beside it,
- * not a column count — see bento.js, which packs the run of sizes into rows
- * that fill the grid exactly. A `normal` in a row of three and a `normal` in
- * a row of two are different widths, and a tile that ends up under half the
- * grid drops its cover figure, because there is no width at which one of
- * these diagrams reads as a thumbnail.
+ * Nothing here says how big the tile is. `order` does: bento.js gives the
+ * first project the largest tile and works down, so the grid is a ramp with
+ * the newest work at the top left. A tile that ends up small drops its cover
+ * figure — there is no width at which one of these diagrams reads as a
+ * thumbnail — which is why every project needs copy that stands on its own.
  *
  * What ends up where:
  *   tile         cover, period, status, name, tagline, stack
@@ -318,7 +314,6 @@ export const projectSchema = z
   .strictObject({
     slug,
     order: z.number().int().min(1),
-    size: z.enum(TILE_SIZES),
     name: str(),
     tagline: str(),
     period: str(),

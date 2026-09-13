@@ -1,208 +1,174 @@
 /**
- * Where every tile on the overview grid sits, decided at build time.
+ * The shape of every tile on the overview grid, decided at build time.
  *
- * The grid is six columns wide and a tile's `size` in content/ is what that
- * tile *asks for*, not what it gets. The generator cuts the run of tiles into
- * rows, then shares each row's six columns out in proportion to the asking, so
- * every row fills exactly — no holes, no ragged last row — whatever mix of
- * sizes content/ happens to contain.
+ * The grid is six columns, and a tile occupies a rectangle of them: `[4, 2]`
+ * is four columns wide and two rows tall. Tiles therefore interlock in both
+ * directions — a tall one on the left with two shorter ones stacked beside it
+ * — rather than sitting in a row of equal heights.
  *
- * Fixed spans are what this replaces, and the reason is arithmetic: any rule
- * of the form "wide is three columns" leaves a gap the moment the sizes in
- * content/ don't add up to a multiple of the column count, and the author has
- * no way to close it except by changing a size to something they didn't mean.
- * Asking can't produce that state: a row is stretched or squeezed to the full
- * six columns, and the packer picks the cuts that distort the least.
+ * Nothing in content/ chooses a shape. Position does: the run is cut into
+ * *bands*, each a rectangle exactly six columns wide, and the bands descend —
+ * the newest project gets the largest tile, top left, and they get smaller and
+ * denser down the page. So the only thing an author decides is `order`.
  *
- * Doing it here rather than in CSS is not a preference. `grid-auto-flow: dense`
- * fills holes by reordering tiles away from DOM order, which moves the visual
- * order out of step with the tab order; and the spans themselves can't be
- * inline styles, because firebase.json's CSP has no 'unsafe-inline'. The
- * generator knows the whole list of tiles up front, so it can just solve it
- * and emit a class.
+ *   hero     [4,2] [2,1] [2,1]     the newest, with two stacked beside it
+ *   mirror   [3,1] [3,2] [3,1]     a step down, and the weight on the right
+ *   duo      [4,2] [2,2]           the opener when a hero would strand a tile
+ *   pair     [3,1] [3,1]           halves
+ *   trio     [2,1] [2,1] [2,1]     thirds — the densest row
+ *   solo     [6,2]                 one project is its own band
  *
- * Nothing here reads a file or knows what a project is — it takes size names
- * and returns class names, which is what lets bento.test.js assert the layout
- * of arbitrary tile runs without any content/ around it.
+ * Because every band is a full-width rectangle, concatenating them tiles the
+ * grid exactly — no holes, no ragged last row, for any number of projects.
+ * That is what lets the markup stay in content/'s order and rely on ordinary
+ * (sparse) grid auto-placement: `grid-auto-flow: dense` would fill holes by
+ * reordering tiles out of step with the tab order, and the spans can't be
+ * inline styles because firebase.json's CSP has no 'unsafe-inline'. So each
+ * tile gets a class naming its rectangle and the stylesheet does the rest.
+ *
+ * bento.test.js simulates the browser's auto-placement algorithm over every
+ * project count and asserts that no cell is left empty — the failure this
+ * module exists to prevent, and one that otherwise only shows up as a gap on
+ * the page that nobody put there.
  */
 
-/** Columns in the grid. Every row is filled to exactly this. */
+/** Columns in the grid. Every band is exactly this wide. */
 export const GRID_COLUMNS = 6;
 
 /**
- * How many of the six columns each `size` asks for. These are the widths the
- * desktop grid gives a tile whose row works out exactly — a `flagship` the
- * full width, a `wide` half of it, a `normal` a third — and elsewhere they are
- * the ratio a row is shared out by.
+ * A tile carries its cover figure only where it is both wide enough for one of
+ * these diagrams to resolve and tall enough to hold a band as well as the
+ * copy. Under either, it drops to text and spends the room on the title —
+ * which is most tiles, and the point: a few large tiles anchor the grid and
+ * the rest are dense.
  *
- * Nothing below the smallest `minSpan` in BREAKPOINTS belongs here: a size
- * that asks for less than a row is willing to give can never get what it
- * asked for, at any breakpoint.
- *
- * Adding a size is a value here and nothing else — every span it can produce
- * already has a rule in public/css/bento.css, which covers 1..GRID_COLUMNS.
+ * The thresholds live here and nowhere else. A tile that fails them gets a
+ * `-compact` class for that breakpoint, and the stylesheet keys off the class
+ * rather than repeating the numbers.
  */
-export const TILE_SPANS = { flagship: 6, wide: 3, normal: 2 };
+export const MEDIA_MIN_COLUMNS = 3;
+export const MEDIA_MIN_ROWS = 2;
 
-/** The `size` values content-schema.js accepts, from the same table. */
-export const TILE_SIZES = Object.keys(TILE_SPANS);
+/* ----------------------------------------------------------- wide grid */
+
+const HERO = [
+  [4, 2],
+  [2, 1],
+  [2, 1],
+];
+const MIRROR = [
+  [3, 1],
+  [3, 2],
+  [3, 1],
+];
+const DUO = [
+  [4, 2],
+  [2, 2],
+];
+const PAIR = [
+  [3, 1],
+  [3, 1],
+];
+const TRIO = [
+  [2, 1],
+  [2, 1],
+  [2, 1],
+];
+const SOLO = [[6, 2]];
 
 /**
- * One entry per grid breakpoint in public/css/bento.css, widest last.
+ * The flat rows under the opening bands, densest last: halves before thirds,
+ * so the grid keeps getting tighter rather than jumping back up.
  *
- * `minSpan` is the narrowest a tile is allowed to get there, and it is the
- * only thing that differs between the two grids — everything else is the same
- * six columns. The desktop grid allows a third, so a row can hold three tiles.
- * The tablet-width grid allows a half and therefore two, because six columns
- * split three ways at 900px is narrower than a display-face title can carry.
- * Below the narrowest breakpoint the grid is a single column and no packing
- * happens at all.
- *
- * `prefix` is the class infix — the wide grid emits `b-lg-4`, and so on.
+ * A `pair` is two tiles and a `trio` three, so every count above one can be
+ * covered — and one never reaches here, because the openers in `wideShapes`
+ * are chosen so that a single tile is never what's left over. Which is the
+ * whole reason `duo` exists: four projects would otherwise be a hero and an
+ * orphan, and an orphan has to be stretched across the full six columns.
  */
+function flatBands(count) {
+  const pairs = count % 3 === 0 ? 0 : count % 3 === 2 ? 1 : 2;
+  const trios = (count - pairs * 2) / 3;
+  return [
+    ...Array.from({ length: pairs }, () => PAIR),
+    ...Array.from({ length: trios }, () => TRIO),
+  ].flat();
+}
+
+/** One `[columns, rows]` per tile on the desktop grid, in content order. */
+export function wideShapes(count) {
+  if (count === 1) return [...SOLO];
+  if (count === 2) return [...DUO];
+  // A hero takes three, and would leave exactly one behind.
+  if (count === 4) return [...DUO, ...flatBands(2)];
+
+  const rest = count - HERO.length;
+  // Likewise: a mirror takes three more, and four left would strand one.
+  const mirrored = rest >= MIRROR.length && rest !== MIRROR.length + 1;
+  return [
+    ...HERO,
+    ...(mirrored ? MIRROR : []),
+    ...flatBands(mirrored ? rest - MIRROR.length : rest),
+  ];
+}
+
+/* --------------------------------------------------------- narrow grid */
+
+/**
+ * The tablet-width grid, which is the same six columns two tiles across: a
+ * third of them is under the width a display-face title can carry at 900px.
+ *
+ * It is computed from the count rather than from the bands above, because it
+ * does not have to agree with them — the markup is one run of tiles in
+ * content's order, and each breakpoint shapes it independently. Keeping the
+ * two in step would mean a band that reads as dense on the desktop grid (a
+ * trio) having to become something else here anyway.
+ */
+export function narrowShapes(count) {
+  if (count === 1) return [[6, 2]];
+  if (count === 2) {
+    return [
+      [3, 2],
+      [3, 2],
+    ];
+  }
+
+  const rest = Array.from({ length: count - 3 }, () => [3, 1]);
+  // An odd tail leaves one tile without a partner; it takes the row instead.
+  if (rest.length % 2 === 1) rest[rest.length - 1] = [6, 1];
+  return [[3, 2], [3, 1], [3, 1], ...rest];
+}
+
+/* --------------------------------------------------------------- classes */
+
+/** One entry per grid breakpoint in public/css/bento.css, widest last. */
 export const BREAKPOINTS = [
-  { prefix: "md", minSpan: 3 },
-  { prefix: "lg", minSpan: 2 },
+  { prefix: "md", shapes: narrowShapes },
+  { prefix: "lg", shapes: wideShapes },
 ];
 
 /**
- * The narrowest tile that still shows its cover figure. Below half the grid a
- * figure is a few hundred pixels wide, which turns these diagrams into an
- * illegible strip and the tile into a thumbnail with a caption — so a tile
- * that narrow drops to copy only and gives the space back to the title.
+ * The bento classes for a run of tiles, in the order they are rendered: one
+ * shape class per breakpoint (`b-lg-4x2` is four columns by two rows), plus
+ * `-compact` on the breakpoints where the tile is too small for its figure.
  *
- * The threshold lives here and nowhere else: tiles under it get a `-compact`
- * class, and the stylesheet hides the figure by that class rather than by
- * repeating the number.
- */
-export const MEDIA_MIN_SPAN = 3;
-
-/**
- * Share GRID_COLUMNS out across one row, in proportion to what its tiles asked
- * for, as whole columns that add up exactly and none narrower than `minSpan`.
- * Largest-remainder rather than rounding each share independently, which can
- * miss the total by a column either way.
- *
- * `fits` below is what keeps the floor from overshooting the row, so nothing
- * here has to take columns back; bento.test.js checks the total exhaustively
- * over every tile run rather than trusting that.
- */
-function rowSpans(wanted, minSpan) {
-  const total = wanted.reduce((sum, want) => sum + want, 0);
-  const exact = wanted.map((want) => (want / total) * GRID_COLUMNS);
-  const spans = exact.map((value) => Math.max(minSpan, Math.floor(value)));
-
-  let short = GRID_COLUMNS - spans.reduce((sum, span) => sum + span, 0);
-  const byRemainder = exact
-    .map((value, index) => [value - Math.floor(value), index])
-    .sort((a, b) => b[0] - a[0] || a[1] - b[1]);
-  for (let i = 0; short > 0; i = (i + 1) % byRemainder.length) {
-    spans[byRemainder[i][1]] += 1;
-    short -= 1;
-  }
-  return spans;
-}
-
-/**
- * Whether a row can hold these tiles at all: the asking has to fit in six
- * columns, and every tile has to clear the breakpoint's minimum. The second
- * is what makes the two grids different — three tiles clear a third each and
- * fail a half each, so the same run pairs up on the narrow grid and lines up
- * three across on the wide one.
- */
-function fits(wanted, minSpan) {
-  const asked = wanted.reduce(
-    (sum, want) => sum + Math.min(want, GRID_COLUMNS),
-    0,
-  );
-  return asked <= GRID_COLUMNS && wanted.length * minSpan <= GRID_COLUMNS;
-}
-
-/**
- * How far a row lands from what its tiles asked for. A row whose asking adds
- * up to exactly six columns gives every tile its natural width; anything less
- * stretches them all past it, and the minimum span can squeeze one below it.
- * This is the total of those misses, squared — so one badly distorted tile
- * costs more than two mild ones.
- *
- * Which is the whole point: a lone `normal` left over at the end of the grid
- * and blown up to full width is the ugly case, and squaring is what makes the
- * packer prefer two half-width rows over a full row and a stretched orphan.
- */
-function rowCost(wanted, minSpan) {
-  const spans = rowSpans(wanted, minSpan);
-  return wanted.reduce(
-    (cost, want, index) =>
-      cost + (spans[index] - Math.min(want, GRID_COLUMNS)) ** 2,
-    0,
-  );
-}
-
-/**
- * Cut the run of tiles into rows at the lowest total cost, keeping content/'s
- * order — the grid reads in `order`, and so does the tab order.
- *
- * Greedy packing gets this wrong often enough to matter (four `normal` tiles
- * fill a row and leave one stretched across the whole grid), so this is the
- * exhaustive answer instead: work backwards, and for each tile try every row
- * that can start there. `minSpan` caps a row at three tiles, so the inner loop
- * is bounded and this stays linear in the number of tiles.
- *
- * On a tie the later cut wins — `<=` below — which front-loads the full rows
- * and leaves the short one at the bottom, where a grid is read as ending.
- */
-function packRows(wanted, minSpan) {
-  const best = new Array(wanted.length + 1).fill(null);
-  best[wanted.length] = { cost: 0, rows: [] };
-
-  for (let start = wanted.length - 1; start >= 0; start--) {
-    for (let length = 1; start + length <= wanted.length; length++) {
-      const row = wanted.slice(start, start + length);
-      if (!fits(row, minSpan)) break;
-
-      const rest = best[start + length];
-      const cost = rowCost(row, minSpan) + rest.cost;
-      if (best[start] === null || cost <= best[start].cost + 1e-9) {
-        best[start] = { cost, rows: [length, ...rest.rows] };
-      }
-    }
-  }
-  return best[0].rows;
-}
-
-/** The column span of every tile, in order, on a grid with this minimum. */
-export function spansFor(sizes, minSpan) {
-  const wanted = sizes.map((size) => TILE_SPANS[size]);
-  const spans = [];
-  let start = 0;
-  for (const length of packRows(wanted, minSpan)) {
-    spans.push(...rowSpans(wanted.slice(start, start + length), minSpan));
-    start += length;
-  }
-  return spans;
-}
-
-/**
- * The bento classes for a run of tiles, in the order they are rendered:
- * one span class per breakpoint, plus `-compact` on the breakpoints where the
- * tile is too narrow to carry its cover figure.
- *
- * @param {string[]} sizes one `size` per tile, projects first
+ * @param {number} count how many tiles the grid holds, projects first
  * @returns {string[]} one space-separated class string per tile
  */
-export function tileClasses(sizes) {
-  const perBreakpoint = BREAKPOINTS.map(({ prefix, minSpan }) => ({
+export function tileClasses(count) {
+  const perBreakpoint = BREAKPOINTS.map(({ prefix, shapes }) => ({
     prefix,
-    spans: spansFor(sizes, minSpan),
+    shapes: shapes(count),
   }));
 
-  return sizes.map((_, index) =>
+  return Array.from({ length: count }, (_, index) =>
     perBreakpoint
-      .flatMap(({ prefix, spans }) => {
-        const span = spans[index];
-        return span < MEDIA_MIN_SPAN
-          ? [`b-${prefix}-${span}`, `b-${prefix}-compact`]
-          : [`b-${prefix}-${span}`];
+      .flatMap(({ prefix, shapes }) => {
+        const [columns, rows] = shapes[index];
+        const shape = `b-${prefix}-${columns}x${rows}`;
+        const carriesMedia =
+          columns >= MEDIA_MIN_COLUMNS && rows >= MEDIA_MIN_ROWS;
+        return carriesMedia ? [shape] : [shape, `b-${prefix}-compact`];
       })
       .join(" "),
   );

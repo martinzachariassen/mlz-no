@@ -1,7 +1,6 @@
 {
   "slug": "event-pipeline",
   "order": 1,
-  "size": "flagship",
   "name": "Event Pipeline",
   "tagline": "Replacing a nightly batch job with an append-only event log that any team can read from, replay and reason about.",
   "period": "2023 — 2025",

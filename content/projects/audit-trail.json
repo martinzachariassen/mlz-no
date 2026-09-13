@@ -1,7 +1,6 @@
 {
   "slug": "audit-trail",
   "order": 5,
-  "size": "normal",
   "name": "Audit Trail",
   "tagline": "A hash-linked record of every privileged action, cheap enough to write on the hot path and hard enough to argue with in an audit.",
   "period": "2022",

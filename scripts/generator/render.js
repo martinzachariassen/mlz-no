@@ -297,12 +297,12 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
   /* ------------------------------------------------------- page: index */
 
   /**
-   * A tile's width is not its `size` — bento.js packs the whole run of sizes
-   * into rows that fill the grid, and hands back the class that carries the
-   * result. Everything that varies with width (the cover figure, the stack
-   * line, the type scale) is a rule on that class in public/css/bento.css,
-   * not a branch here: the same tile is a different width at each breakpoint,
-   * and only CSS knows which one is in force.
+   * A tile's shape comes from where it sits, not from anything in content/:
+   * bento.js cuts the run into bands that fill the grid and hands back the
+   * class that carries the result. Everything that varies with it (the cover
+   * figure, the stack line, the type scale) is a rule on that class in
+   * public/css/bento.css, not a branch here — the same tile is a different
+   * shape at each breakpoint, and only CSS knows which one is in force.
    *
    * `first` is the one tile whose figure is worth blocking on — it is the
    * largest thing above the fold at every width, so it is eager where the
@@ -345,13 +345,10 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
 
   function indexPage() {
     const config = site.index;
-    // Projects and aside tiles are one run through the packer, in the order
-    // they are rendered — an aside tile is a tile on the same grid, and a row
-    // it shares with a project has to add up like any other.
-    const classes = tileClasses([
-      ...projects.map((project) => project.size),
-      ...config.asideTiles.map((tile) => tile.size),
-    ]);
+    // Projects and aside tiles are one run through the layout, in the order
+    // they are rendered — an aside tile is a tile on the same grid, and the
+    // band it shares with a project has to add up like any other.
+    const classes = tileClasses(projects.length + config.asideTiles.length);
     return page({
       current: "page",
       meta: {

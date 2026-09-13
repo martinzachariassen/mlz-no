@@ -1,7 +1,6 @@
 {
   "slug": "search-relevance",
   "order": 4,
-  "size": "wide",
   "name": "Search Relevance Service",
   "tagline": "A standalone ranking service that took relevance tuning out of a monolith and into something product could iterate on weekly.",
   "period": "2022 — 2023",

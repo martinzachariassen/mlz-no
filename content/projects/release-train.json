@@ -1,7 +1,6 @@
 {
   "slug": "release-train",
   "order": 7,
-  "size": "wide",
   "name": "Release Train",
   "tagline": "Turning a fortnightly release window that four people had to be awake for into a progressive rollout nobody has to attend.",
   "period": "2021 — 2022",

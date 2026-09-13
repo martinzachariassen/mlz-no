@@ -1,7 +1,6 @@
 {
   "slug": "internal-cli",
   "order": 3,
-  "size": "normal",
   "name": "Internal CLI",
   "tagline": "A single onboarding-to-deploy CLI that replaced a wiki page of copy-pasted shell commands.",
   "period": "2020 — 2021",

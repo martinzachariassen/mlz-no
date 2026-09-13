@@ -1,182 +1,248 @@
 import { describe, expect, test } from "bun:test";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import {
   BREAKPOINTS,
   GRID_COLUMNS,
-  MEDIA_MIN_SPAN,
-  spansFor,
-  TILE_SIZES,
+  MEDIA_MIN_COLUMNS,
+  MEDIA_MIN_ROWS,
+  narrowShapes,
   tileClasses,
+  wideShapes,
 } from "./bento.js";
+import { publicDir } from "./paths.js";
 
 /**
- * The layout is the part of the generator with no visible failure: a grid
- * with a hole in it still builds, still validates, still passes check:content,
- * and only shows up as a gap on the page nobody put there. These tests assert
- * the two properties the whole module exists for — every row is exactly
- * GRID_COLUMNS wide, and content/'s order is preserved — over every tile run
- * that can occur, rather than over the handful that happen to be in content/
- * at the moment.
+ * The layout is the part of the generator with no visible failure: a grid with
+ * a hole in it still builds, still validates, still passes check:content, and
+ * only shows up as a gap on the page nobody put there.
+ *
+ * So rather than assert the shapes of one particular run, `place` below is the
+ * browser's own sparse auto-placement algorithm — start at the cursor, take
+ * the first position the tile fits, never move the cursor backwards — and the
+ * tests run it over every project count the site could plausibly reach.
  */
 
-const MINIMUMS = BREAKPOINTS.map(({ minSpan }) => minSpan);
-/** The two grids by name, so a case below says which one it is about. */
-const WIDE = BREAKPOINTS.at(-1).minSpan;
-const NARROW = BREAKPOINTS[0].minSpan;
+/** The largest number of projects worth proving the layout for. */
+const MOST = 30;
+const COUNTS = Array.from({ length: MOST }, (_, i) => i + 1);
 
-/** Fold a flat run of spans back into the rows they must have come from. */
-function rows(spans) {
-  const out = [];
-  let row = [];
-  let width = 0;
-  for (const span of spans) {
-    row.push(span);
-    width += span;
-    if (width >= GRID_COLUMNS) {
-      out.push(row);
-      row = [];
-      width = 0;
-    }
-  }
-  if (row.length) out.push(row);
-  return out;
-}
-
-/** Every run of `length` tiles, as size names. */
-function* runs(length) {
-  if (length === 0) {
-    yield [];
-    return;
-  }
-  for (const rest of runs(length - 1)) {
-    for (const size of TILE_SIZES) yield [size, ...rest];
-  }
-}
-
-describe("packing", () => {
-  test("fills every row exactly, for every mix of sizes up to six tiles", () => {
-    for (let length = 1; length <= 6; length++) {
-      for (const sizes of runs(length)) {
-        for (const minSpan of MINIMUMS) {
-          const spans = spansFor(sizes, minSpan);
-          const widths = rows(spans).map((row) =>
-            row.reduce((sum, span) => sum + span, 0),
-          );
-          expect(`${sizes.join(",")}@${minSpan}: ${widths.join(",")}`).toBe(
-            `${sizes.join(",")}@${minSpan}: ${widths.map(() => GRID_COLUMNS).join(",")}`,
-          );
-        }
+/**
+ * Place `shapes` the way CSS grid does with the default `grid-auto-flow: row`,
+ * and return the occupancy map. Deliberately a reimplementation rather than a
+ * reading of bento.js: if the module's idea of a band disagrees with how a
+ * browser actually flows it, that shows up here as an empty cell.
+ */
+function place(shapes) {
+  const grid = [];
+  const taken = (row, column) => grid[row]?.[column] === true;
+  const free = (row, column, width, height) => {
+    for (let r = row; r < row + height; r++) {
+      for (let c = column; c < column + width; c++) {
+        if (taken(r, c)) return false;
       }
     }
-  });
+    return true;
+  };
 
-  test("gives every tile a span and keeps them in content order", () => {
-    const sizes = ["flagship", "normal", "wide", "normal"];
-    for (const minSpan of MINIMUMS) {
-      expect(spansFor(sizes, minSpan)).toHaveLength(sizes.length);
+  let cursorRow = 0;
+  let cursorColumn = 0;
+  for (const [width, height] of shapes) {
+    let row = cursorRow;
+    let column = cursorColumn;
+    while (column + width > GRID_COLUMNS || !free(row, column, width, height)) {
+      if (column + width > GRID_COLUMNS) {
+        row += 1;
+        column = 0;
+      } else {
+        column += 1;
+      }
     }
-    // A flagship first means a flagship first, whatever that costs the rows
-    // below it — `grid-auto-flow: dense` is exactly what this avoids.
-    expect(spansFor(sizes, WIDE)[0]).toBe(GRID_COLUMNS);
-  });
+    for (let r = row; r < row + height; r++) {
+      grid[r] ??= [];
+      for (let c = column; c < column + width; c++) grid[r][c] = true;
+    }
+    cursorRow = row;
+    cursorColumn = column + width;
+  }
+  return grid;
+}
 
-  /**
-   * The case greedy packing gets wrong, and the reason rowCost squares: four
-   * equal tiles fill one row of three and leave the fourth stretched across
-   * the whole grid. Two rows of two is the answer a person would draw.
-   */
-  test("balances a run that would otherwise leave a stretched orphan", () => {
-    expect(spansFor(["normal", "normal", "normal", "normal"], WIDE)).toEqual([
-      3, 3, 3, 3,
-    ]);
+/** Which cells a placement left empty, as "row,column" strings. */
+function holes(grid) {
+  const empty = [];
+  grid.forEach((row, r) => {
+    for (let c = 0; c < GRID_COLUMNS; c++) {
+      if (row?.[c] !== true) empty.push(`${r},${c}`);
+    }
   });
+  return empty;
+}
 
-  test("splits a row evenly when the tiles ask for the same width", () => {
-    expect(spansFor(["normal", "normal", "normal"], WIDE)).toEqual([2, 2, 2]);
-    expect(spansFor(["wide", "wide"], WIDE)).toEqual([3, 3]);
-  });
-
-  test("shares a mixed row out in proportion to what its tiles asked for", () => {
-    expect(spansFor(["wide", "normal"], WIDE)).toEqual([4, 2]);
-    expect(spansFor(["normal", "wide"], WIDE)).toEqual([2, 4]);
-  });
-
-  test("keeps a tile that asked for the whole row on a row of its own", () => {
-    // A flagship asks for all six columns, so nothing else fits beside it and
-    // the two normals behind it pair up on the next row instead.
-    expect(spansFor(["flagship", "normal", "normal"], NARROW)).toEqual([
-      6, 3, 3,
-    ]);
-  });
-
-  /**
-   * The only thing that differs between the two grids: the same three tiles
-   * line up across the desktop grid, and pair off on the narrow one, because
-   * a third of six columns is under the width a tile needs at 900px.
-   */
-  test("respects the breakpoint's minimum tile width", () => {
-    const three = ["normal", "normal", "normal"];
-    expect(spansFor(three, WIDE)).toEqual([2, 2, 2]);
-    expect(spansFor(three, NARROW)).toEqual([3, 3, 6]);
-    for (const minSpan of MINIMUMS) {
-      for (const sizes of runs(5)) {
-        const narrowest = Math.min(...spansFor(sizes, minSpan));
-        expect(`${sizes.join(",")}@${minSpan}: ${narrowest >= minSpan}`).toBe(
-          `${sizes.join(",")}@${minSpan}: true`,
+describe("tiling", () => {
+  test("leaves no empty cell, at any project count, on either grid", () => {
+    for (const { prefix, shapes } of BREAKPOINTS) {
+      for (const count of COUNTS) {
+        const empty = holes(place(shapes(count)));
+        expect(`${prefix} ${count}: ${empty.join(" ")}`).toBe(
+          `${prefix} ${count}: `,
         );
       }
     }
   });
 
-  test("gives a single tile the full width whatever its size", () => {
-    for (const size of TILE_SIZES) {
-      for (const minSpan of MINIMUMS) {
-        expect(spansFor([size], minSpan)).toEqual([GRID_COLUMNS]);
+  test("gives every tile exactly one shape, none wider than the grid", () => {
+    for (const { prefix, shapes } of BREAKPOINTS) {
+      for (const count of COUNTS) {
+        const all = shapes(count);
+        expect(`${prefix} ${count}: ${all.length}`).toBe(
+          `${prefix} ${count}: ${count}`,
+        );
+        for (const [columns, rows] of all) {
+          expect(`${prefix} ${count}: ${columns}x${rows}`).toBe(
+            `${prefix} ${count}: ${Math.min(columns, GRID_COLUMNS)}x${Math.max(rows, 1)}`,
+          );
+        }
       }
     }
   });
 });
 
-describe("classes", () => {
-  test("emits one span class per breakpoint, per tile", () => {
-    const classes = tileClasses(["flagship", "normal", "normal"]);
-    expect(classes).toHaveLength(3);
-    for (const { prefix } of BREAKPOINTS) {
-      expect(classes[0]).toContain(`b-${prefix}-`);
+describe("the ramp", () => {
+  /**
+   * The one thing the reader is promised: the newest project is the biggest
+   * tile, and it is in the top-left corner because it is placed first.
+   */
+  test("gives the first project the largest tile", () => {
+    for (const { prefix, shapes } of BREAKPOINTS) {
+      for (const count of COUNTS) {
+        const areas = shapes(count).map(([columns, rows]) => columns * rows);
+        expect(`${prefix} ${count}: ${areas[0]}`).toBe(
+          `${prefix} ${count}: ${Math.max(...areas)}`,
+        );
+      }
     }
   });
 
   /**
-   * The media rule, and the only place the threshold is written down: a tile
-   * under MEDIA_MIN_SPAN columns carries `-compact` for that breakpoint, and
-   * public/css/bento.css hides the cover figure by that class rather than by
-   * repeating the number.
+   * The grid gets denser downwards and never climbs back: once it has dropped
+   * to single-row bands, every tile below is single-row too.
    */
-  test("marks a tile compact exactly where it is too narrow for a figure", () => {
-    // Three normals share a desktop row at two columns each — under the
-    // threshold — but only pair up on the narrow grid, at three columns.
-    const [first] = tileClasses(["normal", "normal", "normal"]);
-    expect(first).toContain("b-lg-2");
-    expect(first).toContain("b-lg-compact");
-    expect(first).toContain("b-md-3");
-    expect(first).not.toContain("b-md-compact");
+  test("never grows back to a taller tile further down the grid", () => {
+    for (const { prefix, shapes } of BREAKPOINTS) {
+      for (const count of COUNTS) {
+        const rows = shapes(count).map(([, height]) => height);
+        const settled = rows.lastIndexOf(2) + 1;
+        expect(`${prefix} ${count}: ${rows.slice(settled).join("")}`).toBe(
+          `${prefix} ${count}: ${rows
+            .slice(settled)
+            .map(() => 1)
+            .join("")}`,
+        );
+      }
+    }
   });
 
-  test("never marks a tile compact when it is wide enough", () => {
-    for (const sizes of runs(4)) {
-      const spans = Object.fromEntries(
-        BREAKPOINTS.map(({ prefix, minSpan }) => [
-          prefix,
-          spansFor(sizes, minSpan),
-        ]),
+  /**
+   * Four projects are the case the band catalogue exists to get right: a hero
+   * takes three, which would leave one tile to be stretched across the whole
+   * grid under it. The opener steps down to a duo instead.
+   */
+  test("opens with a duo where a hero would strand a single tile", () => {
+    expect(wideShapes(4)).toEqual([
+      [4, 2],
+      [2, 2],
+      [3, 1],
+      [3, 1],
+    ]);
+  });
+
+  test("stacks two smaller tiles beside the hero", () => {
+    expect(wideShapes(3)).toEqual([
+      [4, 2],
+      [2, 1],
+      [2, 1],
+    ]);
+  });
+
+  test("mirrors the second band, a size down from the first", () => {
+    expect(wideShapes(6)).toEqual([
+      [4, 2],
+      [2, 1],
+      [2, 1],
+      [3, 1],
+      [3, 2],
+      [3, 1],
+    ]);
+  });
+
+  test("falls to thirds once the openers are spent", () => {
+    expect(wideShapes(9).slice(6)).toEqual([
+      [2, 1],
+      [2, 1],
+      [2, 1],
+    ]);
+  });
+
+  test("pairs tiles two across on the narrow grid", () => {
+    expect(narrowShapes(5)).toEqual([
+      [3, 2],
+      [3, 1],
+      [3, 1],
+      [3, 1],
+      [3, 1],
+    ]);
+    // An odd tail has nobody to sit beside, so it takes the row.
+    expect(narrowShapes(4).at(-1)).toEqual([6, 1]);
+  });
+});
+
+describe("classes", () => {
+  test("emits one shape class per breakpoint, per tile", () => {
+    const classes = tileClasses(6);
+    expect(classes).toHaveLength(6);
+    expect(classes[0]).toBe("b-md-3x2 b-lg-4x2");
+  });
+
+  /**
+   * The media rule, and the only place the thresholds are written down: a tile
+   * too narrow or too short for a figure carries `-compact` for that
+   * breakpoint, and public/css/bento.css hides the figure by that class.
+   */
+  test("marks a tile compact exactly where it is too small for a figure", () => {
+    for (const count of COUNTS) {
+      const shapes = Object.fromEntries(
+        BREAKPOINTS.map(({ prefix, shapes: of }) => [prefix, of(count)]),
       );
-      tileClasses(sizes).forEach((className, index) => {
+      tileClasses(count).forEach((className, index) => {
         for (const { prefix } of BREAKPOINTS) {
-          const compact = className.includes(`b-${prefix}-compact`);
-          expect(`${sizes.join(",")}[${index}] ${prefix}: ${compact}`).toBe(
-            `${sizes.join(",")}[${index}] ${prefix}: ${spans[prefix][index] < MEDIA_MIN_SPAN}`,
+          const [columns, rows] = shapes[prefix][index];
+          const wanted = columns < MEDIA_MIN_COLUMNS || rows < MEDIA_MIN_ROWS;
+          const marked = className.includes(`b-${prefix}-compact`);
+          expect(`${prefix} ${count}[${index}]: ${marked}`).toBe(
+            `${prefix} ${count}[${index}]: ${wanted}`,
           );
         }
       });
     }
+  });
+
+  /**
+   * A shape with no rule in the stylesheet is a tile that silently falls back
+   * to one column — the layout looks broken and nothing fails. The catalogue
+   * is small and closed, so the stylesheet is checked against it directly
+   * rather than carrying a speculative rule for every size the grid allows.
+   */
+  test("every shape it can emit has a rule in public/css/bento.css", () => {
+    const css = readFileSync(join(publicDir, "css", "bento.css"), "utf8");
+    const emitted = new Set(
+      COUNTS.flatMap((count) => tileClasses(count)).flatMap((value) =>
+        value.split(" "),
+      ),
+    );
+    const missing = [...emitted].filter(
+      (name) => !new RegExp(`\\.${name}[\\s,{]`).test(css),
+    );
+    expect(missing.join(" ")).toBe("");
   });
 });

@@ -36,7 +36,6 @@ const site = {
     intro: "A short intro.",
     asideTiles: [
       {
-        size: "normal",
         label: "Elsewhere",
         title: "GitHub",
         text: "Code I have published.",
@@ -52,7 +51,6 @@ const site = {
 const project = {
   slug: "demo",
   order: 1,
-  size: "flagship",
   name: "Demo",
   tagline: "A demo project.",
   period: "2026",
@@ -389,28 +387,28 @@ describe("end navigation", () => {
 describe("overview page", () => {
   test("renders a tile per project plus the aside tiles from site.json", () => {
     expect(indexPage).toContain(
-      '<a class="b-tile b-md-6 b-lg-6" href="/projects/demo"',
+      '<a class="b-tile b-md-3x2 b-lg-4x2" href="/projects/demo"',
     );
     expect(indexPage).toContain('data-umami-event="project-demo"');
-    expect(indexPage).toContain('<a class="b-tile b-aside b-md-6 b-lg-6"');
+    expect(indexPage).toContain('<a class="b-tile b-aside b-md-3x2');
     expect(indexPage).toContain('data-umami-event="aside-github"');
   });
 
   /**
-   * The tiling itself is bento.test.js's subject; what matters here is that
-   * the overview page hands the packer one run covering both kinds of tile.
-   * An aside tile left out of it would be laid out against a different row
-   * plan from the projects it sits beside, and the grid would have a hole.
+   * The mosaic itself is bento.test.js's subject; what matters here is that
+   * the overview page lays out one run covering both kinds of tile. An aside
+   * tile left out of the count would be shaped against a different set of
+   * bands from the projects it sits beside, and the grid would have a hole.
    */
-  test("packs projects and aside tiles as one run, in render order", () => {
-    const twoNormals = [
-      { ...project, slug: "a", order: 1, size: "normal" },
-      { ...project, slug: "b", order: 2, size: "normal" },
+  test("shapes projects and aside tiles as one run, in render order", () => {
+    const twoProjects = [
+      { ...project, slug: "a", order: 1 },
+      { ...project, slug: "b", order: 2 },
     ];
     const classesOf = (asideTiles) => {
       const page = createRenderer({
         site: { ...site, index: { ...site.index, asideTiles } },
-        projects: twoNormals,
+        projects: twoProjects,
         figures,
         tokens,
       })
@@ -421,41 +419,44 @@ describe("overview page", () => {
       );
     };
 
-    // Two projects alone take half the desktop grid each.
-    expect(classesOf([])).toEqual(["b-md-3 b-lg-3", "b-md-3 b-lg-3"]);
+    // Two tiles alone are a duo: a hero and one tall tile beside it.
+    expect(classesOf([])).toEqual([
+      "b-md-3x2 b-lg-4x2",
+      "b-md-3x2 b-lg-2x2 b-lg-compact",
+    ]);
 
-    // The aside tile joins their row rather than starting one of its own, and
-    // all three narrow to a third — which is only true if it went through the
-    // packer with them.
+    // Adding the aside tile makes it three, so the band becomes a hero with
+    // two shorter tiles stacked beside it — which is only true if the aside
+    // went through the layout with them.
     expect(classesOf(site.index.asideTiles)).toEqual([
-      "b-md-3 b-lg-2 b-lg-compact",
-      "b-md-3 b-lg-2 b-lg-compact",
-      "b-aside b-md-6 b-lg-2 b-lg-compact",
+      "b-md-3x2 b-lg-4x2",
+      "b-md-3x1 b-md-compact b-lg-2x1 b-lg-compact",
+      "b-aside b-md-3x1 b-md-compact b-lg-2x1 b-lg-compact",
     ]);
   });
 
   /**
-   * Width is decided by the packer, so nothing about the tile's copy can be:
-   * the same tile is three columns on one grid and two on another, and only
-   * CSS knows which. Every tile therefore carries the whole of its content
-   * and lets the stylesheet drop what does not fit.
+   * The shape is decided by position, so nothing about the tile's copy can be:
+   * the same tile is a different rectangle at each breakpoint and only CSS
+   * knows which. Every tile therefore carries the whole of its content and
+   * lets the stylesheet drop what does not fit.
    */
-  test("gives every tile its figure and stack, whatever width it ends up", () => {
+  test("gives every tile its figure and stack, whatever shape it ends up", () => {
     const page = createRenderer({
       site: { ...site, index: { ...site.index, asideTiles: [] } },
       projects: [
-        { ...project, slug: "a", order: 1, size: "normal" },
-        { ...project, slug: "b", order: 2, size: "normal" },
-        { ...project, slug: "c", order: 3, size: "normal" },
+        { ...project, slug: "a", order: 1 },
+        { ...project, slug: "b", order: 2 },
+        { ...project, slug: "c", order: 3 },
       ],
       figures,
       tokens,
     })
       .files()
       .find((f) => f.path === "/projects/index.html").content;
-    // Three normals: two columns each on the desktop grid — too narrow for a
-    // figure, so all three are compact, and all three still carry one.
-    expect(page.match(/b-lg-compact/g)).toHaveLength(3);
+    // A hero and two tiles stacked beside it: only the hero is big enough for
+    // a figure, and all three carry one regardless.
+    expect(page.match(/b-lg-compact/g)).toHaveLength(2);
     expect(page.match(/<span class="b-media">/g)).toHaveLength(3);
     expect(page.match(/<span class="b-stack">/g)).toHaveLength(3);
   });
@@ -489,7 +490,6 @@ describe("overview page", () => {
           ...site.index,
           asideTiles: [
             {
-              size: "normal",
               label: "Say hello",
               title: "Email",
               text: "Get in touch.",

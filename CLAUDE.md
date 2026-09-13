@@ -31,7 +31,7 @@ you're changing:
 | --- | --- |
 | `content-schema.js` | the spec every file under `content/` is validated against |
 | `render.js` | content in, finished page strings out — no filesystem access |
-| `bento.js` | which tile is how wide on the overview grid, per breakpoint |
+| `bento.js` | the shape of every tile on the overview grid, per breakpoint |
 | `html.js` | the `html\`\`` template engine the renderers are written with |
 | `build-content.js` | reading `content/`, writing `public/`, `--check` |
 | `tokens.js` | the palette, parsed out of `public/css/tokens.css` |
@@ -55,24 +55,35 @@ of whatever happens to be in `content/` at the time; `html.test.js` pins the
 template engine's indentation and empty-value rules, which otherwise only show
 up as a committed file that looks slightly wrong; `render.test.js` renders
 fixtures covering every block type and asserts escaping, ordering and optional
-fields; `bento.test.js` checks exhaustively — every mix of sizes up to six
-tiles — that each grid row is filled exactly and no tile is narrower than its
-breakpoint allows, which is the failure a hole in the grid would otherwise only
-show as a gap on the page; `tokens.test.js` also pins the two files under
-`public/` that carry a hand-written copy of the palette. Add a source file, add
-its test file.
+fields; `bento.test.js` reimplements the browser's own grid auto-placement and
+runs it over every project count up to thirty, asserting no cell is left empty
+— the failure a hole in the mosaic would otherwise only show as a gap on the
+page nobody put there; `tokens.test.js` also pins the two files under `public/`
+that carry a hand-written copy of the palette. Add a source file, add its test
+file.
 
-A project's `size` is what its tile **asks for**, not a column count.
-`scripts/generator/bento.js` cuts the run of tiles into rows and shares each
-row's six columns out in proportion to the asking, so a row always fills
-exactly whatever mix of sizes `content/` contains — the answer is a
-`b-lg-<n> b-md-<n>` class per tile, and `public/css/bento.css` only turns that
-into `grid-column`. Two consequences worth knowing before you change either:
+**Nothing in `content/` says how big a project's tile is — `order` does.** The
+overview grid is a mosaic six columns wide in which a tile occupies a
+rectangle, so tiles interlock vertically as well as horizontally.
+`scripts/generator/bento.js` cuts the run into *bands*, each a rectangle
+exactly six columns wide, and the bands descend: a hero (`4x2`) with two
+shorter tiles stacked beside it, a mirrored band a size down, then halves, then
+thirds. The newest project is the largest tile, top left, and they get smaller
+and denser down the page. The answer is a `b-lg-4x2 b-md-3x1` class per tile —
+columns by rows — and `public/css/bento.css` only turns that into spans.
 
-- Nothing in `render.js` may branch on `size`. The same tile is a different
-  width at each breakpoint and only CSS knows which, so every tile carries its
-  whole content and the stylesheet drops what does not fit — a cover figure on
-  a tile under half the grid, for instance, which `bento.js` marks `-compact`.
+Three consequences worth knowing before you change either:
+
+- Every band is a full-width rectangle, so concatenating them tiles the grid
+  exactly for **any** number of projects. That is what lets the markup stay in
+  `order` and rely on ordinary grid auto-placement. Adding a band means proving
+  it is a rectangle; `bento.test.js` will tell you if it isn't.
+- Nothing in `render.js` may branch on tile size. The same tile is a different
+  rectangle at each breakpoint and only CSS knows which, so every tile carries
+  its whole content and the stylesheet drops what does not fit — the cover
+  figure on a tile too small to hold one, which `bento.js` marks `-compact`.
+  That mark is only true at the breakpoint that set it, so every rule keyed off
+  it belongs inside that breakpoint's media query.
 - The spans cannot be inline styles (`firebase.json`'s CSP has no
   `'unsafe-inline'`) and cannot be left to `grid-auto-flow: dense`, which fills
   holes by reordering tiles out of step with the tab order. Hence the class.

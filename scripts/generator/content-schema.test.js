@@ -41,7 +41,6 @@ const validSite = {
 const validProject = {
   slug: "demo",
   order: 1,
-  size: "normal",
   name: "Demo",
   tagline: "A demo project.",
   period: "2026",
@@ -221,7 +220,6 @@ describe("validateContent", () => {
 
   describe("analytics events", () => {
     const asideTile = (umamiEvent) => ({
-      size: "normal",
       label: "L",
       title: "T",
       text: "X",
