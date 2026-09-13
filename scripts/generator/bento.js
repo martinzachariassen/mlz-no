@@ -12,11 +12,15 @@
  * denser down the page. So the only thing an author decides is `order`.
  *
  *   hero     [4,2] [2,1] [2,1]     the newest, with two stacked beside it
- *   mirror   [3,1] [3,2] [3,1]     a step down, and the weight on the right
- *   duo      [4,2] [2,2]           the opener when a hero would strand a tile
- *   pair     [3,1] [3,1]           halves
+ *   duet     [3,2] [3,2]           halves, a size down from the hero
  *   trio     [2,1] [2,1] [2,1]     thirds — the densest row
  *   solo     [6,2]                 one project is its own band
+ *
+ * Every shape in the catalogue lands between 1.15:1 and 1.6:1 at desktop
+ * width, which is why there is no single-row shape wider than a third: a
+ * six-column grid on a 230px row makes `[3,1]` a 3:1 slab, and a run of them
+ * reads as stacked banners rather than as a mosaic. Halves are two rows tall
+ * or they are not halves.
  *
  * Because every band is a full-width rectangle, concatenating them tiles the
  * grid exactly — no holes, no ragged last row, for any number of projects.
@@ -56,18 +60,9 @@ const HERO = [
   [2, 1],
   [2, 1],
 ];
-const MIRROR = [
-  [3, 1],
+const DUET = [
   [3, 2],
-  [3, 1],
-];
-const DUO = [
-  [4, 2],
-  [2, 2],
-];
-const PAIR = [
-  [3, 1],
-  [3, 1],
+  [3, 2],
 ];
 const TRIO = [
   [2, 1],
@@ -77,20 +72,18 @@ const TRIO = [
 const SOLO = [[6, 2]];
 
 /**
- * The flat rows under the opening bands, densest last: halves before thirds,
- * so the grid keeps getting tighter rather than jumping back up.
+ * The bands under the opening hero, densest last: duets before trios, so the
+ * grid keeps getting tighter rather than jumping back up.
  *
- * A `pair` is two tiles and a `trio` three, so every count above one can be
- * covered — and one never reaches here, because the openers in `wideShapes`
- * are chosen so that a single tile is never what's left over. Which is the
- * whole reason `duo` exists: four projects would otherwise be a hero and an
- * orphan, and an orphan has to be stretched across the full six columns.
+ * A `duet` is two tiles and a `trio` three, so every count but one can be
+ * covered — and one never reaches here, because `wideShapes` never leaves a
+ * single tile over. Zero does: three projects are a hero and nothing else.
  */
-function flatBands(count) {
-  const pairs = count % 3 === 0 ? 0 : count % 3 === 2 ? 1 : 2;
-  const trios = (count - pairs * 2) / 3;
+function tailBands(count) {
+  const duets = count % 3 === 0 ? 0 : count % 3 === 2 ? 1 : 2;
+  const trios = (count - duets * 2) / 3;
   return [
-    ...Array.from({ length: pairs }, () => PAIR),
+    ...Array.from({ length: duets }, () => DUET),
     ...Array.from({ length: trios }, () => TRIO),
   ].flat();
 }
@@ -98,18 +91,12 @@ function flatBands(count) {
 /** One `[columns, rows]` per tile on the desktop grid, in content order. */
 export function wideShapes(count) {
   if (count === 1) return [...SOLO];
-  if (count === 2) return [...DUO];
-  // A hero takes three, and would leave exactly one behind.
-  if (count === 4) return [...DUO, ...flatBands(2)];
+  if (count === 2) return [...DUET];
+  // A hero takes three, and four would leave exactly one behind — so the run
+  // opens on two duets instead, rather than stranding a tile under the hero.
+  if (count === 4) return [...DUET, ...DUET];
 
-  const rest = count - HERO.length;
-  // Likewise: a mirror takes three more, and four left would strand one.
-  const mirrored = rest >= MIRROR.length && rest !== MIRROR.length + 1;
-  return [
-    ...HERO,
-    ...(mirrored ? MIRROR : []),
-    ...flatBands(mirrored ? rest - MIRROR.length : rest),
-  ];
+  return [...HERO, ...tailBands(count - HERO.length)];
 }
 
 /* --------------------------------------------------------- narrow grid */

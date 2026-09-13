@@ -146,14 +146,14 @@ describe("the ramp", () => {
   /**
    * Four projects are the case the band catalogue exists to get right: a hero
    * takes three, which would leave one tile to be stretched across the whole
-   * grid under it. The opener steps down to a duo instead.
+   * grid under it. The opener steps down to two duets instead.
    */
-  test("opens with a duo where a hero would strand a single tile", () => {
+  test("opens with duets where a hero would strand a single tile", () => {
     expect(wideShapes(4)).toEqual([
-      [4, 2],
-      [2, 2],
-      [3, 1],
-      [3, 1],
+      [3, 2],
+      [3, 2],
+      [3, 2],
+      [3, 2],
     ]);
   });
 
@@ -165,15 +165,44 @@ describe("the ramp", () => {
     ]);
   });
 
-  test("mirrors the second band, a size down from the first", () => {
-    expect(wideShapes(6)).toEqual([
+  test("follows the hero with halves a size down", () => {
+    expect(wideShapes(5)).toEqual([
       [4, 2],
       [2, 1],
       [2, 1],
-      [3, 1],
       [3, 2],
-      [3, 1],
+      [3, 2],
     ]);
+  });
+
+  /**
+   * The run the site itself is at: a hero, halves, then thirds — each band a
+   * step denser than the one above it.
+   */
+  test("descends hero, duet, trio over eight projects", () => {
+    expect(wideShapes(8)).toEqual([
+      [4, 2],
+      [2, 1],
+      [2, 1],
+      [3, 2],
+      [3, 2],
+      [2, 1],
+      [2, 1],
+      [2, 1],
+    ]);
+  });
+
+  /**
+   * No single-row shape is wider than a third, at any count: a `[3,1]` on the
+   * desktop grid is a 3:1 slab, and a band of them reads as stacked banners.
+   */
+  test("never emits a wide single-row tile", () => {
+    for (const count of COUNTS) {
+      const slabs = wideShapes(count).filter(
+        ([columns, rows]) => rows === 1 && columns > 2,
+      );
+      expect(`${count}: ${slabs.length}`).toBe(`${count}: 0`);
+    }
   });
 
   test("falls to thirds once the openers are spent", () => {

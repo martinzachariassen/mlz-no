@@ -387,7 +387,7 @@ describe("end navigation", () => {
 describe("overview page", () => {
   test("renders a tile per project plus the aside tiles from site.json", () => {
     expect(indexPage).toContain(
-      '<a class="b-tile b-md-3x2 b-lg-4x2" href="/projects/demo"',
+      '<a class="b-tile b-md-3x2 b-lg-3x2" href="/projects/demo"',
     );
     expect(indexPage).toContain('data-umami-event="project-demo"');
     expect(indexPage).toContain('<a class="b-tile b-aside b-md-3x2');
@@ -419,11 +419,8 @@ describe("overview page", () => {
       );
     };
 
-    // Two tiles alone are a duo: a hero and one tall tile beside it.
-    expect(classesOf([])).toEqual([
-      "b-md-3x2 b-lg-4x2",
-      "b-md-3x2 b-lg-2x2 b-lg-compact",
-    ]);
+    // Two tiles alone are a duet: the band is split down the middle.
+    expect(classesOf([])).toEqual(["b-md-3x2 b-lg-3x2", "b-md-3x2 b-lg-3x2"]);
 
     // Adding the aside tile makes it three, so the band becomes a hero with
     // two shorter tiles stacked beside it — which is only true if the aside

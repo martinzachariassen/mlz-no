@@ -70,24 +70,17 @@
 @media (min-width: 1024px) {
   .bento {
     gap: 18px;
-    grid-auto-rows: minmax(176px, auto);
+    /* Deeper than the narrow grid's row, and deliberately: six columns split
+       three ways is 550px, so a one-row half would be a 3:1 slab. At 230px
+       every shape the catalogue can emit lands between 1.15:1 and 1.6:1 — and
+       the thirds, which carry no figure, stop having to fit a title, a tagline
+       and a footer into 148px. */
+    grid-auto-rows: minmax(230px, auto);
   }
   .b-lg-2x1 {
     --cols: 2;
     --rows: 1;
     grid-column: span 2;
-    grid-row: span 1;
-  }
-  .b-lg-2x2 {
-    --cols: 2;
-    --rows: 2;
-    grid-column: span 2;
-    grid-row: span 2;
-  }
-  .b-lg-3x1 {
-    --cols: 3;
-    --rows: 1;
-    grid-column: span 3;
     grid-row: span 1;
   }
   .b-lg-3x2 {
@@ -384,10 +377,15 @@
     justify-content: flex-start;
   }
 
+  /* A line more than the narrow grid allows: this row is 230px deep where
+     that one is 168px, and clamping to three here truncates a tagline the
+     tile has the room for — an ellipsis above visible empty space. Four is
+     still a ceiling, so a long tagline can't push the row taller and strand
+     the tiles beside it. */
   .b-lg-compact .b-tagline {
     display: -webkit-box;
     overflow: hidden;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 4;
   }
 }
