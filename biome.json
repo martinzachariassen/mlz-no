@@ -9,7 +9,7 @@
     "includes": [
       "public/*.js",
       "public/css/*.css",
-      "scripts/*.js",
+      "scripts/**/*.js",
       "content/**/*.json"
     ]
   },

@@ -17,11 +17,21 @@ Personal homepage (mlz.no) — a static site with no build step. Everything in
 ## Generated content
 
 `public/projects/**`, `public/assets/figures/**` and `public/sitemap.xml` are
-**generated** by `scripts/content/build-content.js` from `content/`, and the output is
+**generated** by `bun run build:content` from `content/`, and the output is
 committed. Never hand-edit those files — edit `content/site.json`,
 `content/projects/<slug>.json` or `content/figures/<name>.svg`, then run
 `bun run build:content`. `bun run lint` also runs `check:content`, which fails
 if the committed output no longer matches `content/`.
+
+The generator is four files under `scripts/content/`, and which one you want
+depends on what you're changing:
+
+| File | Owns |
+| --- | --- |
+| `content-schema.js` | the spec every file under `content/` is validated against |
+| `render.js` | content in, finished page strings out — no filesystem access |
+| `html.js` | the `html\`\`` template engine the renderers are written with |
+| `build-content.js` | reading `content/`, writing `public/`, `--check` |
 
 `content/` has a spec: `scripts/content/content-schema.js`, doc comments and
 all — there's no separate prose copy to keep in sync. The build validates
@@ -29,11 +39,17 @@ every file against it before rendering anything, and **a key that isn't in
 the spec is an error** — that's the point of it. So adding a field to the
 site is two edits in this order: describe it in
 `scripts/content/content-schema.js`, then render it in
-`scripts/content/build-content.js`. Renderers downstream of validation assume
-the shape the spec guarantees and don't re-check it. `scripts/content/content-schema.test.js`
-(`bun run test`, also run by `bun run lint`) exercises that spec's own
-cross-file checks against fixtures, so a regression there fails independently
-of whatever happens to be in `content/` at the time.
+`scripts/content/render.js`. Renderers downstream of validation assume
+the shape the spec guarantees and don't re-check it.
+
+Three test files run under `bun run test` (also run by `bun run lint`), each
+covering the part of the pipeline that fails silently without it:
+`content-schema.test.js` exercises the spec's own cross-file checks against
+fixtures, so a regression there fails independently of whatever happens to be
+in `content/` at the time; `html.test.js` pins the template engine's
+indentation and empty-value rules, which otherwise only show up as a committed
+file that looks slightly wrong; `render.test.js` renders fixtures covering
+every block type and asserts escaping, ordering and optional fields.
 
 After validation, `scripts/content/build-content.js` also checks that every
 root-relative `href`/`src`/`og:image` the generated pages emit resolves to a
@@ -50,9 +66,15 @@ in `public/css/tokens.css`, because an SVG loaded via `<img>` cannot see the
 page's `[data-theme]`. `content/site.json` carries no colour data — every
 colour on the site, figures included, has one source of truth.
 
-The topbar and footer are copied into each generated page by
-`scripts/content/build-content.js`, and hand-written into `index.html` and
-`404.html` — keep all three in sync when that markup changes.
+The topbar and footer are generated from one function in
+`scripts/content/render.js`, for every page. Generated pages embed it;
+`public/index.html` and `public/404.html` — which are otherwise hand-written —
+receive it spliced into their `<!-- generated:topbar -->` and
+`<!-- generated:footer -->` regions. So **don't hand-edit anything between
+those markers**: change the renderer instead and run `bun run build:content`.
+`check:content` compares those two files byte-for-byte like any other output,
+so an edit inside a region — or a deleted marker — fails CI rather than
+quietly diverging from the generated pages.
 - All hardening (CSP, HSTS, cache-control) is declared in `firebase.json`,
   not in code. The `headers` list there is last-match-wins — be careful with
   ordering.

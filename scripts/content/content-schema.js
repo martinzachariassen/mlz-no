@@ -12,19 +12,19 @@
  *   bun run check:content   validate, then fail if what's on disk differs
  *   bun run dev             serve public/ through the Firebase Hosting emulator
  *
- * build-content.js renders whatever it is handed, so without this file
- * a typo is invisible: a misspelled key is silently ignored, a block type the
- * renderer has never heard of throws halfway through a page, and a field the
- * generator stopped reading lives on in the JSON looking meaningful. This
- * module is the contract instead — every key that content/ may contain is
- * listed here, anything else is an error, and the error names the JSON path.
+ * render.js renders whatever it is handed, so without this file a typo is
+ * invisible: a misspelled key is silently ignored, a block type the renderer
+ * has never heard of throws halfway through a page, and a field the generator
+ * stopped reading lives on in the JSON looking meaningful. This module is the
+ * contract instead — every key that content/ may contain is listed here,
+ * anything else is an error, and the error names the JSON path.
  *
  * Adding a field to the site is therefore two edits, in this order: describe
- * it here, then render it in build-content.js. Removing one is the same in
- * reverse — drop the renderer, drop the schema entry, and the next build
- * names which content files still carry it. A new block type is three edits:
- * a variant in the `block` union below, a renderer in build-content.js's
- * `blockRenderers`, and whatever CSS it needs in public/css/case-study.css.
+ * it here, then render it in render.js. Removing one is the same in reverse —
+ * drop the renderer, drop the schema entry, and the next build names which
+ * content files still carry it. A new block type is three edits: a variant in
+ * the `block` union below, a renderer in render.js's `blockRenderers`, and
+ * whatever CSS it needs in public/css/case-study.css.
  * A new tile size is a value in TILE_SIZES and a matching `.b-*` rule in
  * public/css/bento.css.
  *
@@ -217,7 +217,7 @@ export const siteSchema = z.strictObject({
 /* --------------------------------------------------- content/projects/*.json */
 
 /**
- * The body of a section. Seven types, one renderer each in build-content.js's
+ * The body of a section. Seven types, one renderer each in render.js's
  * `blockRenderers`, and no way to reach a type the renderer doesn't
  * implement. Nothing in a block is parsed as Markdown or HTML — every value
  * is escaped and rendered as text, so `<`, `&` and quotes are safe to type
@@ -346,7 +346,7 @@ function figureRefs(project) {
  * Checks that span files: references that must resolve, values that must be
  * unique, and output that would be generated but never used.
  */
-function crossCheck({ site, projects, figures, figureFiles, tokens }, problems) {
+function crossCheck({ projects, figures, figureFiles, tokens }, problems) {
   const add = (file, message) => problems.push({ file, message });
 
   // content/figures/ is read as a directory, so anything an editor or the OS
