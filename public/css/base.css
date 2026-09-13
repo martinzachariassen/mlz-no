@@ -64,10 +64,16 @@ a {
 /* The 4vw term rather than 5vw is the phone: monospace is a wide face, and at
    390px the old gutter left a case study's prose at about 41 characters a
    line, under the 45 a reader wants. Every page shares this so the topbar, the
-   page copy and the footer keep one edge. */
+   page copy and the footer keep one edge.
+
+   The gutter is a custom property because one rule has to add to it rather
+   than inherit it: the case study's previous/next row sits outside <main> and
+   has to reserve the same width the section rail takes out of the column above
+   it, or the page ends with two different right edges. */
 .wrap {
+  --gutter: clamp(16px, 4vw, 48px);
   width: 100%;
   max-width: 1120px;
   margin-inline: auto;
-  padding-inline: clamp(16px, 4vw, 48px);
+  padding-inline: var(--gutter);
 }

@@ -133,6 +133,12 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
    * authored — content/ says nothing about anchors and shouldn't have to. Two
    * sections sharing a label get `-2`, `-3`: an index whose links quietly all
    * point at the first of them would be worse than an ugly id.
+   *
+   * Each section also carries `tabindex="-1"`, which is what makes following
+   * one of those links work for a keyboard: the browser only moves focus to a
+   * fragment's target if that target can hold it, so without this the page
+   * scrolls to the section and the next Tab carries on from the index at the
+   * top, four sections back from what the reader is now looking at.
    */
   function sectionAnchors(sections) {
     const used = new Set();
@@ -173,43 +179,67 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
     return files;
   }
 
+  const figureSrc = (name, theme) => `${site.figureDir}/${name}-${theme}.svg`;
+
   /**
-   * `frame` wraps the pair in a scroll container and makes each copy a link to
-   * its own SVG. These are wide diagrams: at phone width they would shrink to
-   * an unreadable strip, so a case study lets them keep a legible minimum
-   * width and scroll sideways instead — and the link is the way out of that
-   * box, since the file opened on its own is the only place a dense diagram
-   * can be as large as the reader's screen allows.
+   * `frame` wraps the pair in a scroll container. These are wide diagrams: at
+   * phone width they would shrink to an unreadable strip, so a case study lets
+   * them keep a legible minimum width and scroll sideways instead.
    *
-   * The link has to be per theme rather than around the pair: the two files
-   * are different documents and only CSS knows which one is on screen, so the
-   * theme class goes on the link as well and case-study.css hides the pair the
-   * reader isn't looking at. A tile's figure is unframed for the same reason
-   * it can't be a link — the whole tile already is one.
+   * That container is `tabindex="0"` for the same reason a code block's <pre>
+   * is: a region the mouse can scroll and the keyboard cannot is the whole of
+   * WCAG 2.1.1, and these two are the only scrolling regions on the site. It
+   * carries no role — the image inside already names it, through the alt text
+   * the reader's theme leaves in the accessibility tree.
+   *
+   * A tile's figure is unframed: a tile is a link, it cannot scroll, and its
+   * cover is decoration for the copy beside it rather than something to study.
    */
   function figureImages(name, alt, { eager = false, frame = false } = {}) {
     const figure = figures.get(name);
     const loading = eager ? "eager" : "lazy";
     const shared = `alt="${esc(alt)}" width="${figure.width}" height="${figure.height}" loading="${loading}" decoding="async"`;
-    const src = (theme) => `${site.figureDir}/${name}-${theme}.svg`;
     const image = (theme) => html`
-      <img class="shot shot-${theme}" src="${src(theme)}"
+      <img class="shot shot-${theme}" src="${figureSrc(name, theme)}"
         ${shared} />`;
     if (!frame) {
       return html`
         ${image("light")}
         ${image("dark")}`;
     }
-    const linked = (theme) => html`
-      <a class="shot-link shot-${theme}" href="${src(theme)}"
-        target="_blank" rel="noopener" title="Open the full-size diagram">
-        ${image(theme)}
-      </a>`;
     return html`
-      <span class="shot-frame">
-        ${linked("light")}
-        ${linked("dark")}
+      <span class="shot-frame" tabindex="0">
+        ${image("light")}
+        ${image("dark")}
       </span>`;
+  }
+
+  /**
+   * A framed figure's caption, and the way out of the frame: the file opened on
+   * its own is the only place a dense diagram can be as large as the reader's
+   * screen allows, and a scroll container is the one thing that cannot offer
+   * that.
+   *
+   * It is a visible link in the caption rather than the image itself being one.
+   * Wrapping the image made the link's accessible name the alt text — a
+   * screen reader announced "link, a request carrying a tenant identifier
+   * passes through a router that…" — and left `title` as the only hint that
+   * anything was clickable, which is no hint at all on a touch screen.
+   *
+   * Per theme, like the images: the two files are different documents and only
+   * CSS knows which one is on screen, so the same `shot-light`/`shot-dark`
+   * swap that picks the image picks its link.
+   */
+  function figureCaption(name, caption) {
+    const link = (theme) => html`
+      <a class="figure-open shot-${theme}" href="${figureSrc(name, theme)}"
+        target="_blank" rel="noopener">Open full size<span class="figure-open-mark" aria-hidden="true">↗</span></a>`;
+    return html`
+      <figcaption>
+        ${caption ? `<span class="figure-note">${esc(caption)}</span>` : ""}
+        ${link("light")}
+        ${link("dark")}
+      </figcaption>`;
   }
 
   /* ------------------------------------------------------------ partials */
@@ -374,7 +404,16 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
       <script src="/js/glitch.js" defer></script>`);
   }
 
-  function page({ meta, jsonLd, body, current }) {
+  /**
+   * `progress` adds the scroll-linked rule at the top of the window. Only the
+   * case studies ask for it — they are the only pages long enough for "how
+   * much of this is left" to be a question — and it is an empty element on
+   * purpose: the whole behaviour is `animation-timeline: scroll()` in
+   * case-study.css, so there is no script to load and nothing to fall out of
+   * step with the page. Browsers without scroll-driven animations never show
+   * it at all; see the @supports guard there.
+   */
+  function page({ meta, jsonLd, body, current, progress = false }) {
     return html`
       <!doctype html>
       <html lang="en">
@@ -390,6 +429,7 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
           }
         </head>
         <body>
+          ${progress ? '<div class="read-progress" aria-hidden="true"></div>' : ""}
           ${topbar({ current })}
           ${body}
           ${footer()}
@@ -522,10 +562,17 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
   const blockRenderers = {
     text: (block) => html`<p class="prose">${esc(block.value)}</p>`,
 
+    /**
+     * The title is an <h3>, not the <p> it used to be. It introduces the list
+     * under it, which makes it a heading whatever it is styled as — and as a
+     * paragraph it was missing from the document outline, so a screen reader
+     * skipping by heading went from one section's <h2> straight to the next
+     * and never saw the structure inside either.
+     */
     list: (block) => {
       const tag = block.kind === "numbered" ? "ol" : "ul";
       return html`
-        ${block.title ? `<p class="block-title" data-glitch>${esc(block.title)}</p>` : ""}
+        ${block.title ? `<h3 class="block-title" data-glitch>${esc(block.title)}</h3>` : ""}
         <${tag} class="prose-list">
           ${block.items.map((item) => `<li>${esc(item)}</li>`)}
         </${tag}>`;
@@ -534,7 +581,7 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
     figure: (block) => html`
       <figure class="figure">
         ${figureImages(block.figure, block.alt, { frame: true })}
-        ${block.caption ? `<figcaption>${esc(block.caption)}</figcaption>` : ""}
+        ${figureCaption(block.figure, block.caption)}
       </figure>`,
 
     code: (block) => html`
@@ -556,7 +603,7 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
 
     note: (block) => html`
       <aside class="note">
-        ${block.title ? `<p class="note-title" data-glitch>${esc(block.title)}</p>` : ""}
+        ${block.title ? `<h3 class="note-title" data-glitch>${esc(block.title)}</h3>` : ""}
         <p>${esc(block.value)}</p>
       </aside>`,
   };
@@ -612,10 +659,29 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
       cards.push(indexCard(""));
     }
 
+    /**
+     * And a way out of the series altogether. Without this the row is a
+     * closed loop — previous, next, previous — with the overview reachable
+     * only from a topbar that scrolled off six minutes ago, and the contact
+     * details only from the home page. `mailto:` opens in place, so no
+     * target: the same rule an aside tile follows.
+     */
+    const { caseEnd } = site;
+    const contact = html`
+      <p class="end-more wrap">
+        <span class="end-more-text">${esc(caseEnd.text)}</span>
+        <span class="end-more-links">
+          <a class="end-more-link" href="${esc(caseEnd.href)}"
+            data-umami-event="${esc(caseEnd.umamiEvent)}"><span data-glitch>${esc(caseEnd.cta)}</span><span class="end-more-mark" aria-hidden="true">↗</span></a>
+          <a class="end-more-link" href="${site.basePath}"><span data-glitch>All projects</span><span class="end-more-mark" aria-hidden="true">→</span></a>
+        </span>
+      </p>`;
+
     return html`
       <nav class="end-nav wrap" aria-label="More projects">
         ${cards}
-      </nav>`;
+      </nav>
+      ${contact}`;
   }
 
   function casePage(project, index) {
@@ -632,12 +698,18 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
      * Below three sections there is nothing to orient yourself in: the index
      * would be a list of everything already visible, which is chrome that
      * looks like navigation and saves nobody a scroll.
+     *
+     * A sibling of the brief rather than a child of it, because at 1080px and
+     * up case-study.css lifts it into the empty right-hand column and makes it
+     * sticky — the one element on the page that does not belong to the single
+     * column of content. Still anchors only: no scroll-spy, so there is
+     * nothing here that can end up describing a position the reader is not at.
      */
     const caseIndex =
       project.sections.length < 3
         ? ""
         : html`
-          <nav class="case-index" aria-label="Sections">
+          <nav class="case-index rise delay-550" aria-label="Sections">
             <span class="case-index-label" data-glitch>On this page</span>
             ${project.sections.map(
               (section, i) =>
@@ -647,6 +719,7 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
 
     return page({
       current: "section",
+      progress: true,
       meta: {
         title: project.seo.title,
         description: project.seo.description,
@@ -670,6 +743,10 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
         abstract: project.tagline,
         description: project.summary,
         author: { "@type": "Person", name: site.author, url: site.origin },
+        // The same date the sitemap gives this page, from the same field:
+        // content/ says when a project was last touched, the clock never does.
+        dateModified: project.lastmod,
+        image: `${site.origin}${site.ogImage}`,
         keywords: project.tags.join(", "),
         isPartOf: {
           "@type": "CollectionPage",
@@ -678,7 +755,7 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
         },
       },
       body: html`
-        <main class="wrap page">
+        <main class="wrap page case-page">
           <header class="page-head rise delay-150">
             <p class="page-eyebrow">
               <span data-glitch>${esc(project.period)}</span>
@@ -688,7 +765,8 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
             <h1 class="page-title">${esc(project.name)}</h1>
             <p class="page-intro">${esc(project.tagline)}</p>
           </header>
-          <div class="case-brief rise delay-450">
+          <p class="case-summary rise delay-450">${esc(project.summary)}</p>
+          <div class="case-brief rise delay-550">
             <dl class="case-facts">
               ${facts.map(
                 ([label, value]) => html`
@@ -699,23 +777,22 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
               )}
             </dl>
             ${project.outcome ? metricsList(project.outcome, "metrics case-outcome") : ""}
-            ${caseIndex}
           </div>
-          <p class="case-summary rise delay-550">${esc(project.summary)}</p>
+          ${caseIndex}
           <figure class="figure figure-cover rise delay-600">
             ${figureImages(project.cover.figure, project.cover.alt, { eager: true, frame: true })}
-            ${project.cover.caption ? `<figcaption>${esc(project.cover.caption)}</figcaption>` : ""}
+            ${figureCaption(project.cover.figure, project.cover.caption)}
           </figure>
           ${project.sections.map(
             (section, i) => html`
-              <section class="field" id="${anchors[i]}">
+              <section class="field" id="${anchors[i]}" tabindex="-1">
                 <p class="field-label" data-glitch>${esc(section.label)}</p>
                 <h2 class="field-heading">${esc(section.heading)}</h2>
                 ${section.blocks.map(renderBlock)}
               </section>`,
           )}
           <div class="case-topics">
-            <p class="block-title" data-glitch>Topics</p>
+            <h2 class="block-title" data-glitch>Topics</h2>
             <ul class="tag-list">
               ${project.tags.map((tag) => `<li>${esc(tag)}</li>`)}
             </ul>

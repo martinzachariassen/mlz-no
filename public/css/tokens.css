@@ -69,6 +69,15 @@
      deliberate exception and take the whole column. */
   --measure: 40rem;
 
+  /* The exception's exception. Figures and the metrics row take the whole
+     column because they are diagrams and want every pixel; a code listing is
+     text, and at full column width it was a 1024px panel around a 517px line —
+     half of it air, next to prose that stops at 640px. This is deliberately
+     wider than --measure, so a listing still reads as a full-width block and
+     scrolls sideways less often than prose wraps, and deliberately far short
+     of the column. */
+  --measure-wide: 46rem;
+
   --radius: 4px;
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   /* --ease front-loads its motion (fast start, long coast) — reads as snappy

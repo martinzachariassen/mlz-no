@@ -89,6 +89,8 @@
           "name": "Martin Zachariassen",
           "url": "https://mlz.no"
         },
+        "dateModified": "2026-09-13",
+        "image": "https://mlz.no/assets/social/og.png",
         "keywords": "Compliance, Append-only, Security",
         "isPartOf": {
           "@type": "CollectionPage",
@@ -99,6 +101,7 @@
     </script>
   </head>
   <body>
+    <div class="read-progress" aria-hidden="true"></div>
     <header class="wrap topbar rise delay-50">
       <a href="/" aria-label="MLZ home" class="brand">
         <svg
@@ -136,7 +139,7 @@
         </button>
       </div>
     </header>
-    <main class="wrap page">
+    <main class="wrap page case-page">
       <header class="page-head rise delay-150">
         <p class="page-eyebrow">
           <span data-glitch>2022</span>
@@ -146,7 +149,8 @@
         <h1 class="page-title">Audit Trail</h1>
         <p class="page-intro">A hash-linked record of every privileged action, cheap enough to write on the hot path and hard enough to argue with in an audit.</p>
       </header>
-      <div class="case-brief rise delay-450">
+      <p class="case-summary rise delay-450">Access logs lived in three systems, none of which could prove they had not been edited. I replaced them with one append-only table where every record carries the hash of the record before it, and a daily seal anchors the chain — which turns &quot;who changed this?&quot; from an investigation into a query.</p>
+      <div class="case-brief rise delay-550">
         <dl class="case-facts">
           <div class="fact">
             <dt data-glitch>Role</dt>
@@ -175,41 +179,40 @@
             <dd>daily</dd>
           </div>
         </dl>
-        <nav class="case-index" aria-label="Sections">
-          <span class="case-index-label" data-glitch>On this page</span>
-          <a href="#problem">Problem</a>
-          <a href="#approach">Approach</a>
-          <a href="#result">Result</a>
-        </nav>
       </div>
-      <p class="case-summary rise delay-550">Access logs lived in three systems, none of which could prove they had not been edited. I replaced them with one append-only table where every record carries the hash of the record before it, and a daily seal anchors the chain — which turns &quot;who changed this?&quot; from an investigation into a query.</p>
+      <nav class="case-index rise delay-550" aria-label="Sections">
+        <span class="case-index-label" data-glitch>On this page</span>
+        <a href="#problem">Problem</a>
+        <a href="#approach">Approach</a>
+        <a href="#result">Result</a>
+      </nav>
       <figure class="figure figure-cover rise delay-600">
-        <span class="shot-frame">
-          <a class="shot-link shot-light" href="/assets/figures/audit-chain-light.svg"
-            target="_blank" rel="noopener" title="Open the full-size diagram">
-            <img class="shot shot-light" src="/assets/figures/audit-chain-light.svg"
-              alt="Four stacked audit records, each naming the hash of the one before it, ending in a daily seal record that anchors the chain." width="1000" height="640" loading="eager" decoding="async" />
-          </a>
-          <a class="shot-link shot-dark" href="/assets/figures/audit-chain-dark.svg"
-            target="_blank" rel="noopener" title="Open the full-size diagram">
-            <img class="shot shot-dark" src="/assets/figures/audit-chain-dark.svg"
-              alt="Four stacked audit records, each naming the hash of the one before it, ending in a daily seal record that anchors the chain." width="1000" height="640" loading="eager" decoding="async" />
-          </a>
+        <span class="shot-frame" tabindex="0">
+          <img class="shot shot-light" src="/assets/figures/audit-chain-light.svg"
+            alt="Four stacked audit records, each naming the hash of the one before it, ending in a daily seal record that anchors the chain." width="1000" height="640" loading="eager" decoding="async" />
+          <img class="shot shot-dark" src="/assets/figures/audit-chain-dark.svg"
+            alt="Four stacked audit records, each naming the hash of the one before it, ending in a daily seal record that anchors the chain." width="1000" height="640" loading="eager" decoding="async" />
         </span>
-        <figcaption>Each record names the one before it, so a deletion is as visible as an edit.</figcaption>
+        <figcaption>
+          <span class="figure-note">Each record names the one before it, so a deletion is as visible as an edit.</span>
+          <a class="figure-open shot-light" href="/assets/figures/audit-chain-light.svg"
+            target="_blank" rel="noopener">Open full size<span class="figure-open-mark" aria-hidden="true">↗</span></a>
+          <a class="figure-open shot-dark" href="/assets/figures/audit-chain-dark.svg"
+            target="_blank" rel="noopener">Open full size<span class="figure-open-mark" aria-hidden="true">↗</span></a>
+        </figcaption>
       </figure>
-      <section class="field" id="problem">
+      <section class="field" id="problem" tabindex="-1">
         <p class="field-label" data-glitch>Problem</p>
         <h2 class="field-heading">Three logs, no answers</h2>
         <p class="prose">Privileged actions were logged by whichever service happened to perform them: the admin API wrote rows, the support tool wrote to a file, and the data platform wrote nothing at all. Reconstructing a single incident meant three exports, three clock skews and a spreadsheet.</p>
-        <p class="block-title" data-glitch>What an auditor actually asked for</p>
+        <h3 class="block-title" data-glitch>What an auditor actually asked for</h3>
         <ul class="prose-list">
           <li>Every action against a customer record, in one place, in order.</li>
           <li>Evidence that nothing had been removed from that list after the fact.</li>
           <li>A retention story that did not depend on anyone remembering to run something.</li>
         </ul>
       </section>
-      <section class="field" id="approach">
+      <section class="field" id="approach" tabindex="-1">
         <p class="field-label" data-glitch>Approach</p>
         <h2 class="field-heading">Make deletion as loud as editing</h2>
         <p class="prose">Every record stores the hash of its own contents and the hash of the record before it. Editing a row breaks the chain from that point on; deleting one breaks it too. Neither is prevented — the database can always be written to — but neither can happen quietly, which is the property an audit actually needs.</p>
@@ -231,17 +234,17 @@
 );</code></pre>
         </figure>
         <aside class="note">
-          <p class="note-title" data-glitch>Why not a ledger database</p>
+          <h3 class="note-title" data-glitch>Why not a ledger database</h3>
           <p>We costed one. It solved the tamper-evidence problem we had and introduced an operational surface nobody on the team knew how to run at 3am. A column in the database we already operate was the cheaper trade, and it is the trade I would make again.</p>
         </aside>
       </section>
-      <section class="field" id="result">
+      <section class="field" id="result" tabindex="-1">
         <p class="field-label" data-glitch>Result</p>
         <h2 class="field-heading">The question became a query</h2>
         <p class="prose">Verification walks the chain and takes about eleven seconds over a year of records, which is fast enough that it runs nightly rather than on request. The first run found no tampering and two application bugs writing records with the wrong subject — which was worth the whole project on its own.</p>
       </section>
       <div class="case-topics">
-        <p class="block-title" data-glitch>Topics</p>
+        <h2 class="block-title" data-glitch>Topics</h2>
         <ul class="tag-list">
           <li>Compliance</li>
           <li>Append-only</li>
@@ -261,6 +264,14 @@
         <span class="end-tagline">Moving a shared-everything multi-tenant platform onto per-tenant pools, so one customer's bad afternoon stops being everyone's.</span>
       </a>
     </nav>
+    <p class="end-more wrap">
+      <span class="end-more-text">Questions about any of this, or the parts that didn't fit on the page?</span>
+      <span class="end-more-links">
+        <a class="end-more-link" href="mailto:hi@mlz.no"
+          data-umami-event="case-contact"><span data-glitch>Email me</span><span class="end-more-mark" aria-hidden="true">↗</span></a>
+        <a class="end-more-link" href="/projects"><span data-glitch>All projects</span><span class="end-more-mark" aria-hidden="true">→</span></a>
+      </span>
+    </p>
     <footer class="rise delay-750">
       <div class="wrap footer-row">
         <span data-glitch>© <span data-year>2026</span> · Martin Zachariassen</span>

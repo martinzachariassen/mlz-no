@@ -29,5 +29,11 @@
     "heading": "Projects",
     "intro": "Backend systems and the infrastructure around them. Each entry is a short case study — what the problem actually was, what I chose to build, and what changed once it shipped.",
     "asideTiles": []
+  },
+  "caseEnd": {
+    "text": "Questions about any of this, or the parts that didn't fit on the page?",
+    "cta": "Email me",
+    "href": "mailto:hi@mlz.no",
+    "umamiEvent": "case-contact"
   }
 }

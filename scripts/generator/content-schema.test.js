@@ -36,6 +36,12 @@ const validSite = {
     intro: "A short intro.",
     asideTiles: [],
   },
+  caseEnd: {
+    text: "Questions?",
+    cta: "Email me",
+    href: "mailto:hi@example.com",
+    umamiEvent: "case-contact",
+  },
 };
 
 const validProject = {

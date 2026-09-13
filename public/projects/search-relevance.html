@@ -89,6 +89,8 @@
           "name": "Martin Zachariassen",
           "url": "https://mlz.no"
         },
+        "dateModified": "2026-09-13",
+        "image": "https://mlz.no/assets/social/og.png",
         "keywords": "Search, Ranking, A/B testing",
         "isPartOf": {
           "@type": "CollectionPage",
@@ -99,6 +101,7 @@
     </script>
   </head>
   <body>
+    <div class="read-progress" aria-hidden="true"></div>
     <header class="wrap topbar rise delay-50">
       <a href="/" aria-label="MLZ home" class="brand">
         <svg
@@ -136,7 +139,7 @@
         </button>
       </div>
     </header>
-    <main class="wrap page">
+    <main class="wrap page case-page">
       <header class="page-head rise delay-150">
         <p class="page-eyebrow">
           <span data-glitch>2022 — 2023</span>
@@ -146,7 +149,8 @@
         <h1 class="page-title">Search Relevance Service</h1>
         <p class="page-intro">A standalone ranking service that took relevance tuning out of a monolith and into something product could iterate on weekly.</p>
       </header>
-      <div class="case-brief rise delay-450">
+      <p class="case-summary rise delay-450">Ranking logic lived inline in the search endpoint of the main monolith, so every relevance change needed a full deploy and a release owner. I extracted it into its own gRPC service with a config-driven scoring pipeline, so product and search specialists could ship ranking changes without engineering in the loop.</p>
+      <div class="case-brief rise delay-550">
         <dl class="case-facts">
           <div class="fact">
             <dt data-glitch>Role</dt>
@@ -166,28 +170,27 @@
           </div>
         </dl>
       </div>
-      <p class="case-summary rise delay-550">Ranking logic lived inline in the search endpoint of the main monolith, so every relevance change needed a full deploy and a release owner. I extracted it into its own gRPC service with a config-driven scoring pipeline, so product and search specialists could ship ranking changes without engineering in the loop.</p>
       <figure class="figure figure-cover rise delay-600">
-        <span class="shot-frame">
-          <a class="shot-link shot-light" href="/assets/figures/ranking-flow-light.svg"
-            target="_blank" rel="noopener" title="Open the full-size diagram">
-            <img class="shot shot-light" src="/assets/figures/ranking-flow-light.svg"
-              alt="Diagram of a search request flowing through a scoring step driven by a published config version, split across an A/B variant, into ranked results." width="1300" height="460" loading="eager" decoding="async" />
-          </a>
-          <a class="shot-link shot-dark" href="/assets/figures/ranking-flow-dark.svg"
-            target="_blank" rel="noopener" title="Open the full-size diagram">
-            <img class="shot shot-dark" src="/assets/figures/ranking-flow-dark.svg"
-              alt="Diagram of a search request flowing through a scoring step driven by a published config version, split across an A/B variant, into ranked results." width="1300" height="460" loading="eager" decoding="async" />
-          </a>
+        <span class="shot-frame" tabindex="0">
+          <img class="shot shot-light" src="/assets/figures/ranking-flow-light.svg"
+            alt="Diagram of a search request flowing through a scoring step driven by a published config version, split across an A/B variant, into ranked results." width="1300" height="460" loading="eager" decoding="async" />
+          <img class="shot shot-dark" src="/assets/figures/ranking-flow-dark.svg"
+            alt="Diagram of a search request flowing through a scoring step driven by a published config version, split across an A/B variant, into ranked results." width="1300" height="460" loading="eager" decoding="async" />
         </span>
-        <figcaption>A ranking change is a config publish, not a deploy.</figcaption>
+        <figcaption>
+          <span class="figure-note">A ranking change is a config publish, not a deploy.</span>
+          <a class="figure-open shot-light" href="/assets/figures/ranking-flow-light.svg"
+            target="_blank" rel="noopener">Open full size<span class="figure-open-mark" aria-hidden="true">↗</span></a>
+          <a class="figure-open shot-dark" href="/assets/figures/ranking-flow-dark.svg"
+            target="_blank" rel="noopener">Open full size<span class="figure-open-mark" aria-hidden="true">↗</span></a>
+        </figcaption>
       </figure>
-      <section class="field" id="approach">
+      <section class="field" id="approach" tabindex="-1">
         <p class="field-label" data-glitch>Approach</p>
         <h2 class="field-heading">Scoring as configuration, not code</h2>
         <p class="prose">The new service reads a versioned scoring config at request time, so a ranking change is a config publish rather than a deploy. Every request also logs which config version scored it, which made the A/B rollout of new ranking strategies straightforward to attribute.</p>
       </section>
-      <section class="field" id="result">
+      <section class="field" id="result" tabindex="-1">
         <p class="field-label" data-glitch>Result</p>
         <h2 class="field-heading">Weekly ranking iteration instead of quarterly</h2>
         <dl class="metrics">
@@ -202,7 +205,7 @@
         </dl>
       </section>
       <div class="case-topics">
-        <p class="block-title" data-glitch>Topics</p>
+        <h2 class="block-title" data-glitch>Topics</h2>
         <ul class="tag-list">
           <li>Search</li>
           <li>Ranking</li>
@@ -222,6 +225,14 @@
         <span class="end-tagline">A hash-linked record of every privileged action, cheap enough to write on the hot path and hard enough to argue with in an audit.</span>
       </a>
     </nav>
+    <p class="end-more wrap">
+      <span class="end-more-text">Questions about any of this, or the parts that didn't fit on the page?</span>
+      <span class="end-more-links">
+        <a class="end-more-link" href="mailto:hi@mlz.no"
+          data-umami-event="case-contact"><span data-glitch>Email me</span><span class="end-more-mark" aria-hidden="true">↗</span></a>
+        <a class="end-more-link" href="/projects"><span data-glitch>All projects</span><span class="end-more-mark" aria-hidden="true">→</span></a>
+      </span>
+    </p>
     <footer class="rise delay-750">
       <div class="wrap footer-row">
         <span data-glitch>© <span data-year>2026</span> · Martin Zachariassen</span>

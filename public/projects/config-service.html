@@ -89,6 +89,8 @@
           "name": "Martin Zachariassen",
           "url": "https://mlz.no"
         },
+        "dateModified": "2026-09-13",
+        "image": "https://mlz.no/assets/social/og.png",
         "keywords": "Developer tooling, Config management",
         "isPartOf": {
           "@type": "CollectionPage",
@@ -99,6 +101,7 @@
     </script>
   </head>
   <body>
+    <div class="read-progress" aria-hidden="true"></div>
     <header class="wrap topbar rise delay-50">
       <a href="/" aria-label="MLZ home" class="brand">
         <svg
@@ -136,7 +139,7 @@
         </button>
       </div>
     </header>
-    <main class="wrap page">
+    <main class="wrap page case-page">
       <header class="page-head rise delay-150">
         <p class="page-eyebrow">
           <span data-glitch>2021 — 2022</span>
@@ -146,7 +149,8 @@
         <h1 class="page-title">Config Service</h1>
         <p class="page-intro">A typed, versioned configuration store that replaced a shared YAML file and its merge conflicts.</p>
       </header>
-      <div class="case-brief rise delay-450">
+      <p class="case-summary rise delay-450">A dozen services shared one YAML file in a config repo, edited by hand and deployed by CI. Merge conflicts and silent typos were routine. I built a small typed config service with schema validation and an audit log, so a bad value fails at publish time instead of at runtime in a service nobody was watching.</p>
+      <div class="case-brief rise delay-550">
         <dl class="case-facts">
           <div class="fact">
             <dt data-glitch>Role</dt>
@@ -162,29 +166,28 @@
           </div>
         </dl>
       </div>
-      <p class="case-summary rise delay-550">A dozen services shared one YAML file in a config repo, edited by hand and deployed by CI. Merge conflicts and silent typos were routine. I built a small typed config service with schema validation and an audit log, so a bad value fails at publish time instead of at runtime in a service nobody was watching.</p>
       <figure class="figure figure-cover rise delay-600">
-        <span class="shot-frame">
-          <a class="shot-link shot-light" href="/assets/figures/config-diff-light.svg"
-            target="_blank" rel="noopener" title="Open the full-size diagram">
-            <img class="shot shot-light" src="/assets/figures/config-diff-light.svg"
-              alt="A config publish view showing a timeout and retry value changed and validated against a schema before publishing." width="900" height="620" loading="eager" decoding="async" />
-          </a>
-          <a class="shot-link shot-dark" href="/assets/figures/config-diff-dark.svg"
-            target="_blank" rel="noopener" title="Open the full-size diagram">
-            <img class="shot shot-dark" src="/assets/figures/config-diff-dark.svg"
-              alt="A config publish view showing a timeout and retry value changed and validated against a schema before publishing." width="900" height="620" loading="eager" decoding="async" />
-          </a>
+        <span class="shot-frame" tabindex="0">
+          <img class="shot shot-light" src="/assets/figures/config-diff-light.svg"
+            alt="A config publish view showing a timeout and retry value changed and validated against a schema before publishing." width="900" height="572" loading="eager" decoding="async" />
+          <img class="shot shot-dark" src="/assets/figures/config-diff-dark.svg"
+            alt="A config publish view showing a timeout and retry value changed and validated against a schema before publishing." width="900" height="572" loading="eager" decoding="async" />
         </span>
-        <figcaption>A config change is validated and published, not merged and deployed.</figcaption>
+        <figcaption>
+          <span class="figure-note">A config change is validated and published, not merged and deployed.</span>
+          <a class="figure-open shot-light" href="/assets/figures/config-diff-light.svg"
+            target="_blank" rel="noopener">Open full size<span class="figure-open-mark" aria-hidden="true">↗</span></a>
+          <a class="figure-open shot-dark" href="/assets/figures/config-diff-dark.svg"
+            target="_blank" rel="noopener">Open full size<span class="figure-open-mark" aria-hidden="true">↗</span></a>
+        </figcaption>
       </figure>
-      <section class="field" id="result">
+      <section class="field" id="result" tabindex="-1">
         <p class="field-label" data-glitch>Result</p>
         <h2 class="field-heading">Config errors caught before rollout, not after</h2>
         <p class="prose">Every config change is validated against the owning service's schema before it publishes, and every publish is attributed and reversible. The class of incident caused by a bad config value reaching production dropped to zero in the following year.</p>
       </section>
       <div class="case-topics">
-        <p class="block-title" data-glitch>Topics</p>
+        <h2 class="block-title" data-glitch>Topics</h2>
         <ul class="tag-list">
           <li>Developer tooling</li>
           <li>Config management</li>
@@ -203,6 +206,14 @@
         <span class="end-tagline">A single onboarding-to-deploy CLI that replaced a wiki page of copy-pasted shell commands.</span>
       </a>
     </nav>
+    <p class="end-more wrap">
+      <span class="end-more-text">Questions about any of this, or the parts that didn't fit on the page?</span>
+      <span class="end-more-links">
+        <a class="end-more-link" href="mailto:hi@mlz.no"
+          data-umami-event="case-contact"><span data-glitch>Email me</span><span class="end-more-mark" aria-hidden="true">↗</span></a>
+        <a class="end-more-link" href="/projects"><span data-glitch>All projects</span><span class="end-more-mark" aria-hidden="true">→</span></a>
+      </span>
+    </p>
     <footer class="rise delay-750">
       <div class="wrap footer-row">
         <span data-glitch>© <span data-year>2026</span> · Martin Zachariassen</span>

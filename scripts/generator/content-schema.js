@@ -188,6 +188,26 @@ const asideTile = z.strictObject({
 });
 
 /**
+ * The line at the foot of every case study — the one thing to do after
+ * finishing one that isn't reading another one.
+ *
+ * A case study used to end in the previous/next row and nothing else: a reader
+ * who had just spent six minutes being convinced had exactly one move
+ * available, which was to start over on a different project. The contact
+ * details live on the home page, four sections and a scroll away from the
+ * moment they matter.
+ *
+ * Same field names as `asideTile` on purpose — `text` is the prompt, `cta` the
+ * link's own words — minus the two a single line has no room for.
+ */
+const contactPrompt = z.strictObject({
+  text: str(),
+  cta: str(),
+  href: externalHref,
+  umamiEvent: slug,
+});
+
+/**
  * content/site.json — settings and copy shared by every generated page. One
  * object, no optional keys.
  *
@@ -198,7 +218,8 @@ const asideTile = z.strictObject({
  * at `basePath`, each project at `<basePath>/<slug>`; themed SVGs are
  * written under `figureDir`). `index` is the copy on the overview page:
  * `title`/`description` go to <head> and JSON-LD, `eyebrow`/`heading`/
- * `intro` are the page copy, `asideTiles` may be `[]`.
+ * `intro` are the page copy, `asideTiles` may be `[]`. `caseEnd` is the line
+ * under every case study's previous/next row.
  */
 export const siteSchema = z.strictObject({
   origin: str({
@@ -227,6 +248,7 @@ export const siteSchema = z.strictObject({
     intro: str(),
     asideTiles: arr(asideTile, { min: 0 }),
   }),
+  caseEnd: contactPrompt,
 });
 
 /* --------------------------------------------------- content/projects/*.json */
@@ -491,6 +513,11 @@ function crossCheck(
       `index.asideTiles[${i}].umamiEvent`,
     );
   });
+  recordEvent(
+    site?.caseEnd?.umamiEvent,
+    "content/site.json",
+    "caseEnd.umamiEvent",
+  );
 }
 
 /* ------------------------------------------------------------- entry point */

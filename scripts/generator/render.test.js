@@ -45,6 +45,12 @@ const site = {
       },
     ],
   },
+  caseEnd: {
+    text: "Questions about any of this?",
+    cta: "Email me",
+    href: "mailto:hi@example.com",
+    umamiEvent: "case-contact",
+  },
 };
 
 /** One project carrying every block type and both optional facts. */
@@ -272,8 +278,10 @@ describe("case study blocks", () => {
     expect(casePage).toContain('<p class="prose">A paragraph.</p>');
     expect(casePage).toContain('<ol class="prose-list">');
     expect(casePage).toContain('<ul class="prose-list">');
-    expect(casePage).toContain('<p class="block-title" data-glitch>Steps</p>');
-    expect(casePage).toContain("<figcaption>Fig.</figcaption>");
+    expect(casePage).toContain(
+      '<h3 class="block-title" data-glitch>Steps</h3>',
+    );
+    expect(casePage).toContain('<span class="figure-note">Fig.</span>');
     expect(casePage).toContain(
       '<span class="code-lang" data-glitch>kotlin</span>',
     );
@@ -295,7 +303,9 @@ describe("case study blocks", () => {
   });
 
   test("renders an optional block field only when present", () => {
-    expect(casePage).toContain('<p class="note-title" data-glitch>Caveat</p>');
+    expect(casePage).toContain(
+      '<h3 class="note-title" data-glitch>Caveat</h3>',
+    );
     const bare = filesOf([
       {
         ...project,
@@ -347,13 +357,19 @@ describe("case study page", () => {
     expect(json.keywords).toBe("Backend, Data");
     expect(json.isPartOf.url).toBe("https://example.com/projects");
   });
+
+  /** From content/, like the sitemap's copy of it — never from the clock. */
+  test("dates the page from the project's own lastmod", () => {
+    expect(casePage).toContain('"dateModified": "2026-01-03"');
+    expect(sitemap).toContain("<lastmod>2026-01-03</lastmod>");
+  });
 });
 
 /**
- * Everything above the first section: the facts, the headline numbers and the
- * index of what's below. The order of these is the whole point — a reader who
- * never scrolls past the first screen should still have the result — so the
- * tests assert position, not just presence.
+ * Everything above the first section: the summary, the facts, the headline
+ * numbers and the index of what's below. The order of these is the whole point
+ * — a reader who never scrolls past the first screen should still have the
+ * result — so the tests assert position, not just presence.
  */
 describe("the brief", () => {
   const positions = (page, ...needles) =>
@@ -365,7 +381,13 @@ describe("the brief", () => {
     return found.every((at, i) => i === 0 || found[i - 1] < at);
   };
 
-  test("renders the outcome numbers in the brief, above the summary", () => {
+  /**
+   * The outcome numbers used to come first, so "1 of 17" and "6 ms → 0" met a
+   * reader who had been told nothing yet and could not mean anything to them.
+   * They are still above the fold; they are just no longer above the sentence
+   * that explains them.
+   */
+  test("renders the summary before the outcome numbers it explains", () => {
     const page = filesOf([
       {
         ...project,
@@ -377,14 +399,14 @@ describe("the brief", () => {
     ]).get("/projects/demo.html");
     expect(page).toContain('<dl class="metrics case-outcome">');
     expect(page).toContain("<dd>7h → 1.2s</dd>");
-    expect(ordered(page, "case-brief", "case-outcome", "case-summary")).toBe(
+    expect(ordered(page, "case-summary", "case-brief", "case-outcome")).toBe(
       true,
     );
   });
 
   test("leaves the row out of a project that has no outcome", () => {
     expect(casePage).not.toContain("case-outcome");
-    expect(casePage).toContain('<div class="case-brief rise delay-450">');
+    expect(casePage).toContain('<div class="case-brief rise delay-550">');
   });
 
   /**
@@ -440,11 +462,31 @@ describe("section index", () => {
 
   test("links every section, at the id that section carries", () => {
     const page = pageFor("Problem", "Approach", "Result");
-    expect(page).toContain('<nav class="case-index" aria-label="Sections">');
+    expect(page).toContain(
+      '<nav class="case-index rise delay-550" aria-label="Sections">',
+    );
     expect(page).toContain('<a href="#problem">Problem</a>');
-    expect(page).toContain('<section class="field" id="problem">');
+    expect(page).toContain(
+      '<section class="field" id="problem" tabindex="-1">',
+    );
     expect(page).toContain('<a href="#approach">Approach</a>');
-    expect(page).toContain('<section class="field" id="result">');
+    expect(page).toContain('<section class="field" id="result" tabindex="-1">');
+  });
+
+  /**
+   * The rail it becomes from 1080px is a grid item of .case-page, so it has to
+   * be a child of it — inside .case-brief, where it used to live, it could not
+   * be placed in the second column at all.
+   */
+  test("sits beside the brief, not inside it", () => {
+    const page = pageFor("Problem", "Approach", "Result");
+    expect(page).toContain('<main class="wrap page case-page">');
+    // Indentation is how the generated markup says what nests in what: a
+    // child of <main> starts two columns in from it, a child of the brief
+    // four.
+    const main = page.match(/^( *)<main class="wrap page case-page">$/m)[1];
+    expect(page).toContain(`\n${main}  <div class="case-brief`);
+    expect(page).toContain(`\n${main}  <nav class="case-index`);
   });
 
   test("stays off a case study short enough to take in at a glance", () => {
@@ -510,25 +552,39 @@ describe("status", () => {
 });
 
 describe("figures on a case study", () => {
-  test("links a framed figure to its own theme's file", () => {
+  /**
+   * The caption carries the link, not the image. Wrapping the image made the
+   * link's accessible name the whole alt text, and left `title` as the only
+   * hint that it was a link at all.
+   */
+  test("offers each framed figure at full size, per theme, from its caption", () => {
     expect(casePage).toContain(
-      '<a class="shot-link shot-light" href="/assets/figures/diagram-light.svg"',
+      '<a class="figure-open shot-light" href="/assets/figures/diagram-light.svg"',
     );
     expect(casePage).toContain(
-      '<a class="shot-link shot-dark" href="/assets/figures/diagram-dark.svg"',
+      '<a class="figure-open shot-dark" href="/assets/figures/diagram-dark.svg"',
     );
     expect(casePage).toContain('target="_blank" rel="noopener"');
+    expect(casePage).not.toContain("shot-link");
   });
 
-  /** A tile is already a link; a link inside it would be invalid markup. */
-  test("leaves a tile's figure unlinked", () => {
-    expect(indexPage).not.toContain("shot-link");
+  /** A region the mouse can scroll and the keyboard cannot is WCAG 2.1.1. */
+  test("lets a keyboard into the frame it lets a mouse scroll", () => {
+    expect(casePage).toContain('<span class="shot-frame" tabindex="0">');
+  });
+
+  /** A tile is already a link, cannot scroll, and needs neither. */
+  test("leaves a tile's figure unframed and unlinked", () => {
+    expect(indexPage).not.toContain("shot-frame");
+    expect(indexPage).not.toContain("figure-open");
   });
 });
 
 describe("topics", () => {
   test("renders the tags as a plain list under a label", () => {
-    expect(casePage).toContain('<p class="block-title" data-glitch>Topics</p>');
+    expect(casePage).toContain(
+      '<h2 class="block-title" data-glitch>Topics</h2>',
+    );
     expect(casePage).toContain('<ul class="tag-list">');
     expect(casePage).toContain("<li>Backend</li>");
   });
@@ -537,8 +593,11 @@ describe("topics", () => {
 describe("end navigation", () => {
   const named = (slug, order) => ({ ...project, slug, order });
 
+  /** The Index *card*: "All projects" also appears in the row below it now. */
+  const indexCard = '<span class="end-title">All projects</span>';
+
   test("falls back to the overview when a project stands alone", () => {
-    expect(casePage).toContain("All projects");
+    expect(casePage).toContain(indexCard);
     expect(casePage).not.toContain("← Previous");
     expect(casePage).not.toContain("Next →");
   });
@@ -550,7 +609,31 @@ describe("end navigation", () => {
     expect(first).toContain("Next →");
     expect(first).not.toContain("← Previous");
     expect(second).toContain("← Previous");
-    expect(second).toContain("All projects");
+    expect(second).toContain(indexCard);
+  });
+
+  /**
+   * Previous, next, previous is a closed loop, and a reader who has just
+   * finished the last section is the likeliest one this site has to want
+   * something from. Both of these used to be reachable only from a topbar
+   * that scrolled out of sight several thousand pixels ago.
+   */
+  test("ends every case study with a way out of the series", () => {
+    const files = filesOf([named("first", 1), named("second", 2)]);
+    for (const page of files.values()) {
+      if (!page.includes("case-page")) continue;
+      expect(page).toContain('<p class="end-more wrap">');
+      expect(page).toContain("Questions about any of this?");
+      expect(page).toContain('href="mailto:hi@example.com"');
+      expect(page).toContain('data-umami-event="case-contact"');
+      expect(page).toContain('<a class="end-more-link" href="/projects">');
+    }
+  });
+
+  /** mailto: opens the mail client in place — the aside tiles' rule. */
+  test("does not send a mailto: to a new tab", () => {
+    const more = casePage.match(/<p class="end-more[\s\S]*?<\/p>/)[0];
+    expect(more).not.toContain("_blank");
   });
 
   /**
@@ -562,7 +645,7 @@ describe("end navigation", () => {
     expect(files.get("/projects/first.html")).toContain(
       '<span class="end-tagline">A demo project.</span>',
     );
-    const alone = casePage.match(/<nav class="end-nav[\s\S]*<\/nav>/)[0];
+    const alone = casePage.match(/<nav class="end-nav[\s\S]*?<\/nav>/)[0];
     expect(alone).toContain("All projects");
     expect(alone).not.toContain("end-tagline");
   });

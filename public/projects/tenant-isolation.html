@@ -89,6 +89,8 @@
           "name": "Martin Zachariassen",
           "url": "https://mlz.no"
         },
+        "dateModified": "2026-09-13",
+        "image": "https://mlz.no/assets/social/og.png",
         "keywords": "Multi-tenancy, Reliability, Capacity",
         "isPartOf": {
           "@type": "CollectionPage",
@@ -99,6 +101,7 @@
     </script>
   </head>
   <body>
+    <div class="read-progress" aria-hidden="true"></div>
     <header class="wrap topbar rise delay-50">
       <a href="/" aria-label="MLZ home" class="brand">
         <svg
@@ -136,7 +139,7 @@
         </button>
       </div>
     </header>
-    <main class="wrap page">
+    <main class="wrap page case-page">
       <header class="page-head rise delay-150">
         <p class="page-eyebrow">
           <span data-glitch>2023 — 2024</span>
@@ -146,7 +149,8 @@
         <h1 class="page-title">Tenant Isolation</h1>
         <p class="page-intro">Moving a shared-everything multi-tenant platform onto per-tenant pools, so one customer's bad afternoon stops being everyone's.</p>
       </header>
-      <div class="case-brief rise delay-450">
+      <p class="case-summary rise delay-450">Every tenant shared one connection pool, one worker fleet and one rate limit, so a single customer running a bulk import could push the whole platform past its latency objective. I introduced a tenant resolution step at the edge and moved the blast radius from the platform to the pool.</p>
+      <div class="case-brief rise delay-550">
         <dl class="case-facts">
           <div class="fact">
             <dt data-glitch>Role</dt>
@@ -183,30 +187,29 @@
             <dd>2</dd>
           </div>
         </dl>
-        <nav class="case-index" aria-label="Sections">
-          <span class="case-index-label" data-glitch>On this page</span>
-          <a href="#problem">Problem</a>
-          <a href="#approach">Approach</a>
-          <a href="#result">Result</a>
-        </nav>
       </div>
-      <p class="case-summary rise delay-550">Every tenant shared one connection pool, one worker fleet and one rate limit, so a single customer running a bulk import could push the whole platform past its latency objective. I introduced a tenant resolution step at the edge and moved the blast radius from the platform to the pool.</p>
+      <nav class="case-index rise delay-550" aria-label="Sections">
+        <span class="case-index-label" data-glitch>On this page</span>
+        <a href="#problem">Problem</a>
+        <a href="#approach">Approach</a>
+        <a href="#result">Result</a>
+      </nav>
       <figure class="figure figure-cover rise delay-600">
-        <span class="shot-frame">
-          <a class="shot-link shot-light" href="/assets/figures/tenant-routing-light.svg"
-            target="_blank" rel="noopener" title="Open the full-size diagram">
-            <img class="shot shot-light" src="/assets/figures/tenant-routing-light.svg"
-              alt="A request carrying a tenant identifier passes through a router that resolves a pool, a quota and an encryption key, then reaches one of three isolated pools; a saturated pool leaves the other tenants unaffected." width="1500" height="560" loading="eager" decoding="async" />
-          </a>
-          <a class="shot-link shot-dark" href="/assets/figures/tenant-routing-dark.svg"
-            target="_blank" rel="noopener" title="Open the full-size diagram">
-            <img class="shot shot-dark" src="/assets/figures/tenant-routing-dark.svg"
-              alt="A request carrying a tenant identifier passes through a router that resolves a pool, a quota and an encryption key, then reaches one of three isolated pools; a saturated pool leaves the other tenants unaffected." width="1500" height="560" loading="eager" decoding="async" />
-          </a>
+        <span class="shot-frame" tabindex="0">
+          <img class="shot shot-light" src="/assets/figures/tenant-routing-light.svg"
+            alt="A request carrying a tenant identifier passes through a router that resolves a pool, a quota and an encryption key, then reaches one of three isolated pools; a saturated pool leaves the other tenants unaffected." width="1500" height="560" loading="eager" decoding="async" />
+          <img class="shot shot-dark" src="/assets/figures/tenant-routing-dark.svg"
+            alt="A request carrying a tenant identifier passes through a router that resolves a pool, a quota and an encryption key, then reaches one of three isolated pools; a saturated pool leaves the other tenants unaffected." width="1500" height="560" loading="eager" decoding="async" />
         </span>
-        <figcaption>One lookup at the edge decides pool, quota and key. Everything downstream is single-tenant by construction.</figcaption>
+        <figcaption>
+          <span class="figure-note">One lookup at the edge decides pool, quota and key. Everything downstream is single-tenant by construction.</span>
+          <a class="figure-open shot-light" href="/assets/figures/tenant-routing-light.svg"
+            target="_blank" rel="noopener">Open full size<span class="figure-open-mark" aria-hidden="true">↗</span></a>
+          <a class="figure-open shot-dark" href="/assets/figures/tenant-routing-dark.svg"
+            target="_blank" rel="noopener">Open full size<span class="figure-open-mark" aria-hidden="true">↗</span></a>
+        </figcaption>
       </figure>
-      <section class="field" id="problem">
+      <section class="field" id="problem" tabindex="-1">
         <p class="field-label" data-glitch>Problem</p>
         <h2 class="field-heading">One tenant, everyone's outage</h2>
         <p class="prose">The platform was shared-everything, which had been exactly right when it had eleven customers and was increasingly wrong at four hundred. Capacity was provisioned for the aggregate, and the aggregate was dominated by whoever happened to be doing something unusual that afternoon.</p>
@@ -214,7 +217,7 @@
           <p>We were not over capacity. We were over capacity for ninety seconds a day, in a different place each time.</p>
           <cite>From the postmortem that funded the work</cite>
         </blockquote>
-        <p class="block-title" data-glitch>What shared-everything actually cost us</p>
+        <h3 class="block-title" data-glitch>What shared-everything actually cost us</h3>
         <ul class="prose-list">
           <li>A bulk import from one tenant exhausted the connection pool for all of them.</li>
           <li>Rate limits were global, so protecting the platform meant throttling innocent traffic.</li>
@@ -222,11 +225,11 @@
           <li>Capacity planning was a single number nobody could attribute to anything.</li>
         </ul>
       </section>
-      <section class="field" id="approach">
+      <section class="field" id="approach" tabindex="-1">
         <p class="field-label" data-glitch>Approach</p>
         <h2 class="field-heading">Resolve the tenant once, at the edge</h2>
         <p class="prose">Every request already carried a tenant identifier; nothing downstream did anything with it. The change was to resolve it exactly once, at the edge, into the three things that had been global — which pool serves this tenant, what quota it has, and which key its data is encrypted with — and to make every component below that point single-tenant by construction.</p>
-        <p class="block-title" data-glitch>The decisions that mattered</p>
+        <h3 class="block-title" data-glitch>The decisions that mattered</h3>
         <ol class="prose-list">
           <li>Pools, not databases. Physical separation per tenant was unaffordable at four hundred; a pool of tenants sized to a known worst case was not.</li>
           <li>Quota at the edge, enforced before the work is queued. Throttling after a request has taken a connection defeats the point.</li>
@@ -234,18 +237,18 @@
           <li>Migration one pool at a time, with the router able to send a tenant back to the shared fleet on a config change.</li>
         </ol>
         <aside class="note">
-          <p class="note-title" data-glitch>The part I got wrong first</p>
+          <h3 class="note-title" data-glitch>The part I got wrong first</h3>
           <p>The first resolver hit the database on every request and cached nothing, on the theory that tenant configuration changes should take effect immediately. It added 6 ms to the p50 of every call on the platform. A sixty-second cache with an explicit invalidation on publish gave back all of it and nobody has ever noticed the delay.</p>
         </aside>
       </section>
-      <section class="field" id="result">
+      <section class="field" id="result" tabindex="-1">
         <p class="field-label" data-glitch>Result</p>
         <h2 class="field-heading">The blast radius has a name now</h2>
         <p class="prose">The number I care about is the second one. Incidents did not stop — a tenant can still saturate the pool it sits in — but an incident now has a boundary you can name in the first minute, and the other sixteen pools carry on without anybody paging them.</p>
         <p class="prose">The unplanned benefit was capacity planning. Cost and load are attributable per pool, and per pool means per tenant, which turned a single unexplainable infrastructure line into a number the commercial side could actually use.</p>
       </section>
       <div class="case-topics">
-        <p class="block-title" data-glitch>Topics</p>
+        <h2 class="block-title" data-glitch>Topics</h2>
         <ul class="tag-list">
           <li>Multi-tenancy</li>
           <li>Reliability</li>
@@ -265,6 +268,14 @@
         <span class="end-tagline">Turning a fortnightly release window that four people had to be awake for into a progressive rollout nobody has to attend.</span>
       </a>
     </nav>
+    <p class="end-more wrap">
+      <span class="end-more-text">Questions about any of this, or the parts that didn't fit on the page?</span>
+      <span class="end-more-links">
+        <a class="end-more-link" href="mailto:hi@mlz.no"
+          data-umami-event="case-contact"><span data-glitch>Email me</span><span class="end-more-mark" aria-hidden="true">↗</span></a>
+        <a class="end-more-link" href="/projects"><span data-glitch>All projects</span><span class="end-more-mark" aria-hidden="true">→</span></a>
+      </span>
+    </p>
     <footer class="rise delay-750">
       <div class="wrap footer-row">
         <span data-glitch>© <span data-year>2026</span> · Martin Zachariassen</span>
