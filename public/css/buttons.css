@@ -85,28 +85,40 @@
 
 /* The one filled button on the page: projects is the primary CTA, so it
    gets the inverted fill the outline .btn siblings don't, plus an arrow
-   that slides forward on hover instead of the rotate the others use. */
+   that slides forward on hover instead of the rotate the others use.
+   Its hover swaps background and color too (the outline buttons don't),
+   so it needs its own longer, gentler transition — .btn's 0.26s snap-then-
+   ease reads fine for a border/shadow-only hover, but felt sudden once a
+   full fill colour was swapped on top of it. */
 .btn-primary {
   background: var(--fg);
   border-color: var(--fg);
   color: var(--bg);
+  transition:
+    transform 0.4s var(--ease-soft),
+    box-shadow 0.4s var(--ease-soft),
+    border-color 0.4s var(--ease-soft),
+    background-color 0.4s var(--ease-soft),
+    color 0.4s var(--ease-soft);
 }
 
-/* Fill stays var(--fg) on hover — .btn:hover already swaps the border to
-   var(--accent-deep) and draws the offset shadow in it; recoloring the
-   fill to that same accent-deep on top made the shadow vanish into the
-   button instead of reading as an offset. */
 .btn-primary:hover svg,
 .btn-primary:focus-visible svg {
   transform: translateX(3px) rotate(0deg);
 }
 
-/* Override .btn:hover's border/shadow color: --accent-deep flips to a light
-   purple in dark mode, meant to pop against the dark surfaces the rest of
-   the site hovers to. This button's fill is the inverse (light in dark
-   mode), so that light-on-light pairing washed out instead of popping. */
+/* The hover fill commits fully to --accent-deep-on-fill rather than mixing
+   the resting fg/bg fill with a purple outline and shadow — one colour to
+   read, not two. --on-accent-deep-fill is its own constant text colour
+   (rather than reusing --bg) because --bg is dark in dark mode and would
+   sit unreadably close to this purple, which stays the same lightness in
+   both themes. */
 .btn-primary:hover,
 .btn-primary:focus-visible {
+  background: var(--accent-deep-on-fill);
   border-color: var(--accent-deep-on-fill);
-  box-shadow: 5px 5px 0 0 var(--accent-deep-on-fill);
+  color: var(--on-accent-deep-fill);
+  box-shadow: 0 8px 18px -6px
+    oklch(from var(--accent-deep-on-fill) l c h / 0.55);
+  transform: translateY(-2px);
 }

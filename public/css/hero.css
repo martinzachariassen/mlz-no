@@ -45,6 +45,15 @@
   color: var(--accent-deep);
 }
 
+/* The CTA closes the hero, after the social links rather than before them —
+   identity and other-ways-to-reach-me read as one cluster, then a clearly
+   bigger break before the one action that matters. Extra margin on top of
+   .hero's own 28px gap, not a page-wide gap change, so it doesn't loosen
+   the h1/eyebrow/links rhythm that was already fine. */
+.hero .btn-primary {
+  margin-top: 16px;
+}
+
 /* A static accent colour, not part of the animated effect in motion.css —
    404.html paints the middle digit of "404" with it. The animation that
    /js/glitch.js drives lives in motion.css, because that script ships on
