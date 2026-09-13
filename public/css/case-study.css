@@ -537,21 +537,21 @@
    brief, where the numbers a reader came for are in the first screen rather
    than four sections down, and a `metrics` block renders it inside a section.
    .case-outcome only says which — the styling is deliberately identical. */
+/* auto-fit, and the hairlines drawn by the cells rather than by the row.
+   Four fixed columns meant a project with three numbers — `outcome` allows two
+   to four — got a fourth cell with nothing in it, and because the separators
+   were the container's own background showing through a 1px gap, that empty
+   cell was a solid block of border colour a quarter of the row wide. Cells
+   that carry their own outline have nothing to show through: a count that does
+   not divide evenly leaves background, not a shape. */
 .metrics {
   margin: 0;
   display: grid;
   gap: 1px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  background: var(--border);
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
-}
-
-@media (min-width: 760px) {
-  .metrics {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
 }
 
 .metric {
@@ -560,6 +560,10 @@
   gap: 10px;
   padding: 20px 18px;
   background: var(--bg);
+  /* Each cell outlines itself; neighbours' outlines meet inside the 1px gap
+     and read as one line, and the outermost ones land under the row's border
+     and are clipped by its overflow. */
+  box-shadow: 0 0 0 1px var(--border);
 }
 
 .metric dt {

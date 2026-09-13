@@ -144,7 +144,7 @@
         <p class="page-eyebrow">
           <span data-glitch>2021 — 2022</span>
           <span class="sep" aria-hidden="true">/</span>
-          <span data-glitch>1 min read</span>
+          <span data-glitch>2 min read</span>
         </p>
         <h1 class="page-title">Config Service</h1>
         <p class="page-intro">A typed, versioned configuration store that replaced a shared YAML file and its merge conflicts.</p>
@@ -165,7 +165,27 @@
             <dd>Go · PostgreSQL</dd>
           </div>
         </dl>
+        <dl class="metrics case-outcome">
+          <div class="metric">
+            <dt>Time to change one value</dt>
+            <dd>9 min → 4 s</dd>
+          </div>
+          <div class="metric">
+            <dt>Incidents from a bad value, since</dt>
+            <dd>0</dd>
+          </div>
+          <div class="metric">
+            <dt>Services that shared one file</dt>
+            <dd>12</dd>
+          </div>
+        </dl>
       </div>
+      <nav class="case-index rise delay-550" aria-label="Sections">
+        <span class="case-index-label" data-glitch>On this page</span>
+        <a href="#problem">Problem</a>
+        <a href="#approach">Approach</a>
+        <a href="#result">Result</a>
+      </nav>
       <figure class="figure figure-cover rise delay-600">
         <span class="shot-frame" tabindex="0">
           <img class="shot shot-light" src="/assets/figures/config-diff-light.svg"
@@ -181,10 +201,52 @@
             target="_blank" rel="noopener">Open full size<span class="figure-open-mark" aria-hidden="true">↗</span></a>
         </figcaption>
       </figure>
+      <section class="field" id="problem" tabindex="-1">
+        <p class="field-label" data-glitch>Problem</p>
+        <h2 class="field-heading">One file, twelve owners</h2>
+        <p class="prose">Twelve services read their settings from a single file in a repository they all deployed from. Changing one timeout meant a pull request against a file four other teams were editing that week, a review from whoever was free rather than whoever knew, and a deploy that carried everyone else's pending changes out with yours.</p>
+        <h3 class="block-title" data-glitch>How it actually went wrong</h3>
+        <ul class="prose-list">
+          <li>Conflicts in a format with no structure to merge along — YAML is indentation, and a badly resolved conflict is usually still valid YAML.</li>
+          <li>The same timeout: 30 meaning seconds in one service and milliseconds in the next, with nothing anywhere to say which.</li>
+          <li>A misspelled key. The service read its default instead, started cleanly, and behaved strangely for two days.</li>
+          <li>No way to answer &quot;when did this change, and who decided that?&quot; without reading a repository's history and guessing.</li>
+        </ul>
+      </section>
+      <section class="field" id="approach" tabindex="-1">
+        <p class="field-label" data-glitch>Approach</p>
+        <h2 class="field-heading">Let the service own the schema, and validate at publish</h2>
+        <p class="prose">Each service declares the configuration it reads and owns that declaration. Publishing a value validates it against the declaration and stores it as a new version — the store is append-only, so the value it replaced is always still there to go back to. Services subscribe and see a change within a couple of seconds, which is the part that matters: a config change stopped being a deploy.</p>
+        <figure class="code">
+          <figcaption class="code-head">
+            <span class="code-lang" data-glitch>Go</span>
+            <span>A key with no declaration cannot be published, and a declared key cannot be published with the wrong type or outside its bounds. Both of those used to be things you found out about in production.</span>
+          </figcaption>
+          <pre tabindex="0"><code>// Declared once, by the service that reads it: type, bounds,
+// and a default that is known to be safe.
+var conf = config.Declare(&quot;checkout&quot;, config.Keys{
+    &quot;http.timeout&quot;: config.Duration().
+        Between(time.Second, 30*time.Second).
+        Default(5 * time.Second),
+    &quot;retry.budget&quot;: config.Int().Between(0, 10).Default(3),
+})
+
+// Reads are typed and cannot fail here: a value that would not
+// satisfy the declaration was refused at publish time, so there
+// is no error to handle at the call site and no default to
+// fall back to by accident.
+timeout := conf.Duration(&quot;http.timeout&quot;)</code></pre>
+        </figure>
+        <aside class="note">
+          <h3 class="note-title" data-glitch>The part I got wrong twice</h3>
+          <p>Delivering a change to subscribers was harder than storing one, and I underestimated it in both directions. The first version polled every thirty seconds, which was fine until a service running two hundred pods made it the busiest query in the database. The second used the database's own notifications and quietly lost updates whenever a connection dropped. What runs today polls one version counter and only fetches when it moves — less elegant than either, and the first one that has never woken anybody.</p>
+        </aside>
+      </section>
       <section class="field" id="result" tabindex="-1">
         <p class="field-label" data-glitch>Result</p>
         <h2 class="field-heading">Config errors caught before rollout, not after</h2>
         <p class="prose">Every config change is validated against the owning service's schema before it publishes, and every publish is attributed and reversible. The class of incident caused by a bad config value reaching production dropped to zero in the following year.</p>
+        <p class="prose">The change I did not anticipate was to how people behaved. When changing a value took nine minutes and a deploy, values were changed rarely and in batches, which is exactly the shape of change that is hardest to attribute when something breaks. At four seconds and a one-click revert, they get changed one at a time — and one at a time is the version you can reason about.</p>
       </section>
       <div class="case-topics">
         <h2 class="block-title" data-glitch>Topics</h2>
