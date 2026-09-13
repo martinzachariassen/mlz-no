@@ -141,40 +141,72 @@
         <p class="page-eyebrow">
           <span data-glitch>2024 — 2025</span>
           <span class="sep" aria-hidden="true">/</span>
-          <span data-glitch>Kotlin</span>
+          <span data-glitch>3 min read</span>
         </p>
         <h1 class="page-title">Cost Attribution</h1>
         <p class="page-intro">Giving every request, job and query an owner, so an infrastructure bill stops being one number nobody can act on.</p>
       </header>
-      <dl class="case-facts rise delay-450">
-        <div class="fact">
-          <dt data-glitch>Role</dt>
-          <dd>Backend developer</dd>
-        </div>
-        <div class="fact">
-          <dt data-glitch>Team</dt>
-          <dd>2 engineers</dd>
-        </div>
-        <div class="fact">
-          <dt data-glitch>Status</dt>
-          <dd>In production</dd>
-        </div>
-        <div class="fact">
-          <dt data-glitch>Stack</dt>
-          <dd>Kotlin · ClickHouse · Terraform</dd>
-        </div>
-      </dl>
+      <div class="case-brief rise delay-450">
+        <dl class="case-facts">
+          <div class="fact">
+            <dt data-glitch>Role</dt>
+            <dd>Backend developer</dd>
+          </div>
+          <div class="fact">
+            <dt data-glitch>Team</dt>
+            <dd>2 engineers</dd>
+          </div>
+          <div class="fact">
+            <dt data-glitch>Status</dt>
+            <dd>In production</dd>
+          </div>
+          <div class="fact">
+            <dt data-glitch>Stack</dt>
+            <dd>Kotlin · ClickHouse · Terraform</dd>
+          </div>
+        </dl>
+        <dl class="metrics case-outcome">
+          <div class="metric">
+            <dt>Total spend, twelve months</dt>
+            <dd>31%</dd>
+          </div>
+          <div class="metric">
+            <dt>Of the invoice attributed</dt>
+            <dd>98.6%</dd>
+          </div>
+          <div class="metric">
+            <dt>Teams with a standing budget</dt>
+            <dd>4</dd>
+          </div>
+          <div class="metric">
+            <dt>Manual resource tags required</dt>
+            <dd>0</dd>
+          </div>
+        </dl>
+        <nav class="case-index" aria-label="Sections">
+          <span class="case-index-label" data-glitch>On this page</span>
+          <a href="#problem">Problem</a>
+          <a href="#approach">Approach</a>
+          <a href="#result">Result</a>
+        </nav>
+      </div>
+      <p class="case-summary rise delay-550">The monthly infrastructure invoice was a single figure that went up every quarter and belonged to nobody. I built the attribution layer that maps spend back to the service, tenant and query that caused it — and the interesting part turned out not to be the savings, but which decisions teams started making once the number had their name on it.</p>
       <figure class="figure figure-cover rise delay-600">
         <span class="shot-frame">
-          <img class="shot shot-light" src="/assets/figures/cost-breakdown-light.svg"
-            alt="Grouped bar chart of monthly cost per service before and after attribution: search down thirty-seven percent, ingest thirty-one, warehouse eleven, batch jobs forty-six, and observability up forty-one percent." width="1600" height="600" loading="eager" decoding="async" />
-          <img class="shot shot-dark" src="/assets/figures/cost-breakdown-dark.svg"
-            alt="Grouped bar chart of monthly cost per service before and after attribution: search down thirty-seven percent, ingest thirty-one, warehouse eleven, batch jobs forty-six, and observability up forty-one percent." width="1600" height="600" loading="eager" decoding="async" />
+          <a class="shot-link shot-light" href="/assets/figures/cost-breakdown-light.svg"
+            target="_blank" rel="noopener" title="Open the full-size diagram">
+            <img class="shot shot-light" src="/assets/figures/cost-breakdown-light.svg"
+              alt="Grouped bar chart of monthly cost per service before and after attribution: search down thirty-seven percent, ingest thirty-one, warehouse eleven, batch jobs forty-six, and observability up forty-one percent." width="1600" height="600" loading="eager" decoding="async" />
+          </a>
+          <a class="shot-link shot-dark" href="/assets/figures/cost-breakdown-dark.svg"
+            target="_blank" rel="noopener" title="Open the full-size diagram">
+            <img class="shot shot-dark" src="/assets/figures/cost-breakdown-dark.svg"
+              alt="Grouped bar chart of monthly cost per service before and after attribution: search down thirty-seven percent, ingest thirty-one, warehouse eleven, batch jobs forty-six, and observability up forty-one percent." width="1600" height="600" loading="eager" decoding="async" />
+          </a>
         </span>
         <figcaption>Four lines went down because someone could finally see them. The fifth went up on purpose.</figcaption>
       </figure>
-      <p class="case-summary">The monthly infrastructure invoice was a single figure that went up every quarter and belonged to nobody. I built the attribution layer that maps spend back to the service, tenant and query that caused it — and the interesting part turned out not to be the savings, but which decisions teams started making once the number had their name on it.</p>
-      <section class="field">
+      <section class="field" id="problem">
         <p class="field-label" data-glitch>Problem</p>
         <h2 class="field-heading">A number with no owner</h2>
         <p class="prose">Finance had an invoice, platform had a dashboard of cluster utilisation, and neither could be turned into the other. When spend went up, the honest answer to &quot;why?&quot; was a guess, and the honest answer to &quot;whose?&quot; was nobody's. Every cost conversation therefore ended in the same place: a platform-wide efficiency push that hit the teams who were already careful.</p>
@@ -186,7 +218,7 @@
           <li>Anything requiring teams to tag their own resources had already been tried twice and decayed within a quarter.</li>
         </ul>
       </section>
-      <section class="field">
+      <section class="field" id="approach">
         <p class="field-label" data-glitch>Approach</p>
         <h2 class="field-heading">Attribute at the call, not at the resource</h2>
         <p class="prose">The decision that made this tractable was to stop trying to label resources and start labelling work. Every request already carried a trace context; the attribution layer rides on it. A service that calls search does not have to know what search costs — it has to propagate the context it already has, and the cost lands on the caller.</p>
@@ -217,27 +249,9 @@
           <p>An attribution model that does not add up to the bill gets argued with instead of acted on. Pricing usage against the real invoice each night means the columns sum to the number finance already has, and the conversation skips straight past whether the data is right.</p>
         </aside>
       </section>
-      <section class="field">
+      <section class="field" id="result">
         <p class="field-label" data-glitch>Result</p>
         <h2 class="field-heading">Four lines went down; one went up on purpose</h2>
-        <dl class="metrics">
-          <div class="metric">
-            <dt>Total spend, twelve months</dt>
-            <dd>31%</dd>
-          </div>
-          <div class="metric">
-            <dt>Of the invoice attributed</dt>
-            <dd>98.6%</dd>
-          </div>
-          <div class="metric">
-            <dt>Teams with a standing budget</dt>
-            <dd>4</dd>
-          </div>
-          <div class="metric">
-            <dt>Manual resource tags required</dt>
-            <dd>0</dd>
-          </div>
-        </dl>
         <p class="prose">The observability line went up by forty-one percent, and that was the correct outcome: it was the bill for being able to see the other four. Nobody had objected to it before, because nobody had been able to put a number on what it bought.</p>
         <p class="prose">The savings are real but they are not the point. What changed is that a team proposing a feature can now see what it will cost to run before they build it, and twice that year a design got simpler because of it. That is a cheaper kind of saving than the one you get by going back and optimising afterwards.</p>
         <p class="block-title" data-glitch>What I would do differently</p>
@@ -246,16 +260,20 @@
           <li>Price in something other than currency for the internal view. A team reads &quot;18% of ingest&quot; and acts; the same team reads a euro figure and escalates it to their manager instead.</li>
         </ul>
       </section>
-      <ul class="tag-list" aria-label="Topics">
-        <li>FinOps</li>
-        <li>Observability</li>
-        <li>Platform</li>
-      </ul>
+      <div class="case-topics">
+        <p class="block-title" data-glitch>Topics</p>
+        <ul class="tag-list">
+          <li>FinOps</li>
+          <li>Observability</li>
+          <li>Platform</li>
+        </ul>
+      </div>
     </main>
     <nav class="end-nav wrap" aria-label="More projects">
       <a class="end-card" href="/projects/release-train">
         <span class="end-label" data-glitch>← Previous</span>
         <span class="end-title">Release Train</span>
+        <span class="end-tagline">Turning a fortnightly release window that four people had to be awake for into a progressive rollout nobody has to attend.</span>
       </a>
       <a class="end-card end-next" href="/projects">
         <span class="end-label" data-glitch>Index</span>

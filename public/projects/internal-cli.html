@@ -141,53 +141,66 @@
         <p class="page-eyebrow">
           <span data-glitch>2020 — 2021</span>
           <span class="sep" aria-hidden="true">/</span>
-          <span data-glitch>Rust</span>
+          <span data-glitch>1 min read</span>
         </p>
         <h1 class="page-title">Internal CLI</h1>
         <p class="page-intro">A single onboarding-to-deploy CLI that replaced a wiki page of copy-pasted shell commands.</p>
       </header>
-      <dl class="case-facts rise delay-450">
-        <div class="fact">
-          <dt data-glitch>Role</dt>
-          <dd>Backend developer</dd>
-        </div>
-        <div class="fact">
-          <dt data-glitch>Status</dt>
-          <dd>In production</dd>
-        </div>
-        <div class="fact">
-          <dt data-glitch>Stack</dt>
-          <dd>Rust</dd>
-        </div>
-      </dl>
+      <div class="case-brief rise delay-450">
+        <dl class="case-facts">
+          <div class="fact">
+            <dt data-glitch>Role</dt>
+            <dd>Backend developer</dd>
+          </div>
+          <div class="fact">
+            <dt data-glitch>Status</dt>
+            <dd>In production</dd>
+          </div>
+          <div class="fact">
+            <dt data-glitch>Stack</dt>
+            <dd>Rust</dd>
+          </div>
+        </dl>
+      </div>
+      <p class="case-summary rise delay-550">New engineers spent their first week running commands copied from a wiki page that was out of date as often as not. I built a single CLI covering environment setup, local services and deploys, versioned alongside the infrastructure it drove so it could never drift from what the wiki described.</p>
       <figure class="figure figure-cover rise delay-600">
         <span class="shot-frame">
-          <img class="shot shot-light" src="/assets/figures/cli-session-light.svg"
-            alt="A terminal session running dev up, dev deploy --local and dev doctor, each completing in under twenty seconds." width="900" height="620" loading="eager" decoding="async" />
-          <img class="shot shot-dark" src="/assets/figures/cli-session-dark.svg"
-            alt="A terminal session running dev up, dev deploy --local and dev doctor, each completing in under twenty seconds." width="900" height="620" loading="eager" decoding="async" />
+          <a class="shot-link shot-light" href="/assets/figures/cli-session-light.svg"
+            target="_blank" rel="noopener" title="Open the full-size diagram">
+            <img class="shot shot-light" src="/assets/figures/cli-session-light.svg"
+              alt="A terminal session running dev up, dev deploy --local and dev doctor, each completing in under twenty seconds." width="900" height="620" loading="eager" decoding="async" />
+          </a>
+          <a class="shot-link shot-dark" href="/assets/figures/cli-session-dark.svg"
+            target="_blank" rel="noopener" title="Open the full-size diagram">
+            <img class="shot shot-dark" src="/assets/figures/cli-session-dark.svg"
+              alt="A terminal session running dev up, dev deploy --local and dev doctor, each completing in under twenty seconds." width="900" height="620" loading="eager" decoding="async" />
+          </a>
         </span>
         <figcaption>One command instead of a wiki page.</figcaption>
       </figure>
-      <p class="case-summary">New engineers spent their first week running commands copied from a wiki page that was out of date as often as not. I built a single CLI covering environment setup, local services and deploys, versioned alongside the infrastructure it drove so it could never drift from what the wiki described.</p>
-      <section class="field">
+      <section class="field" id="result">
         <p class="field-label" data-glitch>Result</p>
         <h2 class="field-heading">One command instead of a wiki page</h2>
         <p class="prose">Time to a first local build for a new engineer went from roughly a day of following stale instructions to under twenty minutes, and the tool itself became the source of truth the wiki page used to be.</p>
       </section>
-      <ul class="tag-list" aria-label="Topics">
-        <li>Developer tooling</li>
-        <li>CLI</li>
-      </ul>
+      <div class="case-topics">
+        <p class="block-title" data-glitch>Topics</p>
+        <ul class="tag-list">
+          <li>Developer tooling</li>
+          <li>CLI</li>
+        </ul>
+      </div>
     </main>
     <nav class="end-nav wrap" aria-label="More projects">
       <a class="end-card" href="/projects/config-service">
         <span class="end-label" data-glitch>← Previous</span>
         <span class="end-title">Config Service</span>
+        <span class="end-tagline">A typed, versioned configuration store that replaced a shared YAML file and its merge conflicts.</span>
       </a>
       <a class="end-card end-next" href="/projects/search-relevance">
         <span class="end-label" data-glitch>Next →</span>
         <span class="end-title">Search Relevance Service</span>
+        <span class="end-tagline">A standalone ranking service that took relevance tuning out of a monolith and into something product could iterate on weekly.</span>
       </a>
     </nav>
     <footer class="rise delay-750">

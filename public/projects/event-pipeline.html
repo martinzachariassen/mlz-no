@@ -141,40 +141,73 @@
         <p class="page-eyebrow">
           <span data-glitch>2023 — 2025</span>
           <span class="sep" aria-hidden="true">/</span>
-          <span data-glitch>Kotlin</span>
+          <span data-glitch>4 min read</span>
         </p>
         <h1 class="page-title">Event Pipeline</h1>
         <p class="page-intro">Replacing a nightly batch job with an append-only event log that any team can read from, replay and reason about.</p>
       </header>
-      <dl class="case-facts rise delay-450">
-        <div class="fact">
-          <dt data-glitch>Role</dt>
-          <dd>Lead backend developer</dd>
-        </div>
-        <div class="fact">
-          <dt data-glitch>Team</dt>
-          <dd>4 engineers</dd>
-        </div>
-        <div class="fact">
-          <dt data-glitch>Status</dt>
-          <dd>In production</dd>
-        </div>
-        <div class="fact">
-          <dt data-glitch>Stack</dt>
-          <dd>Kotlin · Kafka · PostgreSQL · Kubernetes</dd>
-        </div>
-      </dl>
+      <div class="case-brief rise delay-450">
+        <dl class="case-facts">
+          <div class="fact">
+            <dt data-glitch>Role</dt>
+            <dd>Lead backend developer</dd>
+          </div>
+          <div class="fact">
+            <dt data-glitch>Team</dt>
+            <dd>4 engineers</dd>
+          </div>
+          <div class="fact">
+            <dt data-glitch>Status</dt>
+            <dd>In production</dd>
+          </div>
+          <div class="fact">
+            <dt data-glitch>Stack</dt>
+            <dd>Kotlin · Kafka · PostgreSQL · Kubernetes</dd>
+          </div>
+        </dl>
+        <dl class="metrics case-outcome">
+          <div class="metric">
+            <dt>Data freshness, p99</dt>
+            <dd>7h → 1.2s</dd>
+          </div>
+          <div class="metric">
+            <dt>Sustained throughput</dt>
+            <dd>18.4k/s</dd>
+          </div>
+          <div class="metric">
+            <dt>Stale-data incidents since cutover</dt>
+            <dd>0</dd>
+          </div>
+          <div class="metric">
+            <dt>Worst backlog drain</dt>
+            <dd>4m 45s</dd>
+          </div>
+        </dl>
+        <nav class="case-index" aria-label="Sections">
+          <span class="case-index-label" data-glitch>On this page</span>
+          <a href="#problem">Problem</a>
+          <a href="#approach">Approach</a>
+          <a href="#operations">Operations</a>
+          <a href="#result">Result</a>
+        </nav>
+      </div>
+      <p class="case-summary rise delay-550">A retail platform where the reporting, search and partner integrations all depended on a single nightly batch job. It had grown to seven hours, and any failure inside it meant a day of stale data across the whole product. I led the rewrite to an append-only event log: one write path, independent readers, and offsets that make replay a routine operation instead of an incident.</p>
       <figure class="figure figure-cover rise delay-600">
         <span class="shot-frame">
-          <img class="shot shot-light" src="/assets/figures/architecture-light.svg"
-            alt="Architecture diagram: three source groups feed an ingest API, which writes to a four-partition event log; workers enrich, aggregate and fan out to a warehouse, a search index and customer webhooks, with a dashed replay path from the sinks back to the log." width="1600" height="620" loading="eager" decoding="async" />
-          <img class="shot shot-dark" src="/assets/figures/architecture-dark.svg"
-            alt="Architecture diagram: three source groups feed an ingest API, which writes to a four-partition event log; workers enrich, aggregate and fan out to a warehouse, a search index and customer webhooks, with a dashed replay path from the sinks back to the log." width="1600" height="620" loading="eager" decoding="async" />
+          <a class="shot-link shot-light" href="/assets/figures/architecture-light.svg"
+            target="_blank" rel="noopener" title="Open the full-size diagram">
+            <img class="shot shot-light" src="/assets/figures/architecture-light.svg"
+              alt="Architecture diagram: three source groups feed an ingest API, which writes to a four-partition event log; workers enrich, aggregate and fan out to a warehouse, a search index and customer webhooks, with a dashed replay path from the sinks back to the log." width="1600" height="620" loading="eager" decoding="async" />
+          </a>
+          <a class="shot-link shot-dark" href="/assets/figures/architecture-dark.svg"
+            target="_blank" rel="noopener" title="Open the full-size diagram">
+            <img class="shot shot-dark" src="/assets/figures/architecture-dark.svg"
+              alt="Architecture diagram: three source groups feed an ingest API, which writes to a four-partition event log; workers enrich, aggregate and fan out to a warehouse, a search index and customer webhooks, with a dashed replay path from the sinks back to the log." width="1600" height="620" loading="eager" decoding="async" />
+          </a>
         </span>
         <figcaption>The shape of the system after the rewrite. Every arrow is one direction, and every reader owns its own offset.</figcaption>
       </figure>
-      <p class="case-summary">A retail platform where the reporting, search and partner integrations all depended on a single nightly batch job. It had grown to seven hours, and any failure inside it meant a day of stale data across the whole product. I led the rewrite to an append-only event log: one write path, independent readers, and offsets that make replay a routine operation instead of an incident.</p>
-      <section class="field">
+      <section class="field" id="problem">
         <p class="field-label" data-glitch>Problem</p>
         <h2 class="field-heading">The nightly batch had run out of night</h2>
         <p class="prose">Every downstream system read from the same nightly job. It pulled the day's rows out of the operational database, transformed them, and pushed the results into the warehouse, the search index and a set of partner webhooks. When it was written it took forty minutes. By the time I picked it up it took a little over seven hours, and it had started colliding with the start of the European trading day.</p>
@@ -191,7 +224,7 @@
           <cite>From the design review that started the rewrite</cite>
         </blockquote>
       </section>
-      <section class="field">
+      <section class="field" id="approach">
         <p class="field-label" data-glitch>Approach</p>
         <h2 class="field-heading">One append-only log, many independent readers</h2>
         <p class="prose">The core decision was to stop moving data and start publishing facts. Services write immutable events to a partitioned log as things happen. Every consumer reads that log at its own pace and keeps its own offset, so a slow or broken reader falls behind on its own rather than holding up anyone else.</p>
@@ -230,7 +263,7 @@
         </figure>
         <p class="prose">The claim table is the whole trick. It is a narrow table with one unique index, it lives in the consumer's own database rather than a shared one, and rows are pruned on the same schedule as the topic retention. It costs one extra write per event and it removes an entire category of duplicate-processing bugs.</p>
       </section>
-      <section class="field">
+      <section class="field" id="operations">
         <p class="field-label" data-glitch>Operations</p>
         <h2 class="field-heading">Replay had to be routine, not heroic</h2>
         <p class="prose">A pipeline that can only move forward is a pipeline you are afraid of. The point of keeping offsets per consumer is that reprocessing becomes a normal operation: pick a consumer, pick a point in time, let it catch up. No database restore, no coordination with other teams, no maintenance window.</p>
@@ -253,10 +286,16 @@ kubectl scale deploy/fanout-search --replicas=6
         </figure>
         <figure class="figure">
           <span class="shot-frame">
-            <img class="shot shot-light" src="/assets/figures/console-light.svg"
-              alt="Operator console showing a log stream where the search index circuit opens, offsets are held, the sink recovers, and a backlog drains in four minutes and forty-five seconds, alongside a consumer lag panel with four partitions well under a five second service level objective." width="1600" height="600" loading="lazy" decoding="async" />
-            <img class="shot shot-dark" src="/assets/figures/console-dark.svg"
-              alt="Operator console showing a log stream where the search index circuit opens, offsets are held, the sink recovers, and a backlog drains in four minutes and forty-five seconds, alongside a consumer lag panel with four partitions well under a five second service level objective." width="1600" height="600" loading="lazy" decoding="async" />
+            <a class="shot-link shot-light" href="/assets/figures/console-light.svg"
+              target="_blank" rel="noopener" title="Open the full-size diagram">
+              <img class="shot shot-light" src="/assets/figures/console-light.svg"
+                alt="Operator console showing a log stream where the search index circuit opens, offsets are held, the sink recovers, and a backlog drains in four minutes and forty-five seconds, alongside a consumer lag panel with four partitions well under a five second service level objective." width="1600" height="600" loading="lazy" decoding="async" />
+            </a>
+            <a class="shot-link shot-dark" href="/assets/figures/console-dark.svg"
+              target="_blank" rel="noopener" title="Open the full-size diagram">
+              <img class="shot shot-dark" src="/assets/figures/console-dark.svg"
+                alt="Operator console showing a log stream where the search index circuit opens, offsets are held, the sink recovers, and a backlog drains in four minutes and forty-five seconds, alongside a consumer lag panel with four partitions well under a five second service level objective." width="1600" height="600" loading="lazy" decoding="async" />
+            </a>
           </span>
           <figcaption>A sink outage in production. The log keeps accepting writes, the affected consumer holds its offset, and the backlog drains on its own once the circuit closes.</figcaption>
         </figure>
@@ -265,33 +304,21 @@ kubectl scale deploy/fanout-search --replicas=6
           <p>The first version paused the whole fan-out worker when any single sink failed, because that seemed safer. It was not: a partner webhook being down stopped the warehouse from getting data, which is exactly the coupling we were trying to remove. Circuit breakers moved to per-sink, and the blast radius went with them.</p>
         </aside>
       </section>
-      <section class="field">
+      <section class="field" id="result">
         <p class="field-label" data-glitch>Result</p>
         <h2 class="field-heading">Stale data stopped being a category of incident</h2>
-        <dl class="metrics">
-          <div class="metric">
-            <dt>Data freshness, p99</dt>
-            <dd>7h → 1.2s</dd>
-          </div>
-          <div class="metric">
-            <dt>Sustained throughput</dt>
-            <dd>18.4k/s</dd>
-          </div>
-          <div class="metric">
-            <dt>Stale-data incidents since cutover</dt>
-            <dd>0</dd>
-          </div>
-          <div class="metric">
-            <dt>Worst backlog drain</dt>
-            <dd>4m 45s</dd>
-          </div>
-        </dl>
         <figure class="figure">
           <span class="shot-frame">
-            <img class="shot shot-light" src="/assets/figures/throughput-light.svg"
-              alt="Line chart of events per second over sixteen weeks. Before the cutover the legacy batch line oscillates between roughly six and nine thousand events per second. After the cutover the streaming line climbs steadily to about eighteen and a half thousand and stays smooth." width="1600" height="590" loading="lazy" decoding="async" />
-            <img class="shot shot-dark" src="/assets/figures/throughput-dark.svg"
-              alt="Line chart of events per second over sixteen weeks. Before the cutover the legacy batch line oscillates between roughly six and nine thousand events per second. After the cutover the streaming line climbs steadily to about eighteen and a half thousand and stays smooth." width="1600" height="590" loading="lazy" decoding="async" />
+            <a class="shot-link shot-light" href="/assets/figures/throughput-light.svg"
+              target="_blank" rel="noopener" title="Open the full-size diagram">
+              <img class="shot shot-light" src="/assets/figures/throughput-light.svg"
+                alt="Line chart of events per second over sixteen weeks. Before the cutover the legacy batch line oscillates between roughly six and nine thousand events per second. After the cutover the streaming line climbs steadily to about eighteen and a half thousand and stays smooth." width="1600" height="590" loading="lazy" decoding="async" />
+            </a>
+            <a class="shot-link shot-dark" href="/assets/figures/throughput-dark.svg"
+              target="_blank" rel="noopener" title="Open the full-size diagram">
+              <img class="shot shot-dark" src="/assets/figures/throughput-dark.svg"
+                alt="Line chart of events per second over sixteen weeks. Before the cutover the legacy batch line oscillates between roughly six and nine thousand events per second. After the cutover the streaming line climbs steadily to about eighteen and a half thousand and stays smooth." width="1600" height="590" loading="lazy" decoding="async" />
+            </a>
           </span>
           <figcaption>The jagged half is the batch job competing with production traffic. The smooth half is the same work spread across the day.</figcaption>
         </figure>
@@ -304,13 +331,16 @@ kubectl scale deploy/fanout-search --replicas=6
           <li>Be stricter about payload size early. A handful of producers embedded documents that belonged behind a reference, and splitting them out later was tedious.</li>
         </ul>
       </section>
-      <ul class="tag-list" aria-label="Topics">
-        <li>Event-driven</li>
-        <li>Distributed systems</li>
-        <li>Idempotency</li>
-        <li>Observability</li>
-        <li>Schema evolution</li>
-      </ul>
+      <div class="case-topics">
+        <p class="block-title" data-glitch>Topics</p>
+        <ul class="tag-list">
+          <li>Event-driven</li>
+          <li>Distributed systems</li>
+          <li>Idempotency</li>
+          <li>Observability</li>
+          <li>Schema evolution</li>
+        </ul>
+      </div>
     </main>
     <nav class="end-nav wrap" aria-label="More projects">
       <a class="end-card" href="/projects">
@@ -320,6 +350,7 @@ kubectl scale deploy/fanout-search --replicas=6
       <a class="end-card end-next" href="/projects/config-service">
         <span class="end-label" data-glitch>Next →</span>
         <span class="end-title">Config Service</span>
+        <span class="end-tagline">A typed, versioned configuration store that replaced a shared YAML file and its merge conflicts.</span>
       </a>
     </nav>
     <footer class="rise delay-750">

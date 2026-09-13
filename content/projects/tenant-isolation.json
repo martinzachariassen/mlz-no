@@ -19,6 +19,24 @@
     "alt": "A request carrying a tenant identifier passes through a router that resolves a pool, a quota and an encryption key, then reaches one of three isolated pools; a saturated pool leaves the other tenants unaffected.",
     "caption": "One lookup at the edge decides pool, quota and key. Everything downstream is single-tenant by construction."
   },
+  "outcome": [
+    {
+      "value": "84 ms",
+      "label": "p99 during a saturated pool"
+    },
+    {
+      "value": "1 of 17",
+      "label": "Pools affected by the worst incident"
+    },
+    {
+      "value": "6 ms → 0",
+      "label": "Resolver cost after caching"
+    },
+    {
+      "value": "2",
+      "label": "Enterprise deals unblocked"
+    }
+  ],
   "summary": "Every tenant shared one connection pool, one worker fleet and one rate limit, so a single customer running a bulk import could push the whole platform past its latency objective. I introduced a tenant resolution step at the edge and moved the blast radius from the platform to the pool.",
   "sections": [
     {
@@ -76,18 +94,6 @@
       "label": "Result",
       "heading": "The blast radius has a name now",
       "blocks": [
-        {
-          "type": "metrics",
-          "items": [
-            { "value": "84 ms", "label": "p99 during a saturated pool" },
-            {
-              "value": "1 of 17",
-              "label": "Pools affected by the worst incident"
-            },
-            { "value": "6 ms → 0", "label": "Resolver cost after caching" },
-            { "value": "2", "label": "Enterprise deals unblocked" }
-          ]
-        },
         {
           "type": "text",
           "value": "The number I care about is the second one. Incidents did not stop — a tenant can still saturate the pool it sits in — but an incident now has a boundary you can name in the first minute, and the other sixteen pools carry on without anybody paging them."

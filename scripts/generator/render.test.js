@@ -349,6 +349,191 @@ describe("case study page", () => {
   });
 });
 
+/**
+ * Everything above the first section: the facts, the headline numbers and the
+ * index of what's below. The order of these is the whole point — a reader who
+ * never scrolls past the first screen should still have the result — so the
+ * tests assert position, not just presence.
+ */
+describe("the brief", () => {
+  const positions = (page, ...needles) =>
+    needles.map((needle) => page.indexOf(needle));
+
+  const ordered = (page, ...needles) => {
+    const found = positions(page, ...needles);
+    expect(found.every((at) => at !== -1)).toBe(true);
+    return found.every((at, i) => i === 0 || found[i - 1] < at);
+  };
+
+  test("renders the outcome numbers in the brief, above the summary", () => {
+    const page = filesOf([
+      {
+        ...project,
+        outcome: [
+          { value: "7h → 1.2s", label: "Freshness" },
+          { value: "0", label: "Incidents" },
+        ],
+      },
+    ]).get("/projects/demo.html");
+    expect(page).toContain('<dl class="metrics case-outcome">');
+    expect(page).toContain("<dd>7h → 1.2s</dd>");
+    expect(ordered(page, "case-brief", "case-outcome", "case-summary")).toBe(
+      true,
+    );
+  });
+
+  test("leaves the row out of a project that has no outcome", () => {
+    expect(casePage).not.toContain("case-outcome");
+    expect(casePage).toContain('<div class="case-brief rise delay-450">');
+  });
+
+  /**
+   * The cover figure used to come first, so the page opened with a dense
+   * diagram of a system the reader had not yet been told anything about.
+   */
+  test("puts the summary before the cover figure", () => {
+    expect(ordered(casePage, "case-summary", "figure-cover")).toBe(true);
+  });
+
+  test("counts the page's own prose into a reading time in the eyebrow", () => {
+    expect(casePage).toContain("<span data-glitch>1 min read</span>");
+    const long = filesOf([
+      {
+        ...project,
+        sections: [
+          {
+            label: "Problem",
+            heading: "The problem",
+            blocks: [{ type: "text", value: "word ".repeat(400).trim() }],
+          },
+        ],
+      },
+    ]).get("/projects/demo.html");
+    expect(long).toContain("<span data-glitch>2 min read</span>");
+  });
+
+  /**
+   * The eyebrow used to repeat stack[0], which the facts list states in full
+   * three lines further down.
+   */
+  test("does not repeat the stack in the eyebrow", () => {
+    const eyebrow = casePage.match(
+      /<p class="page-eyebrow">([\s\S]*?)<\/p>/,
+    )[1];
+    expect(eyebrow).toContain("2026");
+    expect(eyebrow).not.toContain("Kotlin");
+  });
+});
+
+describe("section index", () => {
+  const sectioned = (...labels) => ({
+    ...project,
+    sections: labels.map((label) => ({
+      label,
+      heading: `${label} heading`,
+      blocks: [{ type: "text", value: "A paragraph." }],
+    })),
+  });
+
+  const pageFor = (...labels) =>
+    filesOf([sectioned(...labels)]).get("/projects/demo.html");
+
+  test("links every section, at the id that section carries", () => {
+    const page = pageFor("Problem", "Approach", "Result");
+    expect(page).toContain('<nav class="case-index" aria-label="Sections">');
+    expect(page).toContain('<a href="#problem">Problem</a>');
+    expect(page).toContain('<section class="field" id="problem">');
+    expect(page).toContain('<a href="#approach">Approach</a>');
+    expect(page).toContain('<section class="field" id="result">');
+  });
+
+  test("stays off a case study short enough to take in at a glance", () => {
+    expect(pageFor("Problem", "Result")).not.toContain("case-index");
+    expect(casePage).not.toContain("case-index");
+  });
+
+  test("slugifies a label with punctuation and spaces", () => {
+    const page = pageFor("What broke", "The fix (v2)", "Result");
+    expect(page).toContain('<a href="#what-broke">What broke</a>');
+    expect(page).toContain('<a href="#the-fix-v2">The fix (v2)</a>');
+  });
+
+  /** Two links to the same id would both land on the first section. */
+  test("keeps the ids unique when two sections share a label", () => {
+    const page = pageFor("Result", "Result", "Result");
+    expect(page).toContain('<a href="#result">');
+    expect(page).toContain('<a href="#result-2">');
+    expect(page).toContain('<a href="#result-3">');
+    expect(page).toContain('id="result-3"');
+  });
+});
+
+describe("status", () => {
+  const withStatus = (slug, order, status) => ({
+    ...project,
+    slug,
+    order,
+    status,
+  });
+
+  test("drops the status most projects share from the tiles, keeping the exception", () => {
+    const page = filesOf([
+      withStatus("a", 1, "In production"),
+      withStatus("b", 2, "In production"),
+      withStatus("c", 3, "Archived"),
+    ]).get("/projects/index.html");
+    expect(page).not.toContain("In production");
+    expect(page).toContain('<span class="b-status">Archived</span>');
+  });
+
+  test("keeps it when no status is the common one", () => {
+    const page = filesOf([
+      withStatus("a", 1, "In production"),
+      withStatus("b", 2, "Archived"),
+    ]).get("/projects/index.html");
+    expect(page).toContain('<span class="b-status">In production</span>');
+    expect(page).toContain('<span class="b-status">Archived</span>');
+  });
+
+  /** A sample of one is not a convention to hide anything against. */
+  test("keeps it on a lone project's tile", () => {
+    expect(indexPage).toContain('<span class="b-status">In production</span>');
+  });
+
+  test("states it in the case study's facts whatever the tiles do", () => {
+    const files = filesOf([
+      withStatus("a", 1, "In production"),
+      withStatus("b", 2, "In production"),
+    ]);
+    expect(files.get("/projects/a.html")).toContain("<dd>In production</dd>");
+  });
+});
+
+describe("figures on a case study", () => {
+  test("links a framed figure to its own theme's file", () => {
+    expect(casePage).toContain(
+      '<a class="shot-link shot-light" href="/assets/figures/diagram-light.svg"',
+    );
+    expect(casePage).toContain(
+      '<a class="shot-link shot-dark" href="/assets/figures/diagram-dark.svg"',
+    );
+    expect(casePage).toContain('target="_blank" rel="noopener"');
+  });
+
+  /** A tile is already a link; a link inside it would be invalid markup. */
+  test("leaves a tile's figure unlinked", () => {
+    expect(indexPage).not.toContain("shot-link");
+  });
+});
+
+describe("topics", () => {
+  test("renders the tags as a plain list under a label", () => {
+    expect(casePage).toContain('<p class="block-title" data-glitch>Topics</p>');
+    expect(casePage).toContain('<ul class="tag-list">');
+    expect(casePage).toContain("<li>Backend</li>");
+  });
+});
+
 describe("end navigation", () => {
   const named = (slug, order) => ({ ...project, slug, order });
 
@@ -366,6 +551,20 @@ describe("end navigation", () => {
     expect(first).not.toContain("← Previous");
     expect(second).toContain("← Previous");
     expect(second).toContain("All projects");
+  });
+
+  /**
+   * The name of the next project is not enough to decide on, and this row is
+   * the only place the decision is offered.
+   */
+  test("carries the next project's tagline, but none on the Index card", () => {
+    const files = filesOf([named("first", 1), named("second", 2)]);
+    expect(files.get("/projects/first.html")).toContain(
+      '<span class="end-tagline">A demo project.</span>',
+    );
+    const alone = casePage.match(/<nav class="end-nav[\s\S]*<\/nav>/)[0];
+    expect(alone).toContain("All projects");
+    expect(alone).not.toContain("end-tagline");
   });
 
   test("gives the fallback Index card the empty side, not always the right", () => {

@@ -19,6 +19,24 @@
     "alt": "Grouped bar chart of monthly cost per service before and after attribution: search down thirty-seven percent, ingest thirty-one, warehouse eleven, batch jobs forty-six, and observability up forty-one percent.",
     "caption": "Four lines went down because someone could finally see them. The fifth went up on purpose."
   },
+  "outcome": [
+    {
+      "value": "31%",
+      "label": "Total spend, twelve months"
+    },
+    {
+      "value": "98.6%",
+      "label": "Of the invoice attributed"
+    },
+    {
+      "value": "4",
+      "label": "Teams with a standing budget"
+    },
+    {
+      "value": "0",
+      "label": "Manual resource tags required"
+    }
+  ],
   "summary": "The monthly infrastructure invoice was a single figure that went up every quarter and belonged to nobody. I built the attribution layer that maps spend back to the service, tenant and query that caused it — and the interesting part turned out not to be the savings, but which decisions teams started making once the number had their name on it.",
   "sections": [
     {
@@ -86,15 +104,6 @@
       "label": "Result",
       "heading": "Four lines went down; one went up on purpose",
       "blocks": [
-        {
-          "type": "metrics",
-          "items": [
-            { "value": "31%", "label": "Total spend, twelve months" },
-            { "value": "98.6%", "label": "Of the invoice attributed" },
-            { "value": "4", "label": "Teams with a standing budget" },
-            { "value": "0", "label": "Manual resource tags required" }
-          ]
-        },
         {
           "type": "text",
           "value": "The observability line went up by forty-one percent, and that was the correct outcome: it was the bill for being able to see the other four. Nobody had objected to it before, because nobody had been able to put a number on what it bought."

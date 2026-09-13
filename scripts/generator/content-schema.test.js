@@ -140,6 +140,47 @@ describe("validateContent", () => {
     expect(() => validate({ project })).not.toThrow();
   });
 
+  /**
+   * `outcome` is the one field with bounds that are a layout fact rather than
+   * a type: the row it renders into holds four, and one number on its own is
+   * a stray fact rather than a result. Neither is visible from the JSON, so
+   * without these the failure is a page that looks wrong, not a build error.
+   */
+  describe("outcome", () => {
+    const withOutcome = (outcome) => ({ ...validProject, outcome });
+
+    test("is optional — a project can have no headline numbers", () => {
+      expect(() => validate()).not.toThrow();
+    });
+
+    test("accepts two to four numbers", () => {
+      const number = (i) => ({ value: `${i}x`, label: `Label ${i}` });
+      for (const count of [2, 3, 4]) {
+        const outcome = Array.from({ length: count }, (_, i) => number(i));
+        expect(() => validate({ project: withOutcome(outcome) })).not.toThrow();
+      }
+    });
+
+    test("rejects a single number, and five", () => {
+      const number = (i) => ({ value: `${i}x`, label: `Label ${i}` });
+      expect(messageFor({ project: withOutcome([number(1)]) })).toContain(
+        "one alone is not a result",
+      );
+      expect(
+        messageFor({
+          project: withOutcome(Array.from({ length: 5 }, (_, i) => number(i))),
+        }),
+      ).toContain("the row holds four");
+    });
+
+    test("rejects a number missing its label", () => {
+      const message = messageFor({
+        project: withOutcome([{ value: "6x" }, { value: "0", label: "Bugs" }]),
+      });
+      expect(message).toContain("outcome[0].label");
+    });
+  });
+
   describe("slug and order", () => {
     test("rejects a slug that doesn't match its filename", () => {
       const message = messageFor({

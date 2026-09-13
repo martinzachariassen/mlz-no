@@ -255,19 +255,21 @@
   flex-wrap: wrap;
   justify-content: space-between;
   gap: 4px 14px;
-  font-size: 10px;
-  letter-spacing: 0.18em;
+  font-size: var(--label-size);
+  letter-spacing: var(--label-track);
   text-transform: uppercase;
   color: var(--fg-muted);
 }
 
+/* Only a status that isn't the one most projects share reaches the tile at
+   all — see render.js. This is the exception's colour, not the rule's. */
 .b-status {
   color: var(--accent-deep);
 }
 
 .b-label {
-  font-size: 10px;
-  letter-spacing: 0.18em;
+  font-size: var(--label-size);
+  letter-spacing: var(--label-track);
   text-transform: uppercase;
   color: var(--accent-deep);
 }
@@ -299,8 +301,8 @@
 }
 
 .b-stack {
-  font-size: 10px;
-  letter-spacing: 0.16em;
+  font-size: var(--label-size);
+  letter-spacing: var(--label-track);
   text-transform: uppercase;
   color: var(--fg-muted);
 }
@@ -311,8 +313,8 @@
   gap: 8px;
   margin-top: auto;
   padding-top: 8px;
-  font-size: 10px;
-  letter-spacing: 0.16em;
+  font-size: var(--label-size);
+  letter-spacing: var(--label-track);
   text-transform: uppercase;
   color: var(--fg);
 }

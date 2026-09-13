@@ -25,6 +25,24 @@
     "alt": "Architecture diagram: three source groups feed an ingest API, which writes to a four-partition event log; workers enrich, aggregate and fan out to a warehouse, a search index and customer webhooks, with a dashed replay path from the sinks back to the log.",
     "caption": "The shape of the system after the rewrite. Every arrow is one direction, and every reader owns its own offset."
   },
+  "outcome": [
+    {
+      "value": "7h → 1.2s",
+      "label": "Data freshness, p99"
+    },
+    {
+      "value": "18.4k/s",
+      "label": "Sustained throughput"
+    },
+    {
+      "value": "0",
+      "label": "Stale-data incidents since cutover"
+    },
+    {
+      "value": "4m 45s",
+      "label": "Worst backlog drain"
+    }
+  ],
   "summary": "A retail platform where the reporting, search and partner integrations all depended on a single nightly batch job. It had grown to seven hours, and any failure inside it meant a day of stale data across the whole product. I led the rewrite to an append-only event log: one write path, independent readers, and offsets that make replay a routine operation instead of an incident.",
   "sections": [
     {
@@ -154,15 +172,6 @@
       "label": "Result",
       "heading": "Stale data stopped being a category of incident",
       "blocks": [
-        {
-          "type": "metrics",
-          "items": [
-            { "value": "7h → 1.2s", "label": "Data freshness, p99" },
-            { "value": "18.4k/s", "label": "Sustained throughput" },
-            { "value": "0", "label": "Stale-data incidents since cutover" },
-            { "value": "4m 45s", "label": "Worst backlog drain" }
-          ]
-        },
         {
           "type": "figure",
           "figure": "throughput",

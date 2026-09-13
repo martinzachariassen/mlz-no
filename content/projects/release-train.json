@@ -18,6 +18,20 @@
     "alt": "A timeline from merge through build and test, a one percent canary and a twenty-five percent ramp to the full fleet at thirty-one hours, with a dashed automatic rollback arc from the ramp back to the canary stage.",
     "caption": "Every stage can stop the train. Only the last one needs a human, and only to notice it already happened."
   },
+  "outcome": [
+    {
+      "value": "14d → 31h",
+      "label": "Merge to full fleet"
+    },
+    {
+      "value": "90s",
+      "label": "Automatic rollback"
+    },
+    {
+      "value": "0",
+      "label": "Scheduled release evenings"
+    }
+  ],
   "summary": "Releases went out every second Thursday evening, by hand, with a rollback plan that was a document rather than a command. I replaced the window with a pipeline that ships continuously through a canary and a ramp, and rolls itself back when the error budget starts burning.",
   "sections": [
     {
@@ -77,14 +91,6 @@
       "label": "Result",
       "heading": "Nobody attends a release any more",
       "blocks": [
-        {
-          "type": "metrics",
-          "items": [
-            { "value": "14d → 31h", "label": "Merge to full fleet" },
-            { "value": "90s", "label": "Automatic rollback" },
-            { "value": "0", "label": "Scheduled release evenings" }
-          ]
-        },
         {
           "type": "text",
           "value": "Thirty-one hours sounds slow for continuous delivery, and it is — deliberately. Most of it is the canary hold, which is the part that does the work. The change that matters is not the number but that it is the same number every time, and that nobody has to be present for any of it."

@@ -141,45 +141,53 @@
         <p class="page-eyebrow">
           <span data-glitch>2022 — 2023</span>
           <span class="sep" aria-hidden="true">/</span>
-          <span data-glitch>Kotlin</span>
+          <span data-glitch>1 min read</span>
         </p>
         <h1 class="page-title">Search Relevance Service</h1>
         <p class="page-intro">A standalone ranking service that took relevance tuning out of a monolith and into something product could iterate on weekly.</p>
       </header>
-      <dl class="case-facts rise delay-450">
-        <div class="fact">
-          <dt data-glitch>Role</dt>
-          <dd>Backend developer</dd>
-        </div>
-        <div class="fact">
-          <dt data-glitch>Team</dt>
-          <dd>2 engineers</dd>
-        </div>
-        <div class="fact">
-          <dt data-glitch>Status</dt>
-          <dd>In production</dd>
-        </div>
-        <div class="fact">
-          <dt data-glitch>Stack</dt>
-          <dd>Kotlin · Elasticsearch · gRPC</dd>
-        </div>
-      </dl>
+      <div class="case-brief rise delay-450">
+        <dl class="case-facts">
+          <div class="fact">
+            <dt data-glitch>Role</dt>
+            <dd>Backend developer</dd>
+          </div>
+          <div class="fact">
+            <dt data-glitch>Team</dt>
+            <dd>2 engineers</dd>
+          </div>
+          <div class="fact">
+            <dt data-glitch>Status</dt>
+            <dd>In production</dd>
+          </div>
+          <div class="fact">
+            <dt data-glitch>Stack</dt>
+            <dd>Kotlin · Elasticsearch · gRPC</dd>
+          </div>
+        </dl>
+      </div>
+      <p class="case-summary rise delay-550">Ranking logic lived inline in the search endpoint of the main monolith, so every relevance change needed a full deploy and a release owner. I extracted it into its own gRPC service with a config-driven scoring pipeline, so product and search specialists could ship ranking changes without engineering in the loop.</p>
       <figure class="figure figure-cover rise delay-600">
         <span class="shot-frame">
-          <img class="shot shot-light" src="/assets/figures/ranking-flow-light.svg"
-            alt="Diagram of a search request flowing through a scoring step driven by a published config version, split across an A/B variant, into ranked results." width="1300" height="460" loading="eager" decoding="async" />
-          <img class="shot shot-dark" src="/assets/figures/ranking-flow-dark.svg"
-            alt="Diagram of a search request flowing through a scoring step driven by a published config version, split across an A/B variant, into ranked results." width="1300" height="460" loading="eager" decoding="async" />
+          <a class="shot-link shot-light" href="/assets/figures/ranking-flow-light.svg"
+            target="_blank" rel="noopener" title="Open the full-size diagram">
+            <img class="shot shot-light" src="/assets/figures/ranking-flow-light.svg"
+              alt="Diagram of a search request flowing through a scoring step driven by a published config version, split across an A/B variant, into ranked results." width="1300" height="460" loading="eager" decoding="async" />
+          </a>
+          <a class="shot-link shot-dark" href="/assets/figures/ranking-flow-dark.svg"
+            target="_blank" rel="noopener" title="Open the full-size diagram">
+            <img class="shot shot-dark" src="/assets/figures/ranking-flow-dark.svg"
+              alt="Diagram of a search request flowing through a scoring step driven by a published config version, split across an A/B variant, into ranked results." width="1300" height="460" loading="eager" decoding="async" />
+          </a>
         </span>
         <figcaption>A ranking change is a config publish, not a deploy.</figcaption>
       </figure>
-      <p class="case-summary">Ranking logic lived inline in the search endpoint of the main monolith, so every relevance change needed a full deploy and a release owner. I extracted it into its own gRPC service with a config-driven scoring pipeline, so product and search specialists could ship ranking changes without engineering in the loop.</p>
-      <section class="field">
+      <section class="field" id="approach">
         <p class="field-label" data-glitch>Approach</p>
         <h2 class="field-heading">Scoring as configuration, not code</h2>
         <p class="prose">The new service reads a versioned scoring config at request time, so a ranking change is a config publish rather than a deploy. Every request also logs which config version scored it, which made the A/B rollout of new ranking strategies straightforward to attribute.</p>
       </section>
-      <section class="field">
+      <section class="field" id="result">
         <p class="field-label" data-glitch>Result</p>
         <h2 class="field-heading">Weekly ranking iteration instead of quarterly</h2>
         <dl class="metrics">
@@ -193,20 +201,25 @@
           </div>
         </dl>
       </section>
-      <ul class="tag-list" aria-label="Topics">
-        <li>Search</li>
-        <li>Ranking</li>
-        <li>A/B testing</li>
-      </ul>
+      <div class="case-topics">
+        <p class="block-title" data-glitch>Topics</p>
+        <ul class="tag-list">
+          <li>Search</li>
+          <li>Ranking</li>
+          <li>A/B testing</li>
+        </ul>
+      </div>
     </main>
     <nav class="end-nav wrap" aria-label="More projects">
       <a class="end-card" href="/projects/internal-cli">
         <span class="end-label" data-glitch>← Previous</span>
         <span class="end-title">Internal CLI</span>
+        <span class="end-tagline">A single onboarding-to-deploy CLI that replaced a wiki page of copy-pasted shell commands.</span>
       </a>
       <a class="end-card end-next" href="/projects/audit-trail">
         <span class="end-label" data-glitch>Next →</span>
         <span class="end-title">Audit Trail</span>
+        <span class="end-tagline">A hash-linked record of every privileged action, cheap enough to write on the hot path and hard enough to argue with in an audit.</span>
       </a>
     </nav>
     <footer class="rise delay-750">

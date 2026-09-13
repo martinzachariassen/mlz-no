@@ -52,6 +52,23 @@
     "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
   --font-display: "Newsreader", Georgia, "Times New Roman", serif;
 
+  /* Every uppercase micro-label on a content page is this size and this
+     tracking: the eyebrow, the facts, a section's label, the code language, a
+     metric's caption, a tile's meta row, the nav links. They were eleven
+     near-identical values between 10 and 11px and 0.16em to 0.28em, which is
+     eleven ways of saying the same thing and no hierarchy at all — what
+     separates one label from another is its colour (--fg-muted for metadata,
+     --accent-deep for structure), not a difference in size nobody can see. */
+  --label-size: 11px;
+  --label-track: 0.2em;
+
+  /* One measure for every run of body copy, as a length rather than `ch`, so
+     that a caption at 12px and a paragraph at 16px still end at the same
+     pixel. Six different `ch` values is how a page ends up with six different
+     right edges. Full-width blocks — figures, code, the metrics row — are the
+     deliberate exception and take the whole column. */
+  --measure: 40rem;
+
   --radius: 4px;
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   /* --ease front-loads its motion (fast start, long coast) — reads as snappy

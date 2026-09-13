@@ -141,53 +141,66 @@
         <p class="page-eyebrow">
           <span data-glitch>2021 — 2022</span>
           <span class="sep" aria-hidden="true">/</span>
-          <span data-glitch>Go</span>
+          <span data-glitch>1 min read</span>
         </p>
         <h1 class="page-title">Config Service</h1>
         <p class="page-intro">A typed, versioned configuration store that replaced a shared YAML file and its merge conflicts.</p>
       </header>
-      <dl class="case-facts rise delay-450">
-        <div class="fact">
-          <dt data-glitch>Role</dt>
-          <dd>Backend developer</dd>
-        </div>
-        <div class="fact">
-          <dt data-glitch>Status</dt>
-          <dd>In production</dd>
-        </div>
-        <div class="fact">
-          <dt data-glitch>Stack</dt>
-          <dd>Go · PostgreSQL</dd>
-        </div>
-      </dl>
+      <div class="case-brief rise delay-450">
+        <dl class="case-facts">
+          <div class="fact">
+            <dt data-glitch>Role</dt>
+            <dd>Backend developer</dd>
+          </div>
+          <div class="fact">
+            <dt data-glitch>Status</dt>
+            <dd>In production</dd>
+          </div>
+          <div class="fact">
+            <dt data-glitch>Stack</dt>
+            <dd>Go · PostgreSQL</dd>
+          </div>
+        </dl>
+      </div>
+      <p class="case-summary rise delay-550">A dozen services shared one YAML file in a config repo, edited by hand and deployed by CI. Merge conflicts and silent typos were routine. I built a small typed config service with schema validation and an audit log, so a bad value fails at publish time instead of at runtime in a service nobody was watching.</p>
       <figure class="figure figure-cover rise delay-600">
         <span class="shot-frame">
-          <img class="shot shot-light" src="/assets/figures/config-diff-light.svg"
-            alt="A config publish view showing a timeout and retry value changed and validated against a schema before publishing." width="900" height="620" loading="eager" decoding="async" />
-          <img class="shot shot-dark" src="/assets/figures/config-diff-dark.svg"
-            alt="A config publish view showing a timeout and retry value changed and validated against a schema before publishing." width="900" height="620" loading="eager" decoding="async" />
+          <a class="shot-link shot-light" href="/assets/figures/config-diff-light.svg"
+            target="_blank" rel="noopener" title="Open the full-size diagram">
+            <img class="shot shot-light" src="/assets/figures/config-diff-light.svg"
+              alt="A config publish view showing a timeout and retry value changed and validated against a schema before publishing." width="900" height="620" loading="eager" decoding="async" />
+          </a>
+          <a class="shot-link shot-dark" href="/assets/figures/config-diff-dark.svg"
+            target="_blank" rel="noopener" title="Open the full-size diagram">
+            <img class="shot shot-dark" src="/assets/figures/config-diff-dark.svg"
+              alt="A config publish view showing a timeout and retry value changed and validated against a schema before publishing." width="900" height="620" loading="eager" decoding="async" />
+          </a>
         </span>
         <figcaption>A config change is validated and published, not merged and deployed.</figcaption>
       </figure>
-      <p class="case-summary">A dozen services shared one YAML file in a config repo, edited by hand and deployed by CI. Merge conflicts and silent typos were routine. I built a small typed config service with schema validation and an audit log, so a bad value fails at publish time instead of at runtime in a service nobody was watching.</p>
-      <section class="field">
+      <section class="field" id="result">
         <p class="field-label" data-glitch>Result</p>
         <h2 class="field-heading">Config errors caught before rollout, not after</h2>
         <p class="prose">Every config change is validated against the owning service's schema before it publishes, and every publish is attributed and reversible. The class of incident caused by a bad config value reaching production dropped to zero in the following year.</p>
       </section>
-      <ul class="tag-list" aria-label="Topics">
-        <li>Developer tooling</li>
-        <li>Config management</li>
-      </ul>
+      <div class="case-topics">
+        <p class="block-title" data-glitch>Topics</p>
+        <ul class="tag-list">
+          <li>Developer tooling</li>
+          <li>Config management</li>
+        </ul>
+      </div>
     </main>
     <nav class="end-nav wrap" aria-label="More projects">
       <a class="end-card" href="/projects/event-pipeline">
         <span class="end-label" data-glitch>← Previous</span>
         <span class="end-title">Event Pipeline</span>
+        <span class="end-tagline">Replacing a nightly batch job with an append-only event log that any team can read from, replay and reason about.</span>
       </a>
       <a class="end-card end-next" href="/projects/internal-cli">
         <span class="end-label" data-glitch>Next →</span>
         <span class="end-title">Internal CLI</span>
+        <span class="end-tagline">A single onboarding-to-deploy CLI that replaced a wiki page of copy-pasted shell commands.</span>
       </a>
     </nav>
     <footer class="rise delay-750">

@@ -18,6 +18,20 @@
     "alt": "Four stacked audit records, each naming the hash of the one before it, ending in a daily seal record that anchors the chain.",
     "caption": "Each record names the one before it, so a deletion is as visible as an edit."
   },
+  "outcome": [
+    {
+      "value": "0.4 ms",
+      "label": "Added write latency, p99"
+    },
+    {
+      "value": "1",
+      "label": "Systems to export from"
+    },
+    {
+      "value": "daily",
+      "label": "Chain seal, automated"
+    }
+  ],
   "summary": "Access logs lived in three systems, none of which could prove they had not been edited. I replaced them with one append-only table where every record carries the hash of the record before it, and a daily seal anchors the chain — which turns \"who changed this?\" from an investigation into a query.",
   "sections": [
     {
@@ -76,14 +90,6 @@
       "label": "Result",
       "heading": "The question became a query",
       "blocks": [
-        {
-          "type": "metrics",
-          "items": [
-            { "value": "0.4 ms", "label": "Added write latency, p99" },
-            { "value": "1", "label": "Systems to export from" },
-            { "value": "daily", "label": "Chain seal, automated" }
-          ]
-        },
         {
           "type": "text",
           "value": "Verification walks the chain and takes about eleven seconds over a year of records, which is fast enough that it runs nightly rather than on request. The first run found no tampering and two application bugs writing records with the wrong subject — which was worth the whole project on its own."

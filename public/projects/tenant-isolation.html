@@ -141,75 +141,31 @@
         <p class="page-eyebrow">
           <span data-glitch>2023 — 2024</span>
           <span class="sep" aria-hidden="true">/</span>
-          <span data-glitch>Kotlin</span>
+          <span data-glitch>2 min read</span>
         </p>
         <h1 class="page-title">Tenant Isolation</h1>
         <p class="page-intro">Moving a shared-everything multi-tenant platform onto per-tenant pools, so one customer's bad afternoon stops being everyone's.</p>
       </header>
-      <dl class="case-facts rise delay-450">
-        <div class="fact">
-          <dt data-glitch>Role</dt>
-          <dd>Backend developer</dd>
-        </div>
-        <div class="fact">
-          <dt data-glitch>Team</dt>
-          <dd>3 engineers</dd>
-        </div>
-        <div class="fact">
-          <dt data-glitch>Status</dt>
-          <dd>In production</dd>
-        </div>
-        <div class="fact">
-          <dt data-glitch>Stack</dt>
-          <dd>Kotlin · PostgreSQL · Kubernetes</dd>
-        </div>
-      </dl>
-      <figure class="figure figure-cover rise delay-600">
-        <span class="shot-frame">
-          <img class="shot shot-light" src="/assets/figures/tenant-routing-light.svg"
-            alt="A request carrying a tenant identifier passes through a router that resolves a pool, a quota and an encryption key, then reaches one of three isolated pools; a saturated pool leaves the other tenants unaffected." width="1500" height="560" loading="eager" decoding="async" />
-          <img class="shot shot-dark" src="/assets/figures/tenant-routing-dark.svg"
-            alt="A request carrying a tenant identifier passes through a router that resolves a pool, a quota and an encryption key, then reaches one of three isolated pools; a saturated pool leaves the other tenants unaffected." width="1500" height="560" loading="eager" decoding="async" />
-        </span>
-        <figcaption>One lookup at the edge decides pool, quota and key. Everything downstream is single-tenant by construction.</figcaption>
-      </figure>
-      <p class="case-summary">Every tenant shared one connection pool, one worker fleet and one rate limit, so a single customer running a bulk import could push the whole platform past its latency objective. I introduced a tenant resolution step at the edge and moved the blast radius from the platform to the pool.</p>
-      <section class="field">
-        <p class="field-label" data-glitch>Problem</p>
-        <h2 class="field-heading">One tenant, everyone's outage</h2>
-        <p class="prose">The platform was shared-everything, which had been exactly right when it had eleven customers and was increasingly wrong at four hundred. Capacity was provisioned for the aggregate, and the aggregate was dominated by whoever happened to be doing something unusual that afternoon.</p>
-        <blockquote class="pull">
-          <p>We were not over capacity. We were over capacity for ninety seconds a day, in a different place each time.</p>
-          <cite>From the postmortem that funded the work</cite>
-        </blockquote>
-        <p class="block-title" data-glitch>What shared-everything actually cost us</p>
-        <ul class="prose-list">
-          <li>A bulk import from one tenant exhausted the connection pool for all of them.</li>
-          <li>Rate limits were global, so protecting the platform meant throttling innocent traffic.</li>
-          <li>Two enterprise deals stalled on a question about key separation that we could not answer honestly.</li>
-          <li>Capacity planning was a single number nobody could attribute to anything.</li>
-        </ul>
-      </section>
-      <section class="field">
-        <p class="field-label" data-glitch>Approach</p>
-        <h2 class="field-heading">Resolve the tenant once, at the edge</h2>
-        <p class="prose">Every request already carried a tenant identifier; nothing downstream did anything with it. The change was to resolve it exactly once, at the edge, into the three things that had been global — which pool serves this tenant, what quota it has, and which key its data is encrypted with — and to make every component below that point single-tenant by construction.</p>
-        <p class="block-title" data-glitch>The decisions that mattered</p>
-        <ol class="prose-list">
-          <li>Pools, not databases. Physical separation per tenant was unaffordable at four hundred; a pool of tenants sized to a known worst case was not.</li>
-          <li>Quota at the edge, enforced before the work is queued. Throttling after a request has taken a connection defeats the point.</li>
-          <li>Dedicated pools as a product tier rather than an exception, so the two tenants who needed one stopped being a special case in the code.</li>
-          <li>Migration one pool at a time, with the router able to send a tenant back to the shared fleet on a config change.</li>
-        </ol>
-        <aside class="note">
-          <p class="note-title" data-glitch>The part I got wrong first</p>
-          <p>The first resolver hit the database on every request and cached nothing, on the theory that tenant configuration changes should take effect immediately. It added 6 ms to the p50 of every call on the platform. A sixty-second cache with an explicit invalidation on publish gave back all of it and nobody has ever noticed the delay.</p>
-        </aside>
-      </section>
-      <section class="field">
-        <p class="field-label" data-glitch>Result</p>
-        <h2 class="field-heading">The blast radius has a name now</h2>
-        <dl class="metrics">
+      <div class="case-brief rise delay-450">
+        <dl class="case-facts">
+          <div class="fact">
+            <dt data-glitch>Role</dt>
+            <dd>Backend developer</dd>
+          </div>
+          <div class="fact">
+            <dt data-glitch>Team</dt>
+            <dd>3 engineers</dd>
+          </div>
+          <div class="fact">
+            <dt data-glitch>Status</dt>
+            <dd>In production</dd>
+          </div>
+          <div class="fact">
+            <dt data-glitch>Stack</dt>
+            <dd>Kotlin · PostgreSQL · Kubernetes</dd>
+          </div>
+        </dl>
+        <dl class="metrics case-outcome">
           <div class="metric">
             <dt>p99 during a saturated pool</dt>
             <dd>84 ms</dd>
@@ -227,23 +183,86 @@
             <dd>2</dd>
           </div>
         </dl>
+        <nav class="case-index" aria-label="Sections">
+          <span class="case-index-label" data-glitch>On this page</span>
+          <a href="#problem">Problem</a>
+          <a href="#approach">Approach</a>
+          <a href="#result">Result</a>
+        </nav>
+      </div>
+      <p class="case-summary rise delay-550">Every tenant shared one connection pool, one worker fleet and one rate limit, so a single customer running a bulk import could push the whole platform past its latency objective. I introduced a tenant resolution step at the edge and moved the blast radius from the platform to the pool.</p>
+      <figure class="figure figure-cover rise delay-600">
+        <span class="shot-frame">
+          <a class="shot-link shot-light" href="/assets/figures/tenant-routing-light.svg"
+            target="_blank" rel="noopener" title="Open the full-size diagram">
+            <img class="shot shot-light" src="/assets/figures/tenant-routing-light.svg"
+              alt="A request carrying a tenant identifier passes through a router that resolves a pool, a quota and an encryption key, then reaches one of three isolated pools; a saturated pool leaves the other tenants unaffected." width="1500" height="560" loading="eager" decoding="async" />
+          </a>
+          <a class="shot-link shot-dark" href="/assets/figures/tenant-routing-dark.svg"
+            target="_blank" rel="noopener" title="Open the full-size diagram">
+            <img class="shot shot-dark" src="/assets/figures/tenant-routing-dark.svg"
+              alt="A request carrying a tenant identifier passes through a router that resolves a pool, a quota and an encryption key, then reaches one of three isolated pools; a saturated pool leaves the other tenants unaffected." width="1500" height="560" loading="eager" decoding="async" />
+          </a>
+        </span>
+        <figcaption>One lookup at the edge decides pool, quota and key. Everything downstream is single-tenant by construction.</figcaption>
+      </figure>
+      <section class="field" id="problem">
+        <p class="field-label" data-glitch>Problem</p>
+        <h2 class="field-heading">One tenant, everyone's outage</h2>
+        <p class="prose">The platform was shared-everything, which had been exactly right when it had eleven customers and was increasingly wrong at four hundred. Capacity was provisioned for the aggregate, and the aggregate was dominated by whoever happened to be doing something unusual that afternoon.</p>
+        <blockquote class="pull">
+          <p>We were not over capacity. We were over capacity for ninety seconds a day, in a different place each time.</p>
+          <cite>From the postmortem that funded the work</cite>
+        </blockquote>
+        <p class="block-title" data-glitch>What shared-everything actually cost us</p>
+        <ul class="prose-list">
+          <li>A bulk import from one tenant exhausted the connection pool for all of them.</li>
+          <li>Rate limits were global, so protecting the platform meant throttling innocent traffic.</li>
+          <li>Two enterprise deals stalled on a question about key separation that we could not answer honestly.</li>
+          <li>Capacity planning was a single number nobody could attribute to anything.</li>
+        </ul>
+      </section>
+      <section class="field" id="approach">
+        <p class="field-label" data-glitch>Approach</p>
+        <h2 class="field-heading">Resolve the tenant once, at the edge</h2>
+        <p class="prose">Every request already carried a tenant identifier; nothing downstream did anything with it. The change was to resolve it exactly once, at the edge, into the three things that had been global — which pool serves this tenant, what quota it has, and which key its data is encrypted with — and to make every component below that point single-tenant by construction.</p>
+        <p class="block-title" data-glitch>The decisions that mattered</p>
+        <ol class="prose-list">
+          <li>Pools, not databases. Physical separation per tenant was unaffordable at four hundred; a pool of tenants sized to a known worst case was not.</li>
+          <li>Quota at the edge, enforced before the work is queued. Throttling after a request has taken a connection defeats the point.</li>
+          <li>Dedicated pools as a product tier rather than an exception, so the two tenants who needed one stopped being a special case in the code.</li>
+          <li>Migration one pool at a time, with the router able to send a tenant back to the shared fleet on a config change.</li>
+        </ol>
+        <aside class="note">
+          <p class="note-title" data-glitch>The part I got wrong first</p>
+          <p>The first resolver hit the database on every request and cached nothing, on the theory that tenant configuration changes should take effect immediately. It added 6 ms to the p50 of every call on the platform. A sixty-second cache with an explicit invalidation on publish gave back all of it and nobody has ever noticed the delay.</p>
+        </aside>
+      </section>
+      <section class="field" id="result">
+        <p class="field-label" data-glitch>Result</p>
+        <h2 class="field-heading">The blast radius has a name now</h2>
         <p class="prose">The number I care about is the second one. Incidents did not stop — a tenant can still saturate the pool it sits in — but an incident now has a boundary you can name in the first minute, and the other sixteen pools carry on without anybody paging them.</p>
         <p class="prose">The unplanned benefit was capacity planning. Cost and load are attributable per pool, and per pool means per tenant, which turned a single unexplainable infrastructure line into a number the commercial side could actually use.</p>
       </section>
-      <ul class="tag-list" aria-label="Topics">
-        <li>Multi-tenancy</li>
-        <li>Reliability</li>
-        <li>Capacity</li>
-      </ul>
+      <div class="case-topics">
+        <p class="block-title" data-glitch>Topics</p>
+        <ul class="tag-list">
+          <li>Multi-tenancy</li>
+          <li>Reliability</li>
+          <li>Capacity</li>
+        </ul>
+      </div>
     </main>
     <nav class="end-nav wrap" aria-label="More projects">
       <a class="end-card" href="/projects/audit-trail">
         <span class="end-label" data-glitch>← Previous</span>
         <span class="end-title">Audit Trail</span>
+        <span class="end-tagline">A hash-linked record of every privileged action, cheap enough to write on the hot path and hard enough to argue with in an audit.</span>
       </a>
       <a class="end-card end-next" href="/projects/release-train">
         <span class="end-label" data-glitch>Next →</span>
         <span class="end-title">Release Train</span>
+        <span class="end-tagline">Turning a fortnightly release window that four people had to be awake for into a progressive rollout nobody has to attend.</span>
       </a>
     </nav>
     <footer class="rise delay-750">

@@ -1,14 +1,36 @@
-/* Case study page: the facts strip, the Problem/Approach/Result fields and
-   their content blocks, and the previous/next cards. The cards reuse the
-   border and offset-shadow language of .b-tile in bento.css on purpose —
-   they are grid tiles, not a footer navigation row. */
+/* Case study page: the brief at the top (facts, outcome, section index), the
+   Problem/Approach/Result fields and their content blocks, and the
+   previous/next cards. The cards reuse the border and offset-shadow language
+   of .b-tile in bento.css on purpose — they are grid tiles, not a footer
+   navigation row.
+
+   One column, one left edge. An earlier version put each section's label in a
+   150px rail beside the content, which gave the page two left edges — the
+   title, summary and figures on one, everything inside a section on another —
+   and left a near-empty column down the side of a short case study. The label
+   sits above its heading at every width now, and orientation while scrolling
+   comes from the section index instead.
+
+   The other edge is --measure (tokens.css): every run of body copy ends at the
+   same pixel whatever size it is set in, and figures, code and the metrics row
+   take the full column as the deliberate exception. */
+
+/* ------------------------------------------------------------------ brief */
+
+/* Facts, the outcome numbers and the section index are one block: what this
+   was, what came of it, and where to go — before the prose starts. */
+.case-brief {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(22px, 3.5vw, 32px);
+  padding-bottom: clamp(28px, 5vw, 44px);
+}
 
 .case-facts {
   margin: 0;
   display: grid;
   gap: 20px 32px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  padding-bottom: clamp(28px, 5vw, 44px);
 }
 
 @media (min-width: 720px) {
@@ -24,8 +46,8 @@
 }
 
 .fact dt {
-  font-size: 10px;
-  letter-spacing: 0.2em;
+  font-size: var(--label-size);
+  letter-spacing: var(--label-track);
   text-transform: uppercase;
   color: var(--fg-muted);
 }
@@ -36,10 +58,46 @@
   line-height: 1.5;
 }
 
+/* Four sections is more than a reader can hold while scrolling 7000 pixels of
+   one column. Anchors only — there is no scroll-spy and no sticky bar, so
+   nothing here can drift out of step with the page. */
+.case-index {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px 20px;
+}
+
+.case-index-label {
+  font-size: var(--label-size);
+  letter-spacing: var(--label-track);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.case-index a {
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--label-size);
+  letter-spacing: var(--label-track);
+  text-transform: uppercase;
+  color: var(--fg);
+  text-decoration: none;
+  transition:
+    color 0.2s var(--ease-soft),
+    border-color 0.2s var(--ease-soft);
+}
+
+.case-index a:hover,
+.case-index a:focus-visible {
+  color: var(--accent-deep);
+  border-bottom-color: var(--accent-deep);
+}
+
 .case-summary {
   margin: 0;
-  max-width: 68ch;
-  padding-block: clamp(30px, 5vw, 52px);
+  max-width: var(--measure);
+  padding-bottom: clamp(26px, 4vw, 40px);
   font-size: clamp(16px, 2vw, 19px);
   line-height: 1.65;
 }
@@ -47,34 +105,19 @@
 /* ------------------------------------------------------------- the fields */
 
 .field {
-  display: grid;
-  gap: 20px;
-  grid-template-columns: minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   padding-block: clamp(34px, 6vw, 60px);
   border-top: 1px solid var(--border);
-}
-
-@media (min-width: 940px) {
-  .field {
-    grid-template-columns: 150px minmax(0, 1fr);
-    column-gap: 48px;
-  }
-
-  .field-label {
-    grid-column: 1;
-    grid-row: 1;
-    padding-top: 10px;
-  }
-
-  .field > :not(.field-label) {
-    grid-column: 2;
-  }
+  /* Landing on a section from the index should show its rule and label, not
+     start the text at the very top edge of the window. */
+  scroll-margin-top: 16px;
 }
 
 .field-label {
   margin: 0;
-  font-size: 11px;
-  letter-spacing: 0.26em;
+  font-size: var(--label-size);
+  letter-spacing: var(--label-track);
   text-transform: uppercase;
   color: var(--accent-deep);
 }
@@ -93,7 +136,7 @@
 
 .prose {
   margin: 0;
-  max-width: 68ch;
+  max-width: var(--measure);
   font-size: clamp(14px, 1.7vw, 16px);
   line-height: 1.75;
   color: var(--fg-secondary);
@@ -101,8 +144,8 @@
 
 .block-title {
   margin: 0;
-  font-size: 11px;
-  letter-spacing: 0.22em;
+  font-size: var(--label-size);
+  letter-spacing: var(--label-track);
   text-transform: uppercase;
   color: var(--fg-muted);
 }
@@ -110,7 +153,7 @@
 .prose-list {
   margin: 0;
   padding-left: 1.5em;
-  max-width: 66ch;
+  max-width: var(--measure);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -121,6 +164,36 @@
 
 .prose-list li::marker {
   color: var(--accent-deep);
+}
+
+/* Vertical rhythm as the gap between two particular neighbours rather than one
+   flat `gap`, because the distance between two things is what says whether
+   they belong together: a list and the title above it are one unit, two
+   paragraphs in a row are one argument, and a figure after a paragraph is a
+   change of subject. A single value spells all three the same way.
+
+   Last in the section on purpose. Each of these resets a `margin` the rules
+   above set to 0, so they have to out-specify them — which they do — and
+   source order that agrees with specificity is the version a reader can
+   follow without counting selectors. */
+.field > * + * {
+  margin-top: 32px;
+}
+
+.field > .field-label + .field-heading {
+  margin-top: 12px;
+}
+
+.field > .field-heading + * {
+  margin-top: 24px;
+}
+
+.field > .prose + .prose {
+  margin-top: 18px;
+}
+
+.field > .block-title + * {
+  margin-top: 10px;
 }
 
 /* ------------------------------------------------------------------ media */
@@ -146,13 +219,36 @@
 }
 
 @media (max-width: 760px) {
-  .shot-frame .shot {
+  .shot-frame :is(.shot, .shot-link) {
     min-width: 620px;
   }
 }
 
+/* Each framed figure is a link to its own SVG, so a dense diagram can be
+   opened at whatever size the reader's screen allows — the one thing a
+   scroll container can't give them. The light/dark swap lives in bento.css
+   and is written for the images; these restate it at two-class specificity
+   for the link around them, so which file is on screen and which link is
+   clickable cannot disagree, whatever order the stylesheets load in. */
+.shot-link {
+  display: block;
+  cursor: zoom-in;
+}
+
+.shot-link.shot-dark {
+  display: none;
+}
+
+[data-theme="dark"] .shot-link.shot-light {
+  display: none;
+}
+
+[data-theme="dark"] .shot-link.shot-dark {
+  display: block;
+}
+
 .figure figcaption {
-  max-width: 62ch;
+  max-width: var(--measure);
   font-size: 12px;
   line-height: 1.6;
   color: var(--fg-muted);
@@ -175,13 +271,13 @@
   gap: 4px 14px;
   padding: 12px 16px;
   border-bottom: 1px solid var(--border);
-  font-size: 11px;
+  font-size: var(--label-size);
   line-height: 1.5;
   color: var(--fg-muted);
 }
 
 .code-lang {
-  letter-spacing: 0.22em;
+  letter-spacing: var(--label-track);
   text-transform: uppercase;
   color: var(--accent-deep);
 }
@@ -205,6 +301,10 @@
 
 /* ---------------------------------------------------------------- metrics */
 
+/* The same dl in two places: a project's `outcome` renders it inside the
+   brief, where the numbers a reader came for are in the first screen rather
+   than four sections down, and a `metrics` block renders it inside a section.
+   .case-outcome only says which — the styling is deliberately identical. */
 .metrics {
   margin: 0;
   display: grid;
@@ -231,8 +331,8 @@
 }
 
 .metric dt {
-  font-size: 10px;
-  letter-spacing: 0.18em;
+  font-size: var(--label-size);
+  letter-spacing: var(--label-track);
   text-transform: uppercase;
   color: var(--fg-muted);
 }
@@ -251,7 +351,7 @@
 
 .pull {
   margin: 0;
-  max-width: 58ch;
+  max-width: var(--measure);
   padding-left: clamp(16px, 3vw, 28px);
   border-left: 2px solid var(--accent-deep);
   display: flex;
@@ -271,14 +371,14 @@
 
 .pull cite {
   font-style: normal;
-  font-size: 11px;
-  letter-spacing: 0.18em;
+  font-size: var(--label-size);
+  letter-spacing: var(--label-track);
   text-transform: uppercase;
   color: var(--fg-muted);
 }
 
 .note {
-  max-width: 66ch;
+  max-width: var(--measure);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -295,32 +395,41 @@
 }
 
 .note .note-title {
-  font-size: 11px;
-  letter-spacing: 0.22em;
+  font-size: var(--label-size);
+  letter-spacing: var(--label-track);
   text-transform: uppercase;
   color: var(--accent-deep);
 }
 
-/* ------------------------------------------------------------------- tags */
+/* ----------------------------------------------------------------- topics */
 
-.tag-list {
-  margin: 0;
-  padding: clamp(30px, 5vw, 46px) 0 0;
-  list-style: none;
+/* A line of text, not a row of chips. Nothing here filters anything — there
+   is no index to filter — and a bordered, uppercase pill promises a link that
+   isn't there. */
+.case-topics {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: clamp(30px, 5vw, 46px);
   border-top: 1px solid var(--border);
 }
 
-.tag-list li {
-  padding: 6px 10px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+.tag-list {
+  margin: 0;
+  padding: 0;
+  max-width: var(--measure);
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 12px;
+  line-height: 1.6;
   color: var(--fg-muted);
+}
+
+.tag-list li + li::before {
+  content: "·";
+  padding-inline: 8px;
+  color: var(--border);
 }
 
 /* --------------------------------------------------------- previous / next */
@@ -360,8 +469,8 @@
 }
 
 .end-label {
-  font-size: 10px;
-  letter-spacing: 0.2em;
+  font-size: var(--label-size);
+  letter-spacing: var(--label-track);
   text-transform: uppercase;
   color: var(--fg-muted);
 }
@@ -373,4 +482,20 @@
   font-variation-settings: "opsz" 32;
   font-size: clamp(20px, 3vw, 27px);
   line-height: 1.1;
+}
+
+/* What the next project actually is: a name alone is not enough to decide on,
+   and these cards are the only thing offering the decision. Three lines fits
+   every tagline the site has at both card widths, so the clamp is a ceiling
+   against a future one that runs long rather than something a reader meets —
+   which matters because a clamped line ends without a mark to say so when the
+   card is the right-aligned one. */
+.end-tagline {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--fg-secondary);
 }

@@ -45,8 +45,8 @@
   position: relative;
   padding: 6px 2px;
   font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.2em;
+  font-size: var(--label-size);
+  letter-spacing: var(--label-track);
   text-transform: uppercase;
   color: var(--fg-muted);
   text-decoration: none;

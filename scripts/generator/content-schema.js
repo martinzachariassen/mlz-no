@@ -48,6 +48,7 @@
  *     "tags": ["Backend"], "status": "In production", "lastmod": "2026-09-12",
  *     "seo": { "title": "My Project — Martin Zachariassen", "description": "…" },
  *     "cover": { "figure": "my-diagram", "alt": "What the diagram shows." },
+ *     "outcome": [{ "value": "7h → 1.2s", "label": "Data freshness" }],
  *     "summary": "A paragraph above the first section.",
  *     "sections": [{ "label": "Problem", "heading": "…",
  *       "blocks": [{ "type": "text", "value": "A paragraph." }] }]
@@ -242,7 +243,11 @@ export const siteSchema = z.strictObject({
  *   figure   `figure` is the filename under content/figures/ without ".svg"
  *   code     `language` is a label only, no syntax highlighting; `lines` is
  *            one string per line, "" for a blank line inside the snippet
- *   metrics  a row of `{ value, label }` — value is the big number
+ *   metrics  a row of `{ value, label }` — value is the big number. For the
+ *            numbers a case study is *about*, use the project's `outcome`
+ *            instead: it renders the same row at the top of the page, where a
+ *            reader who never scrolls to the Result section still sees it.
+ *            This block is for numbers that belong to a section's argument.
  *   quote    a pull quote, optional `attribution`
  *   note     an aside set apart from the prose, optional `title`
  */
@@ -303,10 +308,13 @@ const block = z.discriminatedUnion("type", [
  * thumbnail — which is why every project needs copy that stands on its own.
  *
  * What ends up where:
- *   tile         cover, period, status, name, tagline, stack
- *   case study   eyebrow (period + stack[0]), name, tagline, a facts list of
- *                role/team/status/stack, the cover figure, summary, then
- *                sections, then tags
+ *   tile         cover, period, name, tagline, stack — and `status`, but only
+ *                when it isn't the status most projects share, since a badge
+ *                every tile carries says nothing (see render.js)
+ *   case study   eyebrow (period + how long the page takes to read), name,
+ *                tagline, then a brief of role/team/status/stack, the
+ *                `outcome` numbers and an index of the sections; then the
+ *                summary, the cover figure, the sections, and the tags
  *   <head>       seo.title, seo.description
  *   sitemap      lastmod
  */
@@ -328,6 +336,16 @@ export const projectSchema = z
       description: str({ maxLength: SEO_DESCRIPTION_MAX }),
     }),
     cover: figureRef,
+    // The two to four numbers the project is judged on, rendered in the brief
+    // at the top of the case study. Two is the minimum because one number on
+    // its own reads as a stray fact rather than a result, and four is the
+    // maximum because that is what the row holds before it wraps into a
+    // second line of the same numbers at half the weight.
+    outcome: z
+      .array(z.strictObject({ value: str(), label: str() }))
+      .min(2, "expected at least two numbers — one alone is not a result")
+      .max(4, "expected at most four numbers — the row holds four")
+      .optional(),
     summary: str(),
     sections: arr(
       z.strictObject({

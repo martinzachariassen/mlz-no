@@ -141,36 +141,64 @@
         <p class="page-eyebrow">
           <span data-glitch>2022</span>
           <span class="sep" aria-hidden="true">/</span>
-          <span data-glitch>Go</span>
+          <span data-glitch>2 min read</span>
         </p>
         <h1 class="page-title">Audit Trail</h1>
         <p class="page-intro">A hash-linked record of every privileged action, cheap enough to write on the hot path and hard enough to argue with in an audit.</p>
       </header>
-      <dl class="case-facts rise delay-450">
-        <div class="fact">
-          <dt data-glitch>Role</dt>
-          <dd>Backend developer</dd>
-        </div>
-        <div class="fact">
-          <dt data-glitch>Status</dt>
-          <dd>In production</dd>
-        </div>
-        <div class="fact">
-          <dt data-glitch>Stack</dt>
-          <dd>Go · PostgreSQL</dd>
-        </div>
-      </dl>
+      <div class="case-brief rise delay-450">
+        <dl class="case-facts">
+          <div class="fact">
+            <dt data-glitch>Role</dt>
+            <dd>Backend developer</dd>
+          </div>
+          <div class="fact">
+            <dt data-glitch>Status</dt>
+            <dd>In production</dd>
+          </div>
+          <div class="fact">
+            <dt data-glitch>Stack</dt>
+            <dd>Go · PostgreSQL</dd>
+          </div>
+        </dl>
+        <dl class="metrics case-outcome">
+          <div class="metric">
+            <dt>Added write latency, p99</dt>
+            <dd>0.4 ms</dd>
+          </div>
+          <div class="metric">
+            <dt>Systems to export from</dt>
+            <dd>1</dd>
+          </div>
+          <div class="metric">
+            <dt>Chain seal, automated</dt>
+            <dd>daily</dd>
+          </div>
+        </dl>
+        <nav class="case-index" aria-label="Sections">
+          <span class="case-index-label" data-glitch>On this page</span>
+          <a href="#problem">Problem</a>
+          <a href="#approach">Approach</a>
+          <a href="#result">Result</a>
+        </nav>
+      </div>
+      <p class="case-summary rise delay-550">Access logs lived in three systems, none of which could prove they had not been edited. I replaced them with one append-only table where every record carries the hash of the record before it, and a daily seal anchors the chain — which turns &quot;who changed this?&quot; from an investigation into a query.</p>
       <figure class="figure figure-cover rise delay-600">
         <span class="shot-frame">
-          <img class="shot shot-light" src="/assets/figures/audit-chain-light.svg"
-            alt="Four stacked audit records, each naming the hash of the one before it, ending in a daily seal record that anchors the chain." width="1000" height="640" loading="eager" decoding="async" />
-          <img class="shot shot-dark" src="/assets/figures/audit-chain-dark.svg"
-            alt="Four stacked audit records, each naming the hash of the one before it, ending in a daily seal record that anchors the chain." width="1000" height="640" loading="eager" decoding="async" />
+          <a class="shot-link shot-light" href="/assets/figures/audit-chain-light.svg"
+            target="_blank" rel="noopener" title="Open the full-size diagram">
+            <img class="shot shot-light" src="/assets/figures/audit-chain-light.svg"
+              alt="Four stacked audit records, each naming the hash of the one before it, ending in a daily seal record that anchors the chain." width="1000" height="640" loading="eager" decoding="async" />
+          </a>
+          <a class="shot-link shot-dark" href="/assets/figures/audit-chain-dark.svg"
+            target="_blank" rel="noopener" title="Open the full-size diagram">
+            <img class="shot shot-dark" src="/assets/figures/audit-chain-dark.svg"
+              alt="Four stacked audit records, each naming the hash of the one before it, ending in a daily seal record that anchors the chain." width="1000" height="640" loading="eager" decoding="async" />
+          </a>
         </span>
         <figcaption>Each record names the one before it, so a deletion is as visible as an edit.</figcaption>
       </figure>
-      <p class="case-summary">Access logs lived in three systems, none of which could prove they had not been edited. I replaced them with one append-only table where every record carries the hash of the record before it, and a daily seal anchors the chain — which turns &quot;who changed this?&quot; from an investigation into a query.</p>
-      <section class="field">
+      <section class="field" id="problem">
         <p class="field-label" data-glitch>Problem</p>
         <h2 class="field-heading">Three logs, no answers</h2>
         <p class="prose">Privileged actions were logged by whichever service happened to perform them: the admin API wrote rows, the support tool wrote to a file, and the data platform wrote nothing at all. Reconstructing a single incident meant three exports, three clock skews and a spreadsheet.</p>
@@ -181,7 +209,7 @@
           <li>A retention story that did not depend on anyone remembering to run something.</li>
         </ul>
       </section>
-      <section class="field">
+      <section class="field" id="approach">
         <p class="field-label" data-glitch>Approach</p>
         <h2 class="field-heading">Make deletion as loud as editing</h2>
         <p class="prose">Every record stores the hash of its own contents and the hash of the record before it. Editing a row breaks the chain from that point on; deleting one breaks it too. Neither is prevented — the database can always be written to — but neither can happen quietly, which is the property an audit actually needs.</p>
@@ -207,39 +235,30 @@
           <p>We costed one. It solved the tamper-evidence problem we had and introduced an operational surface nobody on the team knew how to run at 3am. A column in the database we already operate was the cheaper trade, and it is the trade I would make again.</p>
         </aside>
       </section>
-      <section class="field">
+      <section class="field" id="result">
         <p class="field-label" data-glitch>Result</p>
         <h2 class="field-heading">The question became a query</h2>
-        <dl class="metrics">
-          <div class="metric">
-            <dt>Added write latency, p99</dt>
-            <dd>0.4 ms</dd>
-          </div>
-          <div class="metric">
-            <dt>Systems to export from</dt>
-            <dd>1</dd>
-          </div>
-          <div class="metric">
-            <dt>Chain seal, automated</dt>
-            <dd>daily</dd>
-          </div>
-        </dl>
         <p class="prose">Verification walks the chain and takes about eleven seconds over a year of records, which is fast enough that it runs nightly rather than on request. The first run found no tampering and two application bugs writing records with the wrong subject — which was worth the whole project on its own.</p>
       </section>
-      <ul class="tag-list" aria-label="Topics">
-        <li>Compliance</li>
-        <li>Append-only</li>
-        <li>Security</li>
-      </ul>
+      <div class="case-topics">
+        <p class="block-title" data-glitch>Topics</p>
+        <ul class="tag-list">
+          <li>Compliance</li>
+          <li>Append-only</li>
+          <li>Security</li>
+        </ul>
+      </div>
     </main>
     <nav class="end-nav wrap" aria-label="More projects">
       <a class="end-card" href="/projects/search-relevance">
         <span class="end-label" data-glitch>← Previous</span>
         <span class="end-title">Search Relevance Service</span>
+        <span class="end-tagline">A standalone ranking service that took relevance tuning out of a monolith and into something product could iterate on weekly.</span>
       </a>
       <a class="end-card end-next" href="/projects/tenant-isolation">
         <span class="end-label" data-glitch>Next →</span>
         <span class="end-title">Tenant Isolation</span>
+        <span class="end-tagline">Moving a shared-everything multi-tenant platform onto per-tenant pools, so one customer's bad afternoon stops being everyone's.</span>
       </a>
     </nav>
     <footer class="rise delay-750">

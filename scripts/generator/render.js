@@ -64,6 +64,91 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
 
   const projectUrl = (project) => `${site.basePath}/${project.slug}`;
 
+  /**
+   * The status most of the projects share, or null if there is no such thing.
+   *
+   * Every tile carrying "In production" is eight badges that distinguish
+   * nothing: the reader learns the same fact eight times and has no way to
+   * tell it was ever in question. The tiles drop the common one and keep the
+   * exception, which is the only version that carries information — and it
+   * self-adjusts, so the day half the work is archived the badge starts
+   * meaning something again without an edit here. The case study's facts list
+   * states it either way; that is a table you look things up in.
+   *
+   * Two projects at minimum, so a site with one project still shows its
+   * status rather than deciding a sample of one is a convention.
+   */
+  const routineStatus = (() => {
+    const counts = new Map();
+    for (const { status } of projects) {
+      counts.set(status, (counts.get(status) ?? 0) + 1);
+    }
+    for (const [status, count] of counts) {
+      if (count >= 2 && count * 2 > projects.length) return status;
+    }
+    return null;
+  })();
+
+  /* -------------------------------------------------------- reading time */
+
+  const WORDS_PER_MINUTE = 200;
+
+  const words = (value) => value.trim().split(/\s+/).length;
+
+  /**
+   * How much of a block is prose, by block type — the same one-entry-per-type
+   * table as `blockRenderers` below, and it has to stay that way: a new block
+   * type without an entry here throws at build time instead of quietly
+   * shortening every estimate that contains one.
+   *
+   * A figure, a code listing and a row of metrics count as nothing. They take
+   * a reader time, but not reading time, and guessing at how much would make
+   * the number less honest rather than more.
+   */
+  const blockWords = {
+    text: (block) => words(block.value),
+    list: (block) =>
+      block.items.reduce((total, item) => total + words(item), 0),
+    figure: () => 0,
+    code: () => 0,
+    metrics: () => 0,
+    quote: (block) => words(block.value),
+    note: (block) => words(block.value),
+  };
+
+  /** Rounded up from nothing to one: no page is a zero-minute read. */
+  function readingMinutes(project) {
+    let total = words(project.summary);
+    for (const section of project.sections) {
+      total += words(section.heading);
+      for (const block of section.blocks) {
+        total += blockWords[block.type](block);
+      }
+    }
+    return Math.max(1, Math.round(total / WORDS_PER_MINUTE));
+  }
+
+  /**
+   * The id each section is reachable at, derived from its label rather than
+   * authored — content/ says nothing about anchors and shouldn't have to. Two
+   * sections sharing a label get `-2`, `-3`: an index whose links quietly all
+   * point at the first of them would be worse than an ugly id.
+   */
+  function sectionAnchors(sections) {
+    const used = new Set();
+    return sections.map((section, i) => {
+      const base =
+        section.label
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-|-$/g, "") || `section-${i + 1}`;
+      let id = base;
+      for (let n = 2; used.has(id); n++) id = `${base}-${n}`;
+      used.add(id);
+      return id;
+    });
+  }
+
   /* ------------------------------------------------------------- figures */
 
   /**
@@ -89,23 +174,41 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
   }
 
   /**
-   * `frame` wraps the pair in a scroll container. These are wide diagrams: at
-   * phone width they would shrink to an unreadable strip, so a case study lets
-   * them keep a legible minimum width and scroll sideways instead.
+   * `frame` wraps the pair in a scroll container and makes each copy a link to
+   * its own SVG. These are wide diagrams: at phone width they would shrink to
+   * an unreadable strip, so a case study lets them keep a legible minimum
+   * width and scroll sideways instead — and the link is the way out of that
+   * box, since the file opened on its own is the only place a dense diagram
+   * can be as large as the reader's screen allows.
+   *
+   * The link has to be per theme rather than around the pair: the two files
+   * are different documents and only CSS knows which one is on screen, so the
+   * theme class goes on the link as well and case-study.css hides the pair the
+   * reader isn't looking at. A tile's figure is unframed for the same reason
+   * it can't be a link — the whole tile already is one.
    */
   function figureImages(name, alt, { eager = false, frame = false } = {}) {
     const figure = figures.get(name);
     const loading = eager ? "eager" : "lazy";
     const shared = `alt="${esc(alt)}" width="${figure.width}" height="${figure.height}" loading="${loading}" decoding="async"`;
-    const images = html`
-      <img class="shot shot-light" src="${site.figureDir}/${name}-light.svg"
-        ${shared} />
-      <img class="shot shot-dark" src="${site.figureDir}/${name}-dark.svg"
+    const src = (theme) => `${site.figureDir}/${name}-${theme}.svg`;
+    const image = (theme) => html`
+      <img class="shot shot-${theme}" src="${src(theme)}"
         ${shared} />`;
-    if (!frame) return images;
+    if (!frame) {
+      return html`
+        ${image("light")}
+        ${image("dark")}`;
+    }
+    const linked = (theme) => html`
+      <a class="shot-link shot-${theme}" href="${src(theme)}"
+        target="_blank" rel="noopener" title="Open the full-size diagram">
+        ${image(theme)}
+      </a>`;
     return html`
       <span class="shot-frame">
-        ${images}
+        ${linked("light")}
+        ${linked("dark")}
       </span>`;
   }
 
@@ -318,7 +421,11 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
         <span class="b-body">
           <span class="b-meta">
             <span data-glitch>${esc(project.period)}</span>
-            <span class="b-status">${esc(project.status)}</span>
+            ${
+              project.status === routineStatus
+                ? ""
+                : html`<span class="b-status">${esc(project.status)}</span>`
+            }
           </span>
           <span class="b-title">${esc(project.name)}</span>
           <span class="b-tagline">${esc(project.tagline)}</span>
@@ -395,6 +502,23 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
 
   /* -------------------------------------------------- page: case study */
 
+  /**
+   * The row of numbers, rendered the same way wherever it appears: a project's
+   * `outcome` in the brief at the top of the page, and a `metrics` block
+   * inside a section. `className` is the only difference, and it only says
+   * which of the two this is.
+   */
+  const metricsList = (items, className = "metrics") => html`
+    <dl class="${className}">
+      ${items.map(
+        (item) => html`
+          <div class="metric">
+            <dt>${esc(item.label)}</dt>
+            <dd>${esc(item.value)}</dd>
+          </div>`,
+      )}
+    </dl>`;
+
   const blockRenderers = {
     text: (block) => html`<p class="prose">${esc(block.value)}</p>`,
 
@@ -422,16 +546,7 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
         <pre tabindex="0"><code>${raw(block.lines.map((line) => esc(line)).join("\n"))}</code></pre>
       </figure>`,
 
-    metrics: (block) => html`
-      <dl class="metrics">
-        ${block.items.map(
-          (item) => html`
-            <div class="metric">
-              <dt>${esc(item.label)}</dt>
-              <dd>${esc(item.value)}</dd>
-            </div>`,
-        )}
-      </dl>`,
+    metrics: (block) => metricsList(block.items),
 
     quote: (block) => html`
       <blockquote class="pull">
@@ -452,10 +567,17 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
   function endNav(index) {
     const previous = projects[index - 1];
     const next = projects[index + 1];
-    const card = (cls, label, title, href) => html`
+    /**
+     * `tagline` is what makes these a choice rather than two names: this row
+     * is the only place the next project is offered, and a reader who has
+     * just finished one case study has no other way to tell whether the next
+     * one is worth the scroll.
+     */
+    const card = (cls, label, title, href, tagline) => html`
       <a class="end-card${cls}" href="${href}">
         <span class="end-label" data-glitch>${esc(label)}</span>
         <span class="end-title">${esc(title)}</span>
+        ${tagline ? `<span class="end-tagline">${esc(tagline)}</span>` : ""}
       </a>`;
 
     const indexCard = (cls) =>
@@ -467,12 +589,22 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
     // project with neither gets a single Index card, left-aligned, alone.
     const cards = [];
     if (previous) {
-      cards.push(card("", "← Previous", previous.name, projectUrl(previous)));
+      cards.push(
+        card(
+          "",
+          "← Previous",
+          previous.name,
+          projectUrl(previous),
+          previous.tagline,
+        ),
+      );
     } else if (next) {
       cards.push(indexCard(""));
     }
     if (next) {
-      cards.push(card(" end-next", "Next →", next.name, projectUrl(next)));
+      cards.push(
+        card(" end-next", "Next →", next.name, projectUrl(next), next.tagline),
+      );
     } else if (previous) {
       cards.push(indexCard(" end-next"));
     }
@@ -493,6 +625,25 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
       ["Status", project.status],
       ["Stack", project.stack.join(" · ")],
     ].filter(([, value]) => value);
+
+    const anchors = sectionAnchors(project.sections);
+
+    /**
+     * Below three sections there is nothing to orient yourself in: the index
+     * would be a list of everything already visible, which is chrome that
+     * looks like navigation and saves nobody a scroll.
+     */
+    const caseIndex =
+      project.sections.length < 3
+        ? ""
+        : html`
+          <nav class="case-index" aria-label="Sections">
+            <span class="case-index-label" data-glitch>On this page</span>
+            ${project.sections.map(
+              (section, i) =>
+                html`<a href="#${anchors[i]}">${esc(section.label)}</a>`,
+            )}
+          </nav>`;
 
     return page({
       current: "section",
@@ -532,36 +683,43 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
             <p class="page-eyebrow">
               <span data-glitch>${esc(project.period)}</span>
               <span class="sep" aria-hidden="true">/</span>
-              <span data-glitch>${esc(project.stack[0])}</span>
+              <span data-glitch>${readingMinutes(project)} min read</span>
             </p>
             <h1 class="page-title">${esc(project.name)}</h1>
             <p class="page-intro">${esc(project.tagline)}</p>
           </header>
-          <dl class="case-facts rise delay-450">
-            ${facts.map(
-              ([label, value]) => html`
-                <div class="fact">
-                  <dt data-glitch>${esc(label)}</dt>
-                  <dd>${esc(value)}</dd>
-                </div>`,
-            )}
-          </dl>
+          <div class="case-brief rise delay-450">
+            <dl class="case-facts">
+              ${facts.map(
+                ([label, value]) => html`
+                  <div class="fact">
+                    <dt data-glitch>${esc(label)}</dt>
+                    <dd>${esc(value)}</dd>
+                  </div>`,
+              )}
+            </dl>
+            ${project.outcome ? metricsList(project.outcome, "metrics case-outcome") : ""}
+            ${caseIndex}
+          </div>
+          <p class="case-summary rise delay-550">${esc(project.summary)}</p>
           <figure class="figure figure-cover rise delay-600">
             ${figureImages(project.cover.figure, project.cover.alt, { eager: true, frame: true })}
             ${project.cover.caption ? `<figcaption>${esc(project.cover.caption)}</figcaption>` : ""}
           </figure>
-          <p class="case-summary">${esc(project.summary)}</p>
           ${project.sections.map(
-            (section) => html`
-              <section class="field">
+            (section, i) => html`
+              <section class="field" id="${anchors[i]}">
                 <p class="field-label" data-glitch>${esc(section.label)}</p>
                 <h2 class="field-heading">${esc(section.heading)}</h2>
                 ${section.blocks.map(renderBlock)}
               </section>`,
           )}
-          <ul class="tag-list" aria-label="Topics">
-            ${project.tags.map((tag) => `<li>${esc(tag)}</li>`)}
-          </ul>
+          <div class="case-topics">
+            <p class="block-title" data-glitch>Topics</p>
+            <ul class="tag-list">
+              ${project.tags.map((tag) => `<li>${esc(tag)}</li>`)}
+            </ul>
+          </div>
         </main>
         ${endNav(index)}`,
     });

@@ -22,8 +22,8 @@
   flex-wrap: wrap;
   align-items: center;
   font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.28em;
+  font-size: var(--label-size);
+  letter-spacing: var(--label-track);
   text-transform: uppercase;
   color: var(--fg-muted);
 }
@@ -47,7 +47,7 @@
 
 .page-intro {
   margin: 0;
-  max-width: 56ch;
+  max-width: var(--measure);
   font-size: clamp(14px, 1.7vw, 16px);
   line-height: 1.7;
   color: var(--fg-secondary);
