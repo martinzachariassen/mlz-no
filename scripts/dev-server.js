@@ -74,9 +74,15 @@ async function respond(path, status = 200) {
 }
 
 let isRebuilding = false;
+let rebuildPending = false;
 
 function rebuildContent() {
-  if (isRebuilding) return;
+  if (isRebuilding) {
+    // A change arrived mid-build: note it instead of dropping it, so its
+    // output isn't left stale once the in-flight build finishes.
+    rebuildPending = true;
+    return;
+  }
   isRebuilding = true;
   Bun.spawn(["bun", "scripts/content/build-content.js"], {
     cwd: join(import.meta.dir, ".."),
@@ -87,11 +93,19 @@ function rebuildContent() {
     .finally(() => {
       isRebuilding = false;
       broadcast();
+      if (rebuildPending) {
+        rebuildPending = false;
+        rebuildContent();
+      }
     });
 }
 
 let debounce = null;
 function onChange(rebuild) {
+  // The rebuild's own writes into public/ re-trigger the ROOT watcher below;
+  // without this it would broadcast a second, redundant reload on top of the
+  // one rebuildContent() already sends when the build finishes.
+  if (!rebuild && isRebuilding) return;
   clearTimeout(debounce);
   debounce = setTimeout(() => (rebuild ? rebuildContent() : broadcast()), 80);
 }

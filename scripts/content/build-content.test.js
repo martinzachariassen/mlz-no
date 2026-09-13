@@ -50,4 +50,35 @@ describe("checkAssetLinks", () => {
     );
     expect(broken).toEqual([]);
   });
+
+  test("flags a broken JSON-LD url field, not just href/src", () => {
+    const broken = checkAssetLinks(
+      page(
+        '<script type="application/ld+json">{\n  "url": "https://example.com/projects/does-not-exist"\n}</script>',
+      ),
+      site,
+    );
+    expect(broken).toHaveLength(1);
+    expect(broken[0]).toContain("/projects/does-not-exist");
+  });
+
+  test("does not flag a JSON-LD url that resolves", () => {
+    const broken = checkAssetLinks(
+      page(
+        '<script type="application/ld+json">{\n  "url": "https://example.com/css/tokens.css"\n}</script>',
+      ),
+      site,
+    );
+    expect(broken).toEqual([]);
+  });
+
+  test("treats a stray file scheduled for removal as not resolving", () => {
+    const strayPath = join(publicDir, "css", "tokens.css");
+    const broken = checkAssetLinks(
+      page('<link rel="stylesheet" href="/css/tokens.css" />'),
+      site,
+      new Set([strayPath]),
+    );
+    expect(broken).toHaveLength(1);
+  });
 });

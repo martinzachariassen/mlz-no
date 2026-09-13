@@ -16,6 +16,7 @@
  * constraints as the hand-written pages.
  */
 
+import { projectEventName } from "./content-schema.js";
 import { esc, html, raw, unraw } from "./html.js";
 
 /**
@@ -245,7 +246,7 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
     return output(html`
       <footer class="rise ${delay}">
         <div class="wrap footer-row">
-          <span data-glitch>© <span data-year>2026</span> · Martin Zachariassen</span>
+          <span data-glitch>© <span data-year>2026</span> · ${esc(site.author)}</span>
           <span data-glitch>59°N · 10°E</span>
         </div>
       </footer>
@@ -282,7 +283,7 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
   function bentoTile(project) {
     return html`
       <a class="b-tile b-${esc(project.size)}" href="${projectUrl(project)}"
-        data-umami-event="project-${esc(project.slug)}">
+        data-umami-event="${esc(projectEventName(project.slug))}">
         <span class="b-media">
           ${figureImages(project.cover.figure, project.cover.alt, { eager: true })}
         </span>
@@ -425,19 +426,26 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
         <span class="end-title">${esc(title)}</span>
       </a>`;
 
+    const indexCard = (cls) =>
+      card(cls, "Index", "All projects", site.basePath);
+
+    // Each side of the row always gets a card: the real previous/next project
+    // where one exists, otherwise the Index card fills that side instead —
+    // left-aligned on the left, right-aligned (" end-next") on the right. A
+    // project with neither gets a single Index card, left-aligned, alone.
     const cards = [];
     if (previous) {
       cards.push(card("", "← Previous", previous.name, projectUrl(previous)));
+    } else if (next) {
+      cards.push(indexCard(""));
     }
     if (next) {
       cards.push(card(" end-next", "Next →", next.name, projectUrl(next)));
+    } else if (previous) {
+      cards.push(indexCard(" end-next"));
     }
-    // With a single project there is no previous or next, so the row falls back
-    // to one card back to the overview — left-aligned when it stands alone,
-    // since there is nothing to its left for it to point away from.
-    if (cards.length < 2) {
-      const cls = cards.length ? " end-next" : "";
-      cards.push(card(cls, "Index", "All projects", site.basePath));
+    if (!previous && !next) {
+      cards.push(indexCard(""));
     }
 
     return html`

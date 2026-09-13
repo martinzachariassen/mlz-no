@@ -45,6 +45,7 @@ const validProject = {
   name: "Demo",
   tagline: "A demo project.",
   period: "2026",
+  role: "Solo developer",
   stack: ["TypeScript"],
   tags: ["web"],
   status: "Live",
@@ -125,6 +126,19 @@ describe("validateContent", () => {
     const message = messageFor({ project: { ...validProject, tagline: "  " } });
     expect(message).toContain("tagline");
     expect(message).toContain("non-empty");
+  });
+
+  test("rejects a project with neither role nor team", () => {
+    const project = { ...validProject };
+    delete project.role;
+    const message = messageFor({ project });
+    expect(message).toContain("at least one of role or team");
+  });
+
+  test("accepts a project with only team set", () => {
+    const project = { ...validProject, team: "3 engineers" };
+    delete project.role;
+    expect(() => validate({ project })).not.toThrow();
   });
 
   describe("slug and order", () => {

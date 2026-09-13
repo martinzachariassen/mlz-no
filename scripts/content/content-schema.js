@@ -131,6 +131,26 @@ const externalHref = str({
 const TILE_SIZES = ["flagship", "wide", "normal"];
 
 /**
+ * The shape of any reference to a figure: which SVG under content/figures/
+ * (without ".svg"), its alt text, and an optional caption. Shared by the
+ * `figure` block and a project's `cover` so a rule on one always applies to
+ * the other.
+ */
+const figureRef = z.strictObject({
+  figure: slug,
+  alt: str(),
+  caption: str().optional(),
+});
+
+/**
+ * A project's tile gets this analytics event name for free — see
+ * `asideTile`'s `umamiEvent` for the sibling case that needs one explicitly.
+ * Exported so render.js emits the exact name this spec's uniqueness check
+ * assumes, instead of the two independently hardcoding the convention.
+ */
+export const projectEventName = (projectSlug) => `project-${projectSlug}`;
+
+/**
  * Roughly where Google truncates a result's title and snippet. Approximate
  * (it's actually pixel width, not a character count) but close enough to
  * catch the real failure mode: copy that reads fine in the JSON and gets
@@ -247,9 +267,7 @@ const block = z.discriminatedUnion("type", [
 
   z.strictObject({
     type: z.literal("figure"),
-    figure: slug,
-    alt: str(),
-    caption: str().optional(),
+    ...figureRef.shape,
   }),
 
   z.strictObject({
@@ -293,37 +311,42 @@ const block = z.discriminatedUnion("type", [
  *   <head>       seo.title, seo.description
  *   sitemap      lastmod
  */
-export const projectSchema = z.strictObject({
-  slug,
-  order: z.number().int().min(1),
-  size: z.enum(TILE_SIZES),
-  name: str(),
-  tagline: str(),
-  period: str(),
-  role: str().optional(),
-  team: str().optional(),
-  stack: arr(str()),
-  tags: arr(str()),
-  status: str(),
-  lastmod: date,
-  seo: z.strictObject({
-    title: str({ maxLength: SEO_TITLE_MAX }),
-    description: str({ maxLength: SEO_DESCRIPTION_MAX }),
-  }),
-  cover: z.strictObject({
-    figure: slug,
-    alt: str(),
-    caption: str().optional(),
-  }),
-  summary: str(),
-  sections: arr(
-    z.strictObject({
-      label: str(),
-      heading: str(),
-      blocks: arr(block),
+export const projectSchema = z
+  .strictObject({
+    slug,
+    order: z.number().int().min(1),
+    size: z.enum(TILE_SIZES),
+    name: str(),
+    tagline: str(),
+    period: str(),
+    role: str().optional(),
+    team: str().optional(),
+    stack: arr(str()),
+    tags: arr(str()),
+    status: str(),
+    lastmod: date,
+    seo: z.strictObject({
+      title: str({ maxLength: SEO_TITLE_MAX }),
+      description: str({ maxLength: SEO_DESCRIPTION_MAX }),
     }),
-  ),
-});
+    cover: figureRef,
+    summary: str(),
+    sections: arr(
+      z.strictObject({
+        label: str(),
+        heading: str(),
+        blocks: arr(block),
+      }),
+    ),
+  })
+  // The case study's facts list always shows role/team/status/stack — see
+  // this schema's own doc comment. Without at least one of role/team, that
+  // list silently shrinks to two rows with no signal anything is missing.
+  .refine((data) => data.role !== undefined || data.team !== undefined, {
+    error:
+      "expected at least one of role or team — the case study's facts list needs one",
+    path: ["role"],
+  });
 
 /* ---------------------------------------------------------- cross-checks */
 
@@ -442,7 +465,7 @@ function crossCheck(
   };
   for (const { file, data } of projects) {
     if (typeof data.slug === "string") {
-      recordEvent(`project-${data.slug}`, file, "slug");
+      recordEvent(projectEventName(data.slug), file, "slug");
     }
   }
   site?.index?.asideTiles?.forEach((tile, i) => {

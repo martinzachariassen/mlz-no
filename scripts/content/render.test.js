@@ -256,6 +256,17 @@ describe("footer", () => {
     expect(block).toContain('src="/js/year.js"');
     expect(block).toContain('src="/js/glitch.js"');
   });
+
+  test("takes the name from site.author, not a hardcoded copy", () => {
+    const customSite = { ...site, author: "Someone Else" };
+    const block = createRenderer({
+      site: customSite,
+      projects: [project],
+      figures,
+      tokens,
+    }).footer();
+    expect(block).toContain("Someone Else");
+  });
 });
 
 describe("case study blocks", () => {
@@ -357,6 +368,21 @@ describe("end navigation", () => {
     expect(first).not.toContain("← Previous");
     expect(second).toContain("← Previous");
     expect(second).toContain("All projects");
+  });
+
+  test("gives the fallback Index card the empty side, not always the right", () => {
+    const files = filesOf([named("first", 1), named("second", 2)]);
+    const first = files.get("/projects/first.html");
+    const second = files.get("/projects/second.html");
+    // No previous project: Index fills the left slot, left-aligned.
+    expect(first).toContain("All projects");
+    expect(first).toContain('<a class="end-card" href="/projects">');
+    expect(first).not.toContain(
+      '<a class="end-card end-next" href="/projects">',
+    );
+    // No next project: Index fills the right slot, right-aligned.
+    expect(second).toContain('<a class="end-card end-next" href="/projects">');
+    expect(second).not.toContain('<a class="end-card" href="/projects">');
   });
 });
 

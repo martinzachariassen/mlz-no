@@ -83,7 +83,9 @@ const TOKEN_ALIASES = {
  */
 function readTokens() {
   const path = join(publicDir, "css", "tokens.css");
-  const css = readFileSync(path, "utf8");
+  // Stripped before the block regexes run: a `}` inside a comment would
+  // otherwise truncate the [^}]* capture right there.
+  const css = readFileSync(path, "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
 
   const block = (label, pattern) => {
     const match = css.match(pattern);
@@ -262,18 +264,23 @@ function chromeFiles(renderer) {
 /* ------------------------------------------------------------ asset links */
 
 /**
- * Every root-relative href/src/og:image the written pages emit must resolve to
- * a real file — either something this run writes (a figure, a case study page)
- * or something already on disk (a stylesheet, an icon). This isn't a content/
- * check: a broken link is just as likely to come from a typo in render.js's
- * own hardcoded <head>/<script> markup, which content-schema.js never sees, as
- * from content/site.json's ogImage.
+ * Every root-relative href/src/og:image/JSON-LD url the written pages emit
+ * must resolve to a real file — either something this run writes (a figure, a
+ * case study page) or something already on disk (a stylesheet, an icon).
+ * This isn't a content/ check: a broken link is just as likely to come from a
+ * typo in render.js's own hardcoded <head>/<script>/JSON-LD markup, which
+ * content-schema.js never sees, as from content/site.json's ogImage.
  */
 const STATIC_EXTENSION = /\.[a-z0-9]+$/i;
 const REFERENCE =
-  /\s(?:href|src)="([^"]+)"|<loc>([^<]+)<\/loc>|property="og:image"\s+content="([^"]+)"/g;
+  /\s(?:href|src)="([^"]+)"|<loc>([^<]+)<\/loc>|property="og:image"\s+content="([^"]+)"|"url":\s*"([^"]+)"/g;
 
-export function checkAssetLinks(outputs, site) {
+/**
+ * @param {Set<string>} strays absolute paths findStrays() has already marked
+ *   for removal — excluded from `existsSync` so a link is checked against the
+ *   post-cleanup state of public/, not whatever this run hasn't deleted yet.
+ */
+export function checkAssetLinks(outputs, site, strays = new Set()) {
   /** A root-relative site path from a ref, or null if it's not this site's. */
   const localAssetPath = (ref) => {
     const path = ref.split("#")[0].split("?")[0];
@@ -293,7 +300,9 @@ export function checkAssetLinks(outputs, site) {
    */
   const resolvesToFile = (path) => {
     const target = join(publicDir, path);
-    const has = (candidate) => outputs.has(candidate) || existsSync(candidate);
+    const has = (candidate) =>
+      outputs.has(candidate) ||
+      (existsSync(candidate) && !strays.has(candidate));
     if (STATIC_EXTENSION.test(path)) return has(target);
     return has(`${target}.html`) || has(join(target, "index.html"));
   };
@@ -302,7 +311,7 @@ export function checkAssetLinks(outputs, site) {
   for (const [path, source] of outputs) {
     if (!/\.(?:html|xml)$/.test(path)) continue;
     for (const match of source.matchAll(REFERENCE)) {
-      const ref = match[1] ?? match[2] ?? match[3];
+      const ref = match[1] ?? match[2] ?? match[3] ?? match[4];
       const local = localAssetPath(ref);
       if (local !== null && !resolvesToFile(local)) {
         broken.push(`${rel(path)}: broken link to ${ref}`);
@@ -350,7 +359,7 @@ function main() {
   );
   const strays = findStrays(outputs, site);
 
-  const brokenLinks = checkAssetLinks(outputs, site);
+  const brokenLinks = checkAssetLinks(outputs, site, new Set(strays));
   if (brokenLinks.length) {
     console.error("Generated pages link to files that don't exist:");
     for (const line of brokenLinks) console.error(`  ${line}`);
