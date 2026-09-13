@@ -186,7 +186,7 @@ describe("validateContent", () => {
       expect(message).toContain("viewBox");
     });
 
-    test("rejects an SVG using an undefined palette token, and suggests the closest one", () => {
+    test("rejects an SVG using an undefined palette token", () => {
       const message = messageFor({
         figures: new Map([
           [
@@ -196,7 +196,6 @@ describe("validateContent", () => {
         ]),
       });
       expect(message).toContain("unknown palette token {{bgg}}");
-      expect(message).toContain('did you mean "bg"');
     });
 
     test("rejects a non-.svg file sitting in content/figures/", () => {

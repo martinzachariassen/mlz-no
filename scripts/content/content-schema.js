@@ -1,5 +1,16 @@
 /**
- * The spec for everything under content/.
+ * The spec for everything under content/. This is the only spec — there is
+ * no separate prose copy to keep in sync, so a comment that drifts from the
+ * schema next to it is caught in review, not carried for years unnoticed.
+ *
+ *   content/
+ *     site.json              settings and copy shared by every generated page
+ *     projects/<slug>.json   one case study, one tile on the overview grid
+ *     figures/<name>.svg     one diagram, coloured per theme at build time
+ *
+ *   bun run build:content   validate, write the generated files, drop leftovers
+ *   bun run check:content   validate, then fail if what's on disk differs
+ *   bun run dev             serve public/ through the Firebase Hosting emulator
  *
  * build-content.js renders whatever it is handed, so without this file
  * a typo is invisible: a misspelled key is silently ignored, a block type the
@@ -9,8 +20,39 @@
  * listed here, anything else is an error, and the error names the JSON path.
  *
  * Adding a field to the site is therefore two edits, in this order: describe
- * it here, then render it in build-content.js. The spec is prose in
- * content/README.md; this file is the enforced version of it.
+ * it here, then render it in build-content.js. Removing one is the same in
+ * reverse — drop the renderer, drop the schema entry, and the next build
+ * names which content files still carry it. A new block type is three edits:
+ * a variant in the `block` union below, a renderer in build-content.js's
+ * `blockRenderers`, and whatever CSS it needs in public/css/case-study.css.
+ * A new tile size is a value in TILE_SIZES and a matching `.b-*` rule in
+ * public/css/bento.css.
+ *
+ * Adding a project, start to finish:
+ *   1. Pick the slug — the filename is the URL, and `slug` inside the file
+ *      must match it (content/projects/event-pipeline.json → /projects/event-pipeline).
+ *   2. Draw the cover figure as content/figures/<name>.svg, using {{token}}
+ *      placeholders for colour — see the palette-token check further down.
+ *   3. Write the file (a minimal one that builds is below), or copy an
+ *      existing project and replace it section by section.
+ *   4. Pick `order` — position on the overview grid, unique, and also the
+ *      previous/next order at the foot of each case study.
+ *   5. `bun run build:content` and fix whatever it reports.
+ *   6. `bun run dev`, then look at /projects and /projects/<slug> in both
+ *      themes.
+ *   7. Commit content/ and the generated files under public/ together.
+ *
+ *   {
+ *     "slug": "my-project", "order": 2, "size": "normal",
+ *     "name": "My Project", "tagline": "One sentence, tile + heading.",
+ *     "period": "2024 — 2025", "stack": ["Kotlin", "PostgreSQL"],
+ *     "tags": ["Backend"], "status": "In production", "lastmod": "2026-09-12",
+ *     "seo": { "title": "My Project — Martin Zachariassen", "description": "…" },
+ *     "cover": { "figure": "my-diagram", "alt": "What the diagram shows." },
+ *     "summary": "A paragraph above the first section.",
+ *     "sections": [{ "label": "Problem", "heading": "…",
+ *       "blocks": [{ "type": "text", "value": "A paragraph." }] }]
+ *   }
  *
  * Per-field shape and type checking is Zod's job (strict objects, enums,
  * regex-validated strings). What's hand-rolled below is only the part Zod
@@ -114,6 +156,12 @@ const priority = str({
   hint: 'expected a priority from "0.0" to "1.0", one decimal',
 });
 
+/**
+ * A non-project card on the overview grid — off-site by construction, so
+ * `href` must be http(s):// or mailto:, and it renders with target="_blank"
+ * and a ↗. `umamiEvent` is the analytics event name; project tiles don't
+ * need one, they get `project-<slug>` automatically.
+ */
 const asideTile = z.strictObject({
   size: z.enum(TILE_SIZES),
   label: str(),
@@ -124,6 +172,19 @@ const asideTile = z.strictObject({
   umamiEvent: slug,
 });
 
+/**
+ * content/site.json — settings and copy shared by every generated page. One
+ * object, no optional keys.
+ *
+ * `origin`/`author`/`locale`/`umamiWebsiteId`/`ogImage` feed identity and
+ * analytics (og:site_name, JSON-LD author, the analytics script tag).
+ * `basePath` and `figureDir` are root-relative with no trailing slash
+ * because they're concatenated rather than joined (the projects index lives
+ * at `basePath`, each project at `<basePath>/<slug>`; themed SVGs are
+ * written under `figureDir`). `index` is the copy on the overview page:
+ * `title`/`description` go to <head> and JSON-LD, `eyebrow`/`heading`/
+ * `intro` are the page copy, `asideTiles` may be `[]`.
+ */
 export const siteSchema = z.strictObject({
   origin: str({
     pattern: ORIGIN,
@@ -155,6 +216,22 @@ export const siteSchema = z.strictObject({
 
 /* --------------------------------------------------- content/projects/*.json */
 
+/**
+ * The body of a section. Seven types, one renderer each in build-content.js's
+ * `blockRenderers`, and no way to reach a type the renderer doesn't
+ * implement. Nothing in a block is parsed as Markdown or HTML — every value
+ * is escaped and rendered as text, so `<`, `&` and quotes are safe to type
+ * and a `**bold**` shows up as literal asterisks.
+ *
+ *   text     one paragraph — the block you'll use most
+ *   list     `items`, optional `title`, `kind` "bulleted" (default) or "numbered"
+ *   figure   `figure` is the filename under content/figures/ without ".svg"
+ *   code     `language` is a label only, no syntax highlighting; `lines` is
+ *            one string per line, "" for a blank line inside the snippet
+ *   metrics  a row of `{ value, label }` — value is the big number
+ *   quote    a pull quote, optional `attribution`
+ *   note     an aside set apart from the prose, optional `title`
+ */
 const block = z.discriminatedUnion("type", [
   z.strictObject({
     type: z.literal("text"),
@@ -201,6 +278,21 @@ const block = z.discriminatedUnion("type", [
   }),
 ]);
 
+/**
+ * content/projects/<slug>.json — one case study, one tile on the overview
+ * grid. `slug` must match the filename (the URL) and `order` must be unique
+ * (position on the grid, and the previous/next order at the foot of each
+ * case study). `size` is a TILE_SIZES value; the stylesheet has no rule for
+ * anything else, which is why the list is closed.
+ *
+ * What ends up where:
+ *   tile         cover, period, status, name, tagline, stack
+ *   case study   eyebrow (period + stack[0]), name, tagline, a facts list of
+ *                role/team/status/stack, the cover figure, summary, then
+ *                sections, then tags
+ *   <head>       seo.title, seo.description
+ *   sitemap      lastmod
+ */
 export const projectSchema = z.strictObject({
   slug,
   order: z.number().int().min(1),
@@ -236,50 +328,6 @@ export const projectSchema = z.strictObject({
 /* ---------------------------------------------------------- cross-checks */
 
 const quote = (value) => JSON.stringify(value);
-
-/** Edit distance, used only to guess which palette token someone meant. */
-function distance(a, b) {
-  const row = Array.from({ length: b.length + 1 }, (_, i) => i);
-  for (let i = 1; i <= a.length; i++) {
-    let previous = row[0];
-    row[0] = i;
-    for (let j = 1; j <= b.length; j++) {
-      const swap = row[j];
-      row[j] = Math.min(
-        row[j] + 1,
-        row[j - 1] + 1,
-        previous + (a[i - 1] === b[j - 1] ? 0 : 1),
-      );
-      previous = swap;
-    }
-  }
-  return row[b.length];
-}
-
-function nearest(word, candidates) {
-  const typed = word.toLowerCase();
-  let best = null;
-  let score = Number.POSITIVE_INFINITY;
-  for (const candidate of candidates) {
-    const other = candidate.toLowerCase();
-    // An abbreviation ("lang" for "language") is far away by edit distance but
-    // is the likeliest thing someone meant, so treat a shared prefix as close.
-    const d =
-      typed.startsWith(other) || other.startsWith(typed)
-        ? 1
-        : distance(typed, other);
-    if (d < score) {
-      score = d;
-      best = candidate;
-    }
-  }
-  return score <= Math.max(2, Math.floor(word.length / 3)) ? best : null;
-}
-
-const didYouMean = (key, candidates) => {
-  const guess = nearest(key, candidates);
-  return guess ? ` (did you mean ${quote(guess)}?)` : "";
-};
 
 /** Collect every figure name a project points at. */
 function figureRefs(project) {
@@ -330,10 +378,7 @@ function crossCheck({ site, projects, figures, figureFiles, tokens }, problems) 
     );
     for (const token of used) {
       if (!knownTokens.has(token)) {
-        add(
-          file,
-          `unknown palette token {{${token}}}${didYouMean(token, [...knownTokens])}`,
-        );
+        add(file, `unknown palette token {{${token}}}`);
       }
     }
   }
@@ -456,6 +501,6 @@ export function validateContent({
     .join("\n\n");
 
   throw new ContentError(
-    `${problems.length} problem${problems.length === 1 ? "" : "s"} in content/ — see content/README.md for the spec\n\n${detail}`,
+    `${problems.length} problem${problems.length === 1 ? "" : "s"} in content/ — see scripts/content/content-schema.js for the spec\n\n${detail}`,
   );
 }
