@@ -23,8 +23,9 @@ committed. Never hand-edit those files — edit `content/site.json`,
 `bun run build:content`. `bun run lint` also runs `check:content`, which fails
 if the committed output no longer matches `content/`.
 
-The generator is four files under `scripts/content/`, and which one you want
-depends on what you're changing:
+The generator lives under `scripts/generator/` (not to be confused with
+`content/`, which is the data it reads). Which file you want depends on what
+you're changing:
 
 | File | Owns |
 | --- | --- |
@@ -32,29 +33,36 @@ depends on what you're changing:
 | `render.js` | content in, finished page strings out — no filesystem access |
 | `html.js` | the `html\`\`` template engine the renderers are written with |
 | `build-content.js` | reading `content/`, writing `public/`, `--check` |
+| `tokens.js` | the palette, parsed out of `public/css/tokens.css` |
+| `check-links.js` | every link the output emits resolves to a real file |
+| `paths.js` | `content/` and `public/`, resolved once |
 
-`content/` has a spec: `scripts/content/content-schema.js`, doc comments and
+`content/` has a spec: `scripts/generator/content-schema.js`, doc comments and
 all — there's no separate prose copy to keep in sync. The build validates
 every file against it before rendering anything, and **a key that isn't in
 the spec is an error** — that's the point of it. So adding a field to the
 site is two edits in this order: describe it in
-`scripts/content/content-schema.js`, then render it in
-`scripts/content/render.js`. Renderers downstream of validation assume
+`scripts/generator/content-schema.js`, then render it in
+`scripts/generator/render.js`. Renderers downstream of validation assume
 the shape the spec guarantees and don't re-check it.
 
-Three test files run under `bun run test` (also run by `bun run lint`), each
-covering the part of the pipeline that fails silently without it:
-`content-schema.test.js` exercises the spec's own cross-file checks against
-fixtures, so a regression there fails independently of whatever happens to be
-in `content/` at the time; `html.test.js` pins the template engine's
-indentation and empty-value rules, which otherwise only show up as a committed
-file that looks slightly wrong; `render.test.js` renders fixtures covering
-every block type and asserts escaping, ordering and optional fields.
+Each source file has a `*.test.js` beside it, all run under `bun run test`
+(also run by `bun run lint`), each covering the part of the pipeline that
+fails silently without it: `content-schema.test.js` exercises the spec's own
+cross-file checks against fixtures, so a regression there fails independently
+of whatever happens to be in `content/` at the time; `html.test.js` pins the
+template engine's indentation and empty-value rules, which otherwise only show
+up as a committed file that looks slightly wrong; `render.test.js` renders
+fixtures covering every block type and asserts escaping, ordering and optional
+fields; `tokens.test.js` also pins the two files under `public/` that carry a
+hand-written copy of the palette. Add a source file, add its test file.
 
-After validation, `scripts/content/build-content.js` also checks that every
+After validation, `scripts/generator/check-links.js` checks that every
 root-relative `href`/`src`/`og:image` the generated pages emit resolves to a
 real file in `public/` — catching a typo in `ogImage`, a stylesheet name, or
-similar before it ships as a silent broken link.
+similar before it ships as a silent broken link. It runs on the finished
+output rather than on `content/`, because the typo is as likely to be in
+`render.js`'s own hardcoded markup as in a content file.
 
 The site itself still has no build step: `public/` is deployed exactly as it
 sits on disk. The generator only removes duplication between the bento tile,
@@ -67,7 +75,7 @@ page's `[data-theme]`. `content/site.json` carries no colour data — every
 colour on the site, figures included, has one source of truth.
 
 The topbar and footer are generated from one function in
-`scripts/content/render.js`, for every page. Generated pages embed it;
+`scripts/generator/render.js`, for every page. Generated pages embed it;
 `public/index.html` and `public/404.html` — which are otherwise hand-written —
 receive it spliced into their `<!-- generated:topbar -->` and
 `<!-- generated:footer -->` regions. So **don't hand-edit anything between

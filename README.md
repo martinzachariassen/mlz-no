@@ -54,7 +54,7 @@ That writes `public/projects/**`, `public/assets/figures/**` and
 files should never be hand-edited — `bun run lint` fails if they drift from
 `content/`.
 
-[`scripts/content/content-schema.js`](scripts/content/content-schema.js) is
+[`scripts/generator/content-schema.js`](scripts/generator/content-schema.js) is
 the guide to writing that input — the pipeline, every field, every block
 type, every figure rule — and enforces it in the same place: the build
 validates every file before rendering anything, and a key that isn't in the

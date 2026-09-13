@@ -559,6 +559,6 @@ export function validateContent({
     .join("\n\n");
 
   throw new ContentError(
-    `${problems.length} problem${problems.length === 1 ? "" : "s"} in content/ — see scripts/content/content-schema.js for the spec\n\n${detail}`,
+    `${problems.length} problem${problems.length === 1 ? "" : "s"} in content/ — see scripts/generator/content-schema.js for the spec\n\n${detail}`,
   );
 }

@@ -84,7 +84,7 @@ function rebuildContent() {
     return;
   }
   isRebuilding = true;
-  Bun.spawn(["bun", "scripts/content/build-content.js"], {
+  Bun.spawn(["bun", "scripts/generator/build-content.js"], {
     cwd: join(import.meta.dir, ".."),
     stdout: "inherit",
     stderr: "inherit",

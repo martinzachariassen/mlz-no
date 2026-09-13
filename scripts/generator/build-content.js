@@ -12,11 +12,15 @@
  *   bun run build:content    write the generated files, remove leftovers
  *   bun run check:content    fail if what's on disk differs (used by CI)
  *
- * This file owns the filesystem and nothing else:
+ * This file owns the filesystem: it reads content/, drives the renderer, and
+ * writes or compares the result. The rest of the generator is beside it:
  *
  *   content-schema.js   the spec every file under content/ is checked against
  *   render.js           content in, finished page strings out — no fs
  *   html.js             the template engine those renderers are written with
+ *   tokens.js           the palette, parsed out of public/css/tokens.css
+ *   check-links.js      every link the output emits resolves to a real file
+ *   paths.js            content/ and public/, resolved once
  *
  * Everything read from content/ is checked against the spec before a single
  * page is rendered, so the renderers can assume the shape they were written
@@ -32,15 +36,11 @@ import {
   writeFileSync,
 } from "node:fs";
 import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { checkAssetLinks } from "./check-links.js";
 import { ContentError, validateContent } from "./content-schema.js";
+import { contentDir, publicDir, rel } from "./paths.js";
 import { createRenderer } from "./render.js";
-
-const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
-const contentDir = join(root, "content");
-export const publicDir = join(root, "public");
-
-const rel = (path) => path.slice(root.length + 1);
+import { readTokens } from "./tokens.js";
 
 const readJson = (path) => {
   try {
@@ -49,76 +49,6 @@ const readJson = (path) => {
     throw new ContentError(`${rel(path)}: ${error.message}`);
   }
 };
-
-/* ---------------------------------------------------------------- palette */
-
-/**
- * Figures use `{{camelCaseToken}}` placeholders naming a colour; this maps
- * each one to the `--kebab-case` custom property it reads from
- * public/css/tokens.css. Kept as an explicit table (rather than mechanically
- * deriving the name) so a figure's token names stay meaningful on their own
- * — "warm" reads better than "glitch2" to someone drawing a diagram, even
- * though the colour is also used for the hero's glitch effect.
- */
-const TOKEN_ALIASES = {
-  bg: "bg",
-  surface: "surface",
-  sunken: "sunken",
-  fg: "fg",
-  "fg-secondary": "fgSecondary",
-  "fg-muted": "muted",
-  border: "border",
-  accent: "accent",
-  "accent-deep": "accentDeep",
-  "glitch-2": "warm",
-};
-
-/**
- * Parses the `:root` and `[data-theme="dark"]` custom properties straight
- * out of public/css/tokens.css, so the figures (which can't see the page's
- * own CSS — see render.js's figureAssets) are always painted with the same
- * colours as the page itself, instead of a hand-maintained copy that can
- * drift. Dark values that aren't overridden inherit from light, the same way
- * the real cascade works.
- */
-export function readTokens(path = join(publicDir, "css", "tokens.css")) {
-  // Stripped before the block regexes run: a `}` inside a comment would
-  // otherwise truncate the [^}]* capture right there.
-  const css = readFileSync(path, "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
-
-  const block = (label, pattern) => {
-    const match = css.match(pattern);
-    if (!match) throw new ContentError(`${rel(path)}: no ${label} block found`);
-    const vars = {};
-    for (const [, name, value] of match[1].matchAll(
-      /--([\w-]+):\s*([^;]+);/g,
-    )) {
-      vars[name] = value.trim();
-    }
-    return vars;
-  };
-
-  const rootVars = block(":root", /:root\s*{([^}]*)}/);
-  const darkVars = {
-    ...rootVars,
-    ...block('[data-theme="dark"]', /\[data-theme="dark"\]\s*{([^}]*)}/),
-  };
-
-  const alias = (vars) => {
-    const out = {};
-    for (const [kebab, token] of Object.entries(TOKEN_ALIASES)) {
-      if (vars[kebab] === undefined) {
-        throw new ContentError(
-          `${rel(path)}: missing --${kebab} (needed for palette token "${token}")`,
-        );
-      }
-      out[token] = vars[kebab];
-    }
-    return out;
-  };
-
-  return { light: alias(rootVars), dark: alias(darkVars) };
-}
 
 /* ---------------------------------------------------------------- content */
 
@@ -267,66 +197,6 @@ function chromeFiles(renderer) {
       ),
     };
   });
-}
-
-/* ------------------------------------------------------------ asset links */
-
-/**
- * Every root-relative href/src/og:image/JSON-LD url the written pages emit
- * must resolve to a real file — either something this run writes (a figure, a
- * case study page) or something already on disk (a stylesheet, an icon).
- * This isn't a content/ check: a broken link is just as likely to come from a
- * typo in render.js's own hardcoded <head>/<script>/JSON-LD markup, which
- * content-schema.js never sees, as from content/site.json's ogImage.
- */
-const STATIC_EXTENSION = /\.[a-z0-9]+$/i;
-const REFERENCE =
-  /\s(?:href|src)="([^"]+)"|<loc>([^<]+)<\/loc>|property="og:image"\s+content="([^"]+)"|"url":\s*"([^"]+)"/g;
-
-/**
- * @param {Set<string>} strays absolute paths findStrays() has already marked
- *   for removal — excluded from `existsSync` so a link is checked against the
- *   post-cleanup state of public/, not whatever this run hasn't deleted yet.
- */
-export function checkAssetLinks(outputs, site, strays = new Set()) {
-  /** A root-relative site path from a ref, or null if it's not this site's. */
-  const localAssetPath = (ref) => {
-    const path = ref.split("#")[0].split("?")[0];
-    if (path.startsWith(`${site.origin}/`)) {
-      return path.slice(site.origin.length);
-    }
-    // A protocol-relative URL ("//cdn.example/x.js") also starts with "/",
-    // but it names a different host, not a root-relative path on this one.
-    if (path.startsWith("/") && !path.startsWith("//")) return path;
-    return null; // external, mailto:, tel: — not something public/ can serve
-  };
-
-  /**
-   * Mirrors how `cleanUrls` in firebase.json actually resolves a path: a
-   * static asset needs the exact file, but a route like `/projects/foo` is
-   * served from either `foo.html` or `foo/index.html`, whichever exists.
-   */
-  const resolvesToFile = (path) => {
-    const target = join(publicDir, path);
-    const has = (candidate) =>
-      outputs.has(candidate) ||
-      (existsSync(candidate) && !strays.has(candidate));
-    if (STATIC_EXTENSION.test(path)) return has(target);
-    return has(`${target}.html`) || has(join(target, "index.html"));
-  };
-
-  const broken = [];
-  for (const [path, source] of outputs) {
-    if (!/\.(?:html|xml)$/.test(path)) continue;
-    for (const match of source.matchAll(REFERENCE)) {
-      const ref = match[1] ?? match[2] ?? match[3] ?? match[4];
-      const local = localAssetPath(ref);
-      if (local !== null && !resolvesToFile(local)) {
-        broken.push(`${rel(path)}: broken link to ${ref}`);
-      }
-    }
-  }
-  return broken;
 }
 
 /* ------------------------------------------------------------------ write */
