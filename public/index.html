@@ -36,16 +36,18 @@
       href="/assets/icons/apple-touch-icon.png"
     />
     <link rel="manifest" href="/assets/site.webmanifest" />
+    <!-- generated:theme-color -->
     <meta
       name="theme-color"
       media="(prefers-color-scheme: light)"
-      content="#ebeff2"
+      content="oklch(0.95 0.006 250)"
     />
     <meta
       name="theme-color"
       media="(prefers-color-scheme: dark)"
-      content="#151619"
+      content="oklch(0.2 0.006 265)"
     />
+    <!-- /generated:theme-color -->
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Martin Zachariassen" />
@@ -96,6 +98,7 @@
     ></script>
   </head>
   <body>
+    <!-- generated:topbar -->
     <header class="wrap topbar rise delay-50">
       <a href="/" aria-label="MLZ home" class="brand">
         <svg
@@ -115,12 +118,8 @@
         </svg>
         <span class="brand-word" data-glitch>mlz<span class="period">.</span></span>
       </a>
-
       <div class="topbar-right">
-        <span class="since"
-          ><span class="cursor" aria-hidden="true">▮</span
-          ><span data-glitch>Building since 2017</span></span
-        >
+        <a class="nav-link" href="/projects" data-umami-event="nav-projects" data-glitch>Projects</a>
         <button
           type="button"
           class="theme-toggle"
@@ -137,6 +136,7 @@
         </button>
       </div>
     </header>
+    <!-- /generated:topbar -->
 
     <main class="wrap hero">
       <h1 class="rise delay-150">
@@ -150,7 +150,7 @@
         <span class="glitch" data-glitch>Oslo, Norway</span>
       </p>
 
-      <nav class="links rise delay-600" aria-label="Contact links">
+      <nav class="links rise delay-550" aria-label="Contact links">
         <a class="btn" href="https://github.com/martinzachariassen" target="_blank" rel="noopener noreferrer me" data-umami-event="contact-github">
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.7.5.7 5.5.7 11.8c0 5 3.3 9.2 7.8 10.7.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.4-3.9-1.4-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1.1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.6-.3-5.3-1.3-5.3-5.8 0-1.3.4-2.3 1.2-3.1-.1-.3-.5-1.6.1-3.2 0 0 1-.3 3.3 1.2 1-.3 2-.4 3-.4s2 .1 3 .4c2.3-1.5 3.3-1.2 3.3-1.2.6 1.6.2 2.9.1 3.2.8.8 1.2 1.8 1.2 3.1 0 4.5-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6 4.6-1.5 7.8-5.8 7.8-10.7C23.3 5.5 18.3.5 12 .5z" /></svg>
           <span data-glitch>GitHub</span>
@@ -164,17 +164,27 @@
           <span data-glitch>Email</span>
         </a>
       </nav>
+
+      <a
+        class="btn btn-primary rise delay-600"
+        href="/projects"
+        data-umami-event="nav-projects-hero"
+      >
+        <span data-glitch>See my projects</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+      </a>
     </main>
 
+    <!-- generated:footer -->
     <footer class="rise delay-750">
       <div class="wrap footer-row">
         <span data-glitch>© <span data-year>2026</span> · Martin Zachariassen</span>
         <span data-glitch>59°N · 10°E</span>
       </div>
     </footer>
-
     <script src="/js/theme-toggle.js" defer></script>
     <script src="/js/year.js" defer></script>
     <script src="/js/glitch.js" defer></script>
+    <!-- /generated:footer -->
   </body>
 </html>

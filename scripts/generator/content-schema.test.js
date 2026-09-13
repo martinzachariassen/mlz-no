@@ -1,0 +1,379 @@
+import { describe, expect, test } from "bun:test";
+import { ContentError, validateContent } from "./content-schema.js";
+
+/**
+ * These fixtures are the smallest input that satisfies every schema and
+ * cross-check at once. Each test mutates a copy of them to break exactly one
+ * rule, so a failure here points at the one thing that changed rather than
+ * requiring the reader to diff a whole fixture.
+ *
+ * This file exercises the hand-rolled parts of content-schema.js — the
+ * cross-file checks Zod can't express on its own (slug/filename agreement,
+ * figure references, stray files) — since those are the
+ * parts most likely to silently break under a refactor. Per-field shape
+ * (regexes, enums, `strictObject`) is Zod's own behaviour, exercised only
+ * where it interacts with those checks.
+ */
+
+const validSite = {
+  origin: "https://example.com",
+  author: "Test Author",
+  locale: "en_GB",
+  umamiWebsiteId: "12345678-1234-1234-1234-123456789012",
+  ogImage: "/og.png",
+  basePath: "/projects",
+  figureDir: "/assets/figures",
+  sitemap: {
+    home: { lastmod: "2026-01-01", changefreq: "weekly", priority: "1.0" },
+    index: { lastmod: "2026-01-01", changefreq: "weekly", priority: "0.9" },
+    project: { changefreq: "monthly", priority: "0.8" },
+  },
+  index: {
+    title: "Projects",
+    description: "Selected work.",
+    eyebrow: "Work",
+    heading: "Projects",
+    intro: "A short intro.",
+    asideTiles: [],
+  },
+  caseEnd: {
+    text: "Questions?",
+    cta: "Email me",
+    href: "mailto:hi@example.com",
+    umamiEvent: "case-contact",
+  },
+};
+
+const validProject = {
+  slug: "demo",
+  order: 1,
+  name: "Demo",
+  tagline: "A demo project.",
+  period: "2026",
+  role: "Solo developer",
+  stack: ["TypeScript"],
+  tags: ["web"],
+  status: "Live",
+  lastmod: "2026-01-01",
+  seo: { title: "Demo", description: "A demo project for tests." },
+  cover: { figure: "diagram", alt: "A diagram" },
+  summary: "What this project is.",
+  sections: [
+    {
+      label: "Overview",
+      heading: "Overview",
+      blocks: [{ type: "text", value: "Hello." }],
+    },
+  ],
+};
+
+const validFigureSource =
+  '<svg viewBox="0 0 100 100"><rect fill="{{bg}}" /></svg>';
+
+const validTokens = {
+  light: { bg: "#ffffff" },
+  dark: { bg: "#000000" },
+};
+
+/** Runs validateContent against the fixtures with the given overrides. */
+function validate({ site, project, figures, figureFiles, tokens } = {}) {
+  const resolvedFigures = figures ?? new Map([["diagram", validFigureSource]]);
+  validateContent({
+    site: site ?? validSite,
+    projects: [
+      { file: "content/projects/demo.json", data: project ?? validProject },
+    ],
+    figures: resolvedFigures,
+    figureFiles:
+      figureFiles ?? [...resolvedFigures.keys()].map((n) => `${n}.svg`),
+    tokens: tokens ?? validTokens,
+  });
+}
+
+/** The aggregated ContentError message from calling `validate(overrides)`. */
+function messageFor(overrides) {
+  try {
+    validate(overrides);
+  } catch (error) {
+    expect(error).toBeInstanceOf(ContentError);
+    return error.message;
+  }
+  throw new Error("expected validate() to throw");
+}
+
+describe("validateContent", () => {
+  test("accepts the minimal valid fixtures", () => {
+    expect(() => validate()).not.toThrow();
+  });
+
+  test("rejects an unknown top-level key", () => {
+    const message = messageFor({ project: { ...validProject, bogus: "x" } });
+    expect(message).toContain("bogus");
+  });
+
+  test("rejects an unknown block type", () => {
+    const message = messageFor({
+      project: {
+        ...validProject,
+        sections: [
+          {
+            label: "Overview",
+            heading: "Overview",
+            blocks: [{ type: "carousel", value: "nope" }],
+          },
+        ],
+      },
+    });
+    expect(message).toMatch(/type/i);
+  });
+
+  test("rejects a blank required string", () => {
+    const message = messageFor({ project: { ...validProject, tagline: "  " } });
+    expect(message).toContain("tagline");
+    expect(message).toContain("non-empty");
+  });
+
+  test("rejects a project with neither role nor team", () => {
+    const project = { ...validProject };
+    delete project.role;
+    const message = messageFor({ project });
+    expect(message).toContain("at least one of role or team");
+  });
+
+  test("accepts a project with only team set", () => {
+    const project = { ...validProject, team: "3 engineers" };
+    delete project.role;
+    expect(() => validate({ project })).not.toThrow();
+  });
+
+  /**
+   * `outcome` is the one field with bounds that are a layout fact rather than
+   * a type: the row it renders into holds four, and one number on its own is
+   * a stray fact rather than a result. Neither is visible from the JSON, so
+   * without these the failure is a page that looks wrong, not a build error.
+   */
+  describe("outcome", () => {
+    const withOutcome = (outcome) => ({ ...validProject, outcome });
+
+    test("is optional — a project can have no headline numbers", () => {
+      expect(() => validate()).not.toThrow();
+    });
+
+    test("accepts two to four numbers", () => {
+      const number = (i) => ({ value: `${i}x`, label: `Label ${i}` });
+      for (const count of [2, 3, 4]) {
+        const outcome = Array.from({ length: count }, (_, i) => number(i));
+        expect(() => validate({ project: withOutcome(outcome) })).not.toThrow();
+      }
+    });
+
+    test("rejects a single number, and five", () => {
+      const number = (i) => ({ value: `${i}x`, label: `Label ${i}` });
+      expect(messageFor({ project: withOutcome([number(1)]) })).toContain(
+        "one alone is not a result",
+      );
+      expect(
+        messageFor({
+          project: withOutcome(Array.from({ length: 5 }, (_, i) => number(i))),
+        }),
+      ).toContain("the row holds four");
+    });
+
+    test("rejects a number missing its label", () => {
+      const message = messageFor({
+        project: withOutcome([{ value: "6x" }, { value: "0", label: "Bugs" }]),
+      });
+      expect(message).toContain("outcome[0].label");
+    });
+  });
+
+  describe("slug and order", () => {
+    test("rejects a slug that doesn't match its filename", () => {
+      const message = messageFor({
+        project: { ...validProject, slug: "other" },
+      });
+      expect(message).toContain("does not match the filename");
+    });
+
+    test("rejects two projects sharing an order", () => {
+      const projects = [
+        { file: "content/projects/demo.json", data: validProject },
+        {
+          file: "content/projects/second.json",
+          data: { ...validProject, slug: "second", order: validProject.order },
+        },
+      ];
+      let message;
+      try {
+        validateContent({
+          site: validSite,
+          projects,
+          figures: new Map([["diagram", validFigureSource]]),
+          figureFiles: ["diagram.svg"],
+          tokens: validTokens,
+        });
+      } catch (error) {
+        message = error.message;
+      }
+      expect(message).toContain("order");
+      expect(message).toContain("already used by");
+    });
+  });
+
+  describe("figures", () => {
+    test("rejects a figure block referencing a file that doesn't exist", () => {
+      const message = messageFor({
+        project: { ...validProject, cover: { figure: "missing", alt: "x" } },
+      });
+      expect(message).toContain("no content/figures/missing.svg");
+    });
+
+    test("rejects a figure file nothing references", () => {
+      const message = messageFor({
+        figures: new Map([
+          ["diagram", validFigureSource],
+          ["orphan", validFigureSource],
+        ]),
+      });
+      expect(message).toContain("content/figures/orphan.svg");
+      expect(message).toContain("not referenced by any project");
+    });
+
+    test("rejects a figure without a viewBox", () => {
+      const message = messageFor({
+        figures: new Map([["diagram", '<svg><rect fill="{{bg}}" /></svg>']]),
+      });
+      expect(message).toContain("viewBox");
+    });
+
+    test("rejects an SVG using an undefined palette token", () => {
+      const message = messageFor({
+        figures: new Map([
+          [
+            "diagram",
+            '<svg viewBox="0 0 100 100"><rect fill="{{bgg}}" /></svg>',
+          ],
+        ]),
+      });
+      expect(message).toContain("unknown palette token {{bgg}}");
+    });
+
+    test("rejects a non-.svg file sitting in content/figures/", () => {
+      const message = messageFor({ figureFiles: ["diagram.svg", ".DS_Store"] });
+      expect(message).toContain("content/figures/.DS_Store");
+      expect(message).toContain("not a .svg file");
+    });
+  });
+
+  describe("analytics events", () => {
+    const asideTile = (umamiEvent) => ({
+      label: "L",
+      title: "T",
+      text: "X",
+      cta: "Go",
+      href: "https://example.com",
+      umamiEvent,
+    });
+
+    test("rejects two aside tiles sharing an umamiEvent", () => {
+      const message = messageFor({
+        site: {
+          ...validSite,
+          index: {
+            ...validSite.index,
+            asideTiles: [asideTile("dupe"), asideTile("dupe")],
+          },
+        },
+      });
+      expect(message).toContain("umamiEvent");
+      expect(message).toContain("already used by");
+    });
+
+    test("rejects an aside tile reusing a project's automatic project-<slug> event", () => {
+      const message = messageFor({
+        site: {
+          ...validSite,
+          index: {
+            ...validSite.index,
+            // validProject's slug is "demo", so its tile gets "project-demo".
+            asideTiles: [asideTile("project-demo")],
+          },
+        },
+      });
+      expect(message).toContain("umamiEvent");
+      expect(message).toContain("already used by");
+    });
+
+    test("accepts aside tiles with distinct events, alongside the project's own", () => {
+      expect(() =>
+        validate({
+          site: {
+            ...validSite,
+            index: {
+              ...validSite.index,
+              asideTiles: [asideTile("aside-one"), asideTile("aside-two")],
+            },
+          },
+        }),
+      ).not.toThrow();
+    });
+  });
+
+  describe("SEO copy length", () => {
+    test("accepts a title and description at the limit", () => {
+      expect(() =>
+        validate({
+          project: {
+            ...validProject,
+            seo: { title: "x".repeat(60), description: "x".repeat(160) },
+          },
+        }),
+      ).not.toThrow();
+    });
+
+    test("rejects a project SEO title search engines would truncate", () => {
+      const message = messageFor({
+        project: {
+          ...validProject,
+          seo: { ...validProject.seo, title: "x".repeat(61) },
+        },
+      });
+      expect(message).toContain("seo.title");
+      expect(message).toContain("truncate");
+    });
+
+    test("rejects a project SEO description search engines would truncate", () => {
+      const message = messageFor({
+        project: {
+          ...validProject,
+          seo: { ...validProject.seo, description: "x".repeat(161) },
+        },
+      });
+      expect(message).toContain("seo.description");
+      expect(message).toContain("truncate");
+    });
+
+    test("rejects an overlong index title in site.json", () => {
+      const message = messageFor({
+        site: {
+          ...validSite,
+          index: { ...validSite.index, title: "x".repeat(61) },
+        },
+      });
+      expect(message).toContain("index.title");
+    });
+  });
+
+  test("reports every problem in one error, not just the first", () => {
+    const message = messageFor({
+      site: {
+        ...validSite,
+        index: { ...validSite.index, title: "x".repeat(61) },
+      },
+      project: { ...validProject, slug: "wrong-slug" },
+    });
+    expect(message).toContain("2 problems");
+    expect(message).toContain("index.title");
+    expect(message).toContain("does not match the filename");
+  });
+});

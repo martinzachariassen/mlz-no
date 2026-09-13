@@ -25,26 +25,74 @@
 
 :root {
   --bg: oklch(0.95 0.006 250);
+  --surface: oklch(0.98 0.005 250);
+  --sunken: oklch(0.91 0.007 250);
   --fg: oklch(0.18 0.006 250);
   --fg-secondary: oklch(0.36 0.006 250);
   --fg-muted: oklch(0.49 0.01 250);
   --border: oklch(0.85 0.008 250);
+  /* Deliberately not redefined in the dark block below: at L=0.7 it already
+     reads clearly on both the light and dark --bg, and it's one of the two
+     glitch text-shadow colors (paired with --glitch-2, which does flip) —
+     flipping it too would converge both shadow layers toward the same
+     lightness in dark mode and wash out the chromatic-aberration effect. */
   --accent: oklch(0.7 0.16 285);
   --accent-deep: oklch(0.44 0.12 285);
+  /* Deliberately not redefined in the dark block below: .btn-primary's fill
+     is always var(--fg), so it's light in dark mode. This stays the deep
+     purple in both themes so it still reads against that light fill —
+     the flipped --accent-deep (light purple in dark mode) washed out on it. */
+  --accent-deep-on-fill: oklch(0.44 0.12 285);
+  /* Deliberately not redefined in the dark block below, to stay readable on
+     --accent-deep-on-fill, which is itself constant across themes. */
+  --on-accent-deep-fill: oklch(0.97 0.01 285);
   --glitch-2: oklch(0.58 0.17 40);
 
   --font-mono:
     "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
   --font-display: "Newsreader", Georgia, "Times New Roman", serif;
 
+  /* Every uppercase micro-label on a content page is this size and this
+     tracking: the eyebrow, the facts, a section's label, the code language, a
+     metric's caption, a tile's meta row, the nav links. They were eleven
+     near-identical values between 10 and 11px and 0.16em to 0.28em, which is
+     eleven ways of saying the same thing and no hierarchy at all — what
+     separates one label from another is its colour (--fg-muted for metadata,
+     --accent-deep for structure), not a difference in size nobody can see. */
+  --label-size: 11px;
+  --label-track: 0.2em;
+
+  /* One measure for every run of body copy, as a length rather than `ch`, so
+     that a caption at 12px and a paragraph at 16px still end at the same
+     pixel. Six different `ch` values is how a page ends up with six different
+     right edges. Full-width blocks — figures, code, the metrics row — are the
+     deliberate exception and take the whole column. */
+  --measure: 40rem;
+
+  /* The exception's exception. Figures and the metrics row take the whole
+     column because they are diagrams and want every pixel; a code listing is
+     text, and at full column width it was a 1024px panel around a 517px line —
+     half of it air, next to prose that stops at 640px. This is deliberately
+     wider than --measure, so a listing still reads as a full-width block and
+     scrolls sideways less often than prose wraps, and deliberately far short
+     of the column. */
+  --measure-wide: 46rem;
+
   --radius: 4px;
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  /* --ease front-loads its motion (fast start, long coast) — reads as snappy
+     at the 0.9s "rise" entrance it was built for, but felt abrupt on a hover
+     transition that also swaps a fill colour. This decelerates more evenly
+     across the whole transition instead. */
+  --ease-soft: cubic-bezier(0.16, 1, 0.3, 1);
 
   color-scheme: light;
 }
 
 [data-theme="dark"] {
   --bg: oklch(0.2 0.006 265);
+  --surface: oklch(0.25 0.006 265);
+  --sunken: oklch(0.16 0.007 265);
   --fg: oklch(0.94 0.006 265);
   --fg-secondary: oklch(0.86 0.006 265);
   --fg-muted: oklch(0.7 0.01 265);

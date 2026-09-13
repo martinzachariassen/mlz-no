@@ -38,16 +38,18 @@
       href="/assets/icons/apple-touch-icon.png"
     />
     <link rel="manifest" href="/assets/site.webmanifest" />
+    <!-- generated:theme-color -->
     <meta
       name="theme-color"
       media="(prefers-color-scheme: light)"
-      content="#ebeff2"
+      content="oklch(0.95 0.006 250)"
     />
     <meta
       name="theme-color"
       media="(prefers-color-scheme: dark)"
-      content="#151619"
+      content="oklch(0.2 0.006 265)"
     />
+    <!-- /generated:theme-color -->
 
     <link rel="stylesheet" href="/css/tokens.css" />
     <link rel="stylesheet" href="/css/base.css" />
@@ -64,6 +66,7 @@
     ></script>
   </head>
   <body>
+    <!-- generated:topbar -->
     <header class="wrap topbar rise delay-50">
       <a href="/" aria-label="MLZ home" class="brand">
         <svg
@@ -83,12 +86,8 @@
         </svg>
         <span class="brand-word" data-glitch>mlz<span class="period">.</span></span>
       </a>
-
       <div class="topbar-right">
-        <span class="since"
-          ><span class="cursor" aria-hidden="true">▮</span
-          ><span data-glitch>Building since 2017</span></span
-        >
+        <a class="nav-link" href="/projects" data-umami-event="nav-projects" data-glitch>Projects</a>
         <button
           type="button"
           class="theme-toggle"
@@ -105,6 +104,7 @@
         </button>
       </div>
     </header>
+    <!-- /generated:topbar -->
 
     <main class="wrap hero">
       <h1 class="rise delay-150">4<span class="glitch-accent">0</span>4</h1>
@@ -121,15 +121,16 @@
       </nav>
     </main>
 
+    <!-- generated:footer -->
     <footer class="rise delay-850">
       <div class="wrap footer-row">
         <span data-glitch>© <span data-year>2026</span> · Martin Zachariassen</span>
         <span data-glitch>59°N · 10°E</span>
       </div>
     </footer>
-
     <script src="/js/theme-toggle.js" defer></script>
     <script src="/js/year.js" defer></script>
     <script src="/js/glitch.js" defer></script>
+    <!-- /generated:footer -->
   </body>
 </html>

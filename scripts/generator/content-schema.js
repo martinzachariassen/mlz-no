@@ -1,0 +1,605 @@
+/**
+ * The spec for everything under content/. This is the only spec — there is
+ * no separate prose copy to keep in sync, so a comment that drifts from the
+ * schema next to it is caught in review, not carried for years unnoticed.
+ *
+ *   content/
+ *     site.json              settings and copy shared by every generated page
+ *     projects/<slug>.json   one case study, one tile on the overview grid
+ *     figures/<name>.svg     one diagram, coloured per theme at build time
+ *
+ *   bun run build:content   validate, write the generated files, drop leftovers
+ *   bun run check:content   validate, then fail if what's on disk differs
+ *   bun run dev             serve public/ through the Firebase Hosting emulator
+ *
+ * render.js renders whatever it is handed, so without this file a typo is
+ * invisible: a misspelled key is silently ignored, a block type the renderer
+ * has never heard of throws halfway through a page, and a field the generator
+ * stopped reading lives on in the JSON looking meaningful. This module is the
+ * contract instead — every key that content/ may contain is listed here,
+ * anything else is an error, and the error names the JSON path.
+ *
+ * Adding a field to the site is therefore two edits, in this order: describe
+ * it here, then render it in render.js. Removing one is the same in reverse —
+ * drop the renderer, drop the schema entry, and the next build names which
+ * content files still carry it. A new block type is three edits: a variant in
+ * the `block` union below, a renderer in render.js's `blockRenderers`, and
+ * whatever CSS it needs in public/css/case-study.css.
+ *
+ * Adding a project, start to finish:
+ *   1. Pick the slug — the filename is the URL, and `slug` inside the file
+ *      must match it (content/projects/event-pipeline.json → /projects/event-pipeline).
+ *   2. Draw the cover figure as content/figures/<name>.svg, using {{token}}
+ *      placeholders for colour — see the palette-token check further down.
+ *   3. Write the file (a minimal one that builds is below), or copy an
+ *      existing project and replace it section by section.
+ *   4. Pick `order` — position on the overview grid, unique, and also the
+ *      previous/next order at the foot of each case study. It is the only
+ *      thing that decides how big the tile is: see scripts/generator/bento.js.
+ *   5. `bun run build:content` and fix whatever it reports.
+ *   6. `bun run dev`, then look at /projects and /projects/<slug> in both
+ *      themes.
+ *   7. Commit content/ and the generated files under public/ together.
+ *
+ *   {
+ *     "slug": "my-project", "order": 2,
+ *     "name": "My Project", "tagline": "One sentence, tile + heading.",
+ *     "period": "2024 — 2025", "stack": ["Kotlin", "PostgreSQL"],
+ *     "tags": ["Backend"], "status": "In production", "lastmod": "2026-09-12",
+ *     "seo": { "title": "My Project — Martin Zachariassen", "description": "…" },
+ *     "cover": { "figure": "my-diagram", "alt": "What the diagram shows." },
+ *     "outcome": [{ "value": "7h → 1.2s", "label": "Data freshness" }],
+ *     "summary": "A paragraph above the first section.",
+ *     "sections": [{ "label": "Problem", "heading": "…",
+ *       "blocks": [{ "type": "text", "value": "A paragraph." }] }]
+ *   }
+ *
+ * Per-field shape and type checking is Zod's job (strict objects, enums,
+ * regex-validated strings). What's hand-rolled below is only the part Zod
+ * can't express: checks that span multiple files — a project's slug matching
+ * its filename, a figure block pointing at an SVG that exists, a palette
+ * token an SVG references but public/css/tokens.css never defines.
+ */
+
+import { z } from "zod";
+
+/* --------------------------------------------------------------- formats */
+
+const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const DATE = /^\d{4}-\d{2}-\d{2}$/;
+const UUID = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/;
+const ORIGIN = /^https:\/\/[a-z0-9.-]+$/;
+const LOCALE = /^[a-z]{2}_[A-Z]{2}$/;
+const PRIORITY = /^(?:0\.\d|1\.0)$/;
+/** Root-relative, no trailing slash — these are concatenated, not joined. */
+const SITE_PATH = /^\/[a-z0-9][a-z0-9./-]*[a-z0-9]$/;
+/** Tile and link targets: off-site or a mail link, never a bare path. */
+const EXTERNAL_HREF = /^(?:https?:\/\/|mailto:)\S+$/;
+
+/**
+ * A string that isn't blank, with an optional format and a friendly hint.
+ * Every named pattern below already requires at least one character, so a
+ * pattern makes the separate blank check redundant — without this early
+ * return, a blank value fails both and reports the same field twice.
+ *
+ * `maxLength` is separate from `pattern`: it's for prose fields (an SEO
+ * title or description) that have no fixed shape but do have a length a
+ * search result truncates past, silently, with no build failure to say so.
+ */
+function str({ pattern, hint, allowEmpty = false, maxLength } = {}) {
+  let schema = z.string();
+  if (maxLength !== undefined) {
+    schema = schema.max(
+      maxLength,
+      `search engines truncate this past ${maxLength} characters — trim it`,
+    );
+  }
+  if (pattern) return schema.regex(pattern, hint);
+  if (allowEmpty) return schema;
+  return schema.refine((value) => value.trim() !== "", {
+    error: "expected a non-empty string",
+  });
+}
+
+/** content/ arrays are non-empty unless a call site says otherwise. */
+const arr = (item, { min = 1 } = {}) => z.array(item).min(min);
+
+const slug = str({
+  pattern: SLUG,
+  hint: 'expected a lowercase kebab-case slug, e.g. "event-pipeline"',
+});
+
+const date = str({
+  pattern: DATE,
+  hint: "expected a date as YYYY-MM-DD",
+});
+
+const sitePath = str({
+  pattern: SITE_PATH,
+  hint: 'expected a root-relative path with no trailing slash, e.g. "/projects"',
+});
+
+const externalHref = str({
+  pattern: EXTERNAL_HREF,
+  hint: "expected an http(s):// or mailto: link",
+});
+
+/**
+ * The shape of any reference to a figure: which SVG under content/figures/
+ * (without ".svg"), its alt text, and an optional caption. Shared by the
+ * `figure` block and a project's `cover` so a rule on one always applies to
+ * the other.
+ */
+const figureRef = z.strictObject({
+  figure: slug,
+  alt: str(),
+  caption: str().optional(),
+});
+
+/**
+ * A project's tile gets this analytics event name for free — see
+ * `asideTile`'s `umamiEvent` for the sibling case that needs one explicitly.
+ * Exported so render.js emits the exact name this spec's uniqueness check
+ * assumes, instead of the two independently hardcoding the convention.
+ */
+export const projectEventName = (projectSlug) => `project-${projectSlug}`;
+
+/**
+ * Roughly where Google truncates a result's title and snippet. Approximate
+ * (it's actually pixel width, not a character count) but close enough to
+ * catch the real failure mode: copy that reads fine in the JSON and gets
+ * cut off with an ellipsis in search results, unnoticed until someone
+ * searches for the page.
+ */
+const SEO_TITLE_MAX = 60;
+const SEO_DESCRIPTION_MAX = 160;
+
+/* ------------------------------------------------------------ site.json */
+
+const changefreq = z.enum([
+  "always",
+  "hourly",
+  "daily",
+  "weekly",
+  "monthly",
+  "yearly",
+]);
+
+const priority = str({
+  pattern: PRIORITY,
+  hint: 'expected a priority from "0.0" to "1.0", one decimal',
+});
+
+/**
+ * A non-project card on the overview grid — off-site by construction, so
+ * `href` must be http(s):// or mailto:, and it always renders with a ↗.
+ * `target="_blank" rel="noopener noreferrer"` is added only for http(s)
+ * hrefs — a `mailto:` opens the user's mail client in place, not a new tab.
+ * `umamiEvent` is the analytics event name; project tiles don't need one,
+ * they get `project-<slug>` automatically.
+ */
+const asideTile = z.strictObject({
+  label: str(),
+  title: str(),
+  text: str(),
+  cta: str(),
+  href: externalHref,
+  umamiEvent: slug,
+});
+
+/**
+ * The line at the foot of every case study — the one thing to do after
+ * finishing one that isn't reading another one.
+ *
+ * A case study used to end in the previous/next row and nothing else: a reader
+ * who had just spent six minutes being convinced had exactly one move
+ * available, which was to start over on a different project. The contact
+ * details live on the home page, four sections and a scroll away from the
+ * moment they matter.
+ *
+ * Same field names as `asideTile` on purpose — `text` is the prompt, `cta` the
+ * link's own words — minus the two a single line has no room for.
+ */
+const contactPrompt = z.strictObject({
+  text: str(),
+  cta: str(),
+  href: externalHref,
+  umamiEvent: slug,
+});
+
+/**
+ * content/site.json — settings and copy shared by every generated page. One
+ * object, no optional keys.
+ *
+ * `origin`/`author`/`locale`/`umamiWebsiteId`/`ogImage` feed identity and
+ * analytics (og:site_name, JSON-LD author, the analytics script tag).
+ * `basePath` and `figureDir` are root-relative with no trailing slash
+ * because they're concatenated rather than joined (the projects index lives
+ * at `basePath`, each project at `<basePath>/<slug>`; themed SVGs are
+ * written under `figureDir`). `index` is the copy on the overview page:
+ * `title`/`description` go to <head> and JSON-LD, `eyebrow`/`heading`/
+ * `intro` are the page copy, `asideTiles` may be `[]`. `caseEnd` is the line
+ * under every case study's previous/next row.
+ */
+export const siteSchema = z.strictObject({
+  origin: str({
+    pattern: ORIGIN,
+    hint: 'expected an origin like "https://mlz.no", with no trailing slash',
+  }),
+  author: str(),
+  locale: str({ pattern: LOCALE, hint: 'expected a locale like "en_GB"' }),
+  umamiWebsiteId: str({ pattern: UUID, hint: "expected a UUID" }),
+  ogImage: sitePath,
+  basePath: sitePath,
+  figureDir: sitePath,
+  // lastmod is content, not a clock reading: the sitemap is committed, so a
+  // build-time `new Date()` would make every day's output differ from the
+  // checked-in copy and fail check:content. Projects carry their own.
+  sitemap: z.strictObject({
+    home: z.strictObject({ lastmod: date, changefreq, priority }),
+    index: z.strictObject({ lastmod: date, changefreq, priority }),
+    project: z.strictObject({ changefreq, priority }),
+  }),
+  index: z.strictObject({
+    title: str({ maxLength: SEO_TITLE_MAX }),
+    description: str({ maxLength: SEO_DESCRIPTION_MAX }),
+    eyebrow: str(),
+    heading: str(),
+    intro: str(),
+    asideTiles: arr(asideTile, { min: 0 }),
+  }),
+  caseEnd: contactPrompt,
+});
+
+/* --------------------------------------------------- content/projects/*.json */
+
+/**
+ * The body of a section. Seven types, one renderer each in render.js's
+ * `blockRenderers`, and no way to reach a type the renderer doesn't
+ * implement. Nothing in a block is parsed as Markdown or HTML — every value
+ * is escaped and rendered as text, so `<`, `&` and quotes are safe to type
+ * and a `**bold**` shows up as literal asterisks.
+ *
+ *   text     one paragraph — the block you'll use most
+ *   list     `items`, optional `title`, `kind` "bulleted" (default) or "numbered"
+ *   figure   `figure` is the filename under content/figures/ without ".svg"
+ *   code     `language` is a label only, no syntax highlighting; `lines` is
+ *            one string per line, "" for a blank line inside the snippet
+ *   metrics  a row of `{ value, label }` — value is the big number. For the
+ *            numbers a case study is *about*, use the project's `outcome`
+ *            instead: it renders the same row at the top of the page, where a
+ *            reader who never scrolls to the Result section still sees it.
+ *            This block is for numbers that belong to a section's argument.
+ *   quote    a pull quote, optional `attribution`
+ *   note     an aside set apart from the prose, optional `title`
+ */
+const block = z.discriminatedUnion("type", [
+  z.strictObject({
+    type: z.literal("text"),
+    value: str(),
+  }),
+
+  z.strictObject({
+    type: z.literal("list"),
+    title: str().optional(),
+    kind: z.enum(["bulleted", "numbered"]).optional(),
+    items: arr(str()),
+  }),
+
+  z.strictObject({
+    type: z.literal("figure"),
+    ...figureRef.shape,
+  }),
+
+  z.strictObject({
+    type: z.literal("code"),
+    language: str(),
+    caption: str().optional(),
+    // Blank lines are meaningful inside a snippet, so "" is allowed here.
+    lines: arr(str({ allowEmpty: true })),
+  }),
+
+  z.strictObject({
+    type: z.literal("metrics"),
+    items: arr(z.strictObject({ value: str(), label: str() })),
+  }),
+
+  z.strictObject({
+    type: z.literal("quote"),
+    value: str(),
+    attribution: str().optional(),
+  }),
+
+  z.strictObject({
+    type: z.literal("note"),
+    title: str().optional(),
+    value: str(),
+  }),
+]);
+
+/**
+ * content/projects/<slug>.json — one case study, one tile on the overview
+ * grid. `slug` must match the filename (the URL) and `order` must be unique
+ * (position on the grid, and the previous/next order at the foot of each
+ * case study).
+ *
+ * Nothing here says how big the tile is. `order` does: bento.js gives the
+ * first project the largest tile and works down, so the grid is a ramp with
+ * the newest work at the top left. A tile that ends up small drops its cover
+ * figure — there is no width at which one of these diagrams reads as a
+ * thumbnail — which is why every project needs copy that stands on its own.
+ *
+ * What ends up where:
+ *   tile         cover, period, name, tagline, stack — and `status`, but only
+ *                when it isn't the status most projects share, since a badge
+ *                every tile carries says nothing (see render.js)
+ *   case study   eyebrow (period + how long the page takes to read), name,
+ *                tagline, then a brief of role/team/status/stack, the
+ *                `outcome` numbers and an index of the sections; then the
+ *                summary, the cover figure, the sections, and the tags
+ *   <head>       seo.title, seo.description
+ *   sitemap      lastmod
+ */
+export const projectSchema = z
+  .strictObject({
+    slug,
+    order: z.number().int().min(1),
+    name: str(),
+    tagline: str(),
+    period: str(),
+    role: str().optional(),
+    team: str().optional(),
+    stack: arr(str()),
+    tags: arr(str()),
+    status: str(),
+    lastmod: date,
+    seo: z.strictObject({
+      title: str({ maxLength: SEO_TITLE_MAX }),
+      description: str({ maxLength: SEO_DESCRIPTION_MAX }),
+    }),
+    cover: figureRef,
+    // The two to four numbers the project is judged on, rendered in the brief
+    // at the top of the case study. Two is the minimum because one number on
+    // its own reads as a stray fact rather than a result, and four is the
+    // maximum because that is what the row holds before it wraps into a
+    // second line of the same numbers at half the weight.
+    outcome: z
+      .array(z.strictObject({ value: str(), label: str() }))
+      .min(2, "expected at least two numbers — one alone is not a result")
+      .max(4, "expected at most four numbers — the row holds four")
+      .optional(),
+    summary: str(),
+    sections: arr(
+      z.strictObject({
+        label: str(),
+        heading: str(),
+        blocks: arr(block),
+      }),
+    ),
+  })
+  // The case study's facts list always shows role/team/status/stack — see
+  // this schema's own doc comment. Without at least one of role/team, that
+  // list silently shrinks to two rows with no signal anything is missing.
+  .refine((data) => data.role !== undefined || data.team !== undefined, {
+    error:
+      "expected at least one of role or team — the case study's facts list needs one",
+    path: ["role"],
+  });
+
+/* ---------------------------------------------------------- cross-checks */
+
+const quote = (value) => JSON.stringify(value);
+
+/** Collect every figure name a project points at. */
+function figureRefs(project) {
+  const refs = [[project.cover?.figure, "cover.figure"]];
+  project.sections?.forEach((section, s) => {
+    section.blocks?.forEach((entry, b) => {
+      if (entry?.type === "figure") {
+        refs.push([entry.figure, `sections[${s}].blocks[${b}].figure`]);
+      }
+    });
+  });
+  return refs.filter(([name]) => typeof name === "string");
+}
+
+/**
+ * Checks that span files: references that must resolve, values that must be
+ * unique, and output that would be generated but never used.
+ */
+function crossCheck(
+  { site, projects, figures, figureFiles, tokens },
+  problems,
+) {
+  const add = (file, message) => problems.push({ file, message });
+
+  // content/figures/ is read as a directory, so anything an editor or the OS
+  // drops in there (a stray .DS_Store, a half-renamed .svg.bak) is otherwise
+  // just silently skipped rather than flagged — the same way an unreferenced
+  // .svg is flagged below, not ignored.
+  for (const name of figureFiles) {
+    if (!name.endsWith(".svg")) {
+      add(
+        `content/figures/${name}`,
+        "not a .svg file — content/figures/ holds only figure sources",
+      );
+    }
+  }
+
+  const knownTokens = new Set(Object.keys(tokens?.light ?? {}));
+  const referenced = new Set();
+
+  for (const [name, source] of figures) {
+    const file = `content/figures/${name}.svg`;
+    if (!/viewBox="0 0 \d+ \d+"/.test(source)) {
+      add(
+        file,
+        'needs a viewBox="0 0 W H" to size the <img> it is loaded into',
+      );
+    }
+    const used = new Set(
+      [...source.matchAll(/\{\{(\w+)\}\}/g)].map(([, token]) => token),
+    );
+    for (const token of used) {
+      if (!knownTokens.has(token)) {
+        add(file, `unknown palette token {{${token}}}`);
+      }
+    }
+  }
+
+  const seen = { slug: new Map(), order: new Map() };
+  for (const { file, data } of projects) {
+    const expected = file.replace(/^.*\//, "").replace(/\.json$/, "");
+    if (typeof data.slug === "string" && data.slug !== expected) {
+      add(
+        file,
+        `slug: ${quote(data.slug)} does not match the filename — the page is written to /projects/${expected}`,
+      );
+    }
+
+    for (const key of ["slug", "order"]) {
+      const value = data[key];
+      if (value === undefined) continue;
+      const owner = seen[key].get(value);
+      if (owner) {
+        add(file, `${key}: ${quote(value)} is already used by ${owner}`);
+      } else {
+        seen[key].set(value, file);
+      }
+    }
+
+    for (const [name, path] of figureRefs(data)) {
+      referenced.add(name);
+      if (!figures.has(name)) {
+        add(file, `${path}: no content/figures/${name}.svg`);
+      }
+    }
+  }
+
+  // Every figure is rendered to a -light and a -dark file under public/, so an
+  // unreferenced one is two committed files nothing links to.
+  for (const name of figures.keys()) {
+    if (!referenced.has(name)) {
+      add(`content/figures/${name}.svg`, "not referenced by any project");
+    }
+  }
+
+  // A project's tile gets `project-<slug>` for free; an aside tile's
+  // `umamiEvent` shares that same namespace. Two tiles reusing a name, or a
+  // tile reusing a project's, doesn't fail the build — it just merges two
+  // different things into one count in Umami, silently.
+  const events = new Map();
+  const recordEvent = (name, file, path) => {
+    if (typeof name !== "string") return;
+    const owner = events.get(name);
+    if (owner) {
+      add(
+        file,
+        `${path}: umamiEvent ${quote(name)} is already used by ${owner}`,
+      );
+    } else {
+      events.set(name, `${file}: ${path}`);
+    }
+  };
+  for (const { file, data } of projects) {
+    if (typeof data.slug === "string") {
+      recordEvent(projectEventName(data.slug), file, "slug");
+    }
+  }
+  site?.index?.asideTiles?.forEach((tile, i) => {
+    recordEvent(
+      tile?.umamiEvent,
+      "content/site.json",
+      `index.asideTiles[${i}].umamiEvent`,
+    );
+  });
+  recordEvent(
+    site?.caseEnd?.umamiEvent,
+    "content/site.json",
+    "caseEnd.umamiEvent",
+  );
+}
+
+/* ------------------------------------------------------------- entry point */
+
+export class ContentError extends Error {}
+
+/** Turns a Zod issue path like ["sections", 0, "blocks"] into "sections[0].blocks". */
+function formatPath(path) {
+  return path.reduce((acc, segment) => {
+    if (typeof segment === "number") return `${acc}[${segment}]`;
+    return acc ? `${acc}.${segment}` : `${segment}`;
+  }, "");
+}
+
+/**
+ * Most issues carry their own message directly, but a few Zod issue types
+ * (a bad record key, among others) wrap the real failure in a nested
+ * `issues` array with its own path *relative to the wrapper*. Recursing
+ * finds the actual message instead of the wrapper's generic one, e.g.
+ * "Invalid key in record".
+ */
+function* flattenIssues(issues, prefix = []) {
+  for (const issue of issues) {
+    const path = [...prefix, ...issue.path];
+    if (issue.issues?.length) {
+      yield* flattenIssues(issue.issues, path);
+    } else {
+      yield { path, message: issue.message };
+    }
+  }
+}
+
+function collect(file, schema, value, problems) {
+  const result = schema.safeParse(value);
+  if (result.success) return;
+  for (const { path, message } of flattenIssues(result.error.issues)) {
+    problems.push({
+      file,
+      message: `${formatPath(path) || "(root)"}: ${message}`,
+    });
+  }
+}
+
+/**
+ * Validates everything in one pass and throws once, so a broken file reports
+ * all of its problems instead of one per run.
+ *
+ * @param {object} input
+ * @param {object} input.site         parsed content/site.json
+ * @param {{file: string, data: object}[]} input.projects
+ * @param {Map<string, string>} input.figures  name -> raw SVG source, .svg files only
+ * @param {string[]} input.figureFiles every filename in content/figures/, unfiltered
+ * @param {{light: object, dark: object}} input.tokens palette tokens parsed from public/css/tokens.css
+ */
+export function validateContent({
+  site,
+  projects,
+  figures,
+  figureFiles,
+  tokens,
+}) {
+  const problems = [];
+
+  collect("content/site.json", siteSchema, site, problems);
+  for (const { file, data } of projects) {
+    collect(file, projectSchema, data, problems);
+  }
+  crossCheck({ site, projects, figures, figureFiles, tokens }, problems);
+
+  if (!problems.length) return;
+
+  const byFile = new Map();
+  for (const { file, message } of problems) {
+    byFile.set(file, [...(byFile.get(file) ?? []), message]);
+  }
+  const detail = [...byFile]
+    .map(([file, messages]) =>
+      [file, ...messages.map((message) => `  ${message}`)].join("\n"),
+    )
+    .join("\n\n");
+
+  throw new ContentError(
+    `${problems.length} problem${problems.length === 1 ? "" : "s"} in content/ — see scripts/generator/content-schema.js for the spec\n\n${detail}`,
+  );
+}

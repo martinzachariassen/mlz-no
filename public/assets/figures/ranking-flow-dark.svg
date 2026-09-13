@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1300 460" width="1300" height="460" role="img">
+  <rect width="1300" height="460" fill="oklch(0.2 0.006 265)" />
+
+  <defs>
+    <marker id="arrow-rf" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="oklch(0.7 0.01 265)" />
+    </marker>
+  </defs>
+
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">
+    <text x="52" y="72" font-size="22" letter-spacing="3" fill="oklch(0.94 0.006 265)">RANKING REQUEST FLOW</text>
+    <text x="1248" y="72" font-size="14" letter-spacing="2" fill="oklch(0.7 0.01 265)" text-anchor="end">CONFIG-DRIVEN &#183; NO DEPLOY</text>
+    <line x1="52" y1="94" x2="1248" y2="94" stroke="oklch(0.31 0.008 265)" stroke-width="2" />
+
+    <rect x="52" y="170" width="280" height="120" rx="10" fill="oklch(0.25 0.006 265)" stroke="oklch(0.31 0.008 265)" stroke-width="2" />
+    <text x="192" y="222" font-size="24" fill="oklch(0.94 0.006 265)" text-anchor="middle">search</text>
+    <text x="192" y="252" font-size="24" fill="oklch(0.94 0.006 265)" text-anchor="middle">request</text>
+
+    <path d="M332 230 L420 230" stroke="oklch(0.7 0.01 265)" stroke-width="3" marker-end="url(#arrow-rf)" />
+
+    <rect x="420" y="150" width="360" height="160" rx="10" fill="oklch(0.25 0.006 265)" stroke="oklch(0.74 0.16 285)" stroke-width="2.5" />
+    <text x="600" y="200" font-size="23" fill="oklch(0.94 0.006 265)" text-anchor="middle">score (config v41)</text>
+    <line x1="452" y1="222" x2="748" y2="222" stroke="oklch(0.31 0.008 265)" stroke-width="1.5" />
+    <text x="600" y="260" font-size="17" fill="oklch(0.7 0.01 265)" text-anchor="middle">published, not deployed</text>
+    <text x="600" y="286" font-size="17" fill="oklch(0.74 0.16 285)" text-anchor="middle">variant B &#183; 50% traffic</text>
+
+    <path d="M780 230 L868 230" stroke="oklch(0.7 0.01 265)" stroke-width="3" marker-end="url(#arrow-rf)" />
+
+    <rect x="868" y="170" width="380" height="120" rx="10" fill="oklch(0.25 0.006 265)" stroke="oklch(0.31 0.008 265)" stroke-width="2" />
+    <text x="1058" y="222" font-size="24" fill="oklch(0.94 0.006 265)" text-anchor="middle">ranked</text>
+    <text x="1058" y="252" font-size="24" fill="oklch(0.94 0.006 265)" text-anchor="middle">results</text>
+
+    <text x="52" y="404" font-size="16" fill="oklch(0.86 0.006 265)">a ranking change is a config publish, attributable and reversible &#8212; not a release.</text>
+  </g>
+</svg>

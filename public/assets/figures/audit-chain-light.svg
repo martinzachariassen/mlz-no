@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" role="img">
+  <rect width="1000" height="640" fill="oklch(0.95 0.006 250)" />
+
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">
+    <text x="48" y="72" font-size="24" letter-spacing="3" fill="oklch(0.18 0.006 250)">AUDIT CHAIN</text>
+    <line x1="48" y1="94" x2="952" y2="94" stroke="oklch(0.85 0.008 250)" stroke-width="2" />
+
+    <g>
+      <rect x="48" y="132" width="904" height="96" rx="10" fill="oklch(0.98 0.005 250)" stroke="oklch(0.85 0.008 250)" stroke-width="2" />
+      <text x="76" y="172" font-size="19" fill="oklch(0.36 0.006 250)">policy.update</text>
+      <text x="76" y="202" font-size="15" fill="oklch(0.49 0.01 250)">prev 0000000 &#183; self 4f1ac92 &#183; 11:02:14</text>
+      <text x="924" y="186" font-size="15" fill="oklch(0.49 0.01 250)" text-anchor="end">#1201</text>
+    </g>
+    <path d="M500 228 L500 264" stroke="oklch(0.85 0.008 250)" stroke-width="2" />
+
+    <g>
+      <rect x="48" y="264" width="904" height="96" rx="10" fill="oklch(0.98 0.005 250)" stroke="oklch(0.85 0.008 250)" stroke-width="2" />
+      <text x="76" y="304" font-size="19" fill="oklch(0.36 0.006 250)">grant.revoke</text>
+      <text x="76" y="334" font-size="15" fill="oklch(0.49 0.01 250)">prev 4f1ac92 &#183; self 9c07be1 &#183; 11:06:48</text>
+      <text x="924" y="318" font-size="15" fill="oklch(0.49 0.01 250)" text-anchor="end">#1202</text>
+    </g>
+    <path d="M500 360 L500 396" stroke="oklch(0.85 0.008 250)" stroke-width="2" />
+
+    <g>
+      <rect x="48" y="396" width="904" height="96" rx="10" fill="oklch(0.98 0.005 250)" stroke="oklch(0.85 0.008 250)" stroke-width="2" />
+      <text x="76" y="436" font-size="19" fill="oklch(0.36 0.006 250)">export.request</text>
+      <text x="76" y="466" font-size="15" fill="oklch(0.49 0.01 250)">prev 9c07be1 &#183; self 2ad5330 &#183; 11:14:02</text>
+      <text x="924" y="450" font-size="15" fill="oklch(0.49 0.01 250)" text-anchor="end">#1203</text>
+    </g>
+    <path d="M500 492 L500 528" stroke="oklch(0.44 0.12 285)" stroke-width="2" />
+
+    <g>
+      <rect x="48" y="528" width="904" height="96" rx="10" fill="oklch(0.98 0.005 250)" stroke="oklch(0.44 0.12 285)" stroke-width="2.5" />
+      <text x="76" y="568" font-size="19" fill="oklch(0.18 0.006 250)">seal.daily</text>
+      <text x="76" y="598" font-size="15" fill="oklch(0.44 0.12 285)">prev 2ad5330 &#183; anchored &#183; 12:00:00</text>
+      <text x="924" y="582" font-size="15" fill="oklch(0.49 0.01 250)" text-anchor="end">#1204</text>
+    </g>
+  </g>
+</svg>

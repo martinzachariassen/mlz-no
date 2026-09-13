@@ -1,0 +1,126 @@
+{
+  "slug": "cost-attribution",
+  "order": 8,
+  "name": "Cost Attribution",
+  "tagline": "Giving every request, job and query an owner, so an infrastructure bill stops being one number nobody can act on.",
+  "period": "2024 — 2025",
+  "role": "Backend developer",
+  "team": "2 engineers",
+  "stack": ["Kotlin", "ClickHouse", "Terraform"],
+  "tags": ["FinOps", "Observability", "Platform"],
+  "status": "In production",
+  "lastmod": "2026-09-13",
+  "seo": {
+    "title": "Cost Attribution — Martin Zachariassen",
+    "description": "Attributing infrastructure spend to the service, tenant and query that caused it — and what changed once every team could see their own line."
+  },
+  "cover": {
+    "figure": "cost-breakdown",
+    "alt": "Grouped bar chart of monthly cost per service before and after attribution: search down thirty-seven percent, ingest thirty-one, warehouse eleven, batch jobs forty-six, and observability up forty-one percent.",
+    "caption": "Four lines went down because someone could finally see them. The fifth went up on purpose."
+  },
+  "outcome": [
+    {
+      "value": "31%",
+      "label": "Total spend, twelve months"
+    },
+    {
+      "value": "98.6%",
+      "label": "Of the invoice attributed"
+    },
+    {
+      "value": "4",
+      "label": "Teams with a standing budget"
+    },
+    {
+      "value": "0",
+      "label": "Manual resource tags required"
+    }
+  ],
+  "summary": "The monthly infrastructure invoice was a single figure that went up every quarter and belonged to nobody. I built the attribution layer that maps spend back to the service, tenant and query that caused it — and the interesting part turned out not to be the savings, but which decisions teams started making once the number had their name on it.",
+  "sections": [
+    {
+      "label": "Problem",
+      "heading": "A number with no owner",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Finance had an invoice, platform had a dashboard of cluster utilisation, and neither could be turned into the other. When spend went up, the honest answer to \"why?\" was a guess, and the honest answer to \"whose?\" was nobody's. Every cost conversation therefore ended in the same place: a platform-wide efficiency push that hit the teams who were already careful."
+        },
+        {
+          "type": "list",
+          "title": "Why the usual answers did not work here",
+          "items": [
+            "Per-namespace cluster costs attributed compute, which was under a third of the bill.",
+            "The expensive things — object storage reads, warehouse scans, egress — had no namespace to attribute to.",
+            "Shared services (search, ingest) were charged to the platform, which is exactly where nobody optimises them.",
+            "Anything requiring teams to tag their own resources had already been tried twice and decayed within a quarter."
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Approach",
+      "heading": "Attribute at the call, not at the resource",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "The decision that made this tractable was to stop trying to label resources and start labelling work. Every request already carried a trace context; the attribution layer rides on it. A service that calls search does not have to know what search costs — it has to propagate the context it already has, and the cost lands on the caller."
+        },
+        {
+          "type": "text",
+          "value": "That turns attribution into a join rather than a taxonomy. Usage records carry the originating service, tenant and operation; a nightly job prices them against the actual invoice, so the attributed total reconciles to the real bill rather than to a model of it."
+        },
+        {
+          "type": "code",
+          "language": "Kotlin",
+          "caption": "Cost context rides on the call, not on the resource. A team that never touches this file still gets an accurate line.",
+          "lines": [
+            "suspend fun <T> attributed(op: String, body: suspend () -> T): T {",
+            "    val origin = CostContext.current()   // propagated with the trace",
+            "    val started = clock.now()",
+            "",
+            "    return try {",
+            "        body()",
+            "    } finally {",
+            "        usage.record(",
+            "            service = origin.service,",
+            "            tenant  = origin.tenant,",
+            "            op      = op,",
+            "            nanos   = clock.now() - started,",
+            "        )",
+            "    }",
+            "}"
+          ]
+        },
+        {
+          "type": "note",
+          "title": "Reconcile to the invoice, always",
+          "value": "An attribution model that does not add up to the bill gets argued with instead of acted on. Pricing usage against the real invoice each night means the columns sum to the number finance already has, and the conversation skips straight past whether the data is right."
+        }
+      ]
+    },
+    {
+      "label": "Result",
+      "heading": "Four lines went down; one went up on purpose",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "The observability line went up by forty-one percent, and that was the correct outcome: it was the bill for being able to see the other four. Nobody had objected to it before, because nobody had been able to put a number on what it bought."
+        },
+        {
+          "type": "text",
+          "value": "The savings are real but they are not the point. What changed is that a team proposing a feature can now see what it will cost to run before they build it, and twice that year a design got simpler because of it. That is a cheaper kind of saving than the one you get by going back and optimising afterwards."
+        },
+        {
+          "type": "list",
+          "title": "What I would do differently",
+          "items": [
+            "Ship the per-team view before the platform-wide one. The first dashboard was aimed at the people who already cared, and the people whose behaviour mattered did not see it for two months.",
+            "Price in something other than currency for the internal view. A team reads \"18% of ingest\" and acts; the same team reads a euro figure and escalates it to their manager instead."
+          ]
+        }
+      ]
+    }
+  ]
+}

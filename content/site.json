@@ -1,0 +1,39 @@
+{
+  "origin": "https://mlz.no",
+  "author": "Martin Zachariassen",
+  "locale": "en_GB",
+  "umamiWebsiteId": "e73d093f-ea9e-4839-8c5f-3dd4888a3c36",
+  "ogImage": "/assets/social/og.png",
+  "basePath": "/projects",
+  "figureDir": "/assets/figures",
+  "sitemap": {
+    "home": {
+      "lastmod": "2026-07-26",
+      "changefreq": "monthly",
+      "priority": "1.0"
+    },
+    "index": {
+      "lastmod": "2026-09-12",
+      "changefreq": "monthly",
+      "priority": "0.8"
+    },
+    "project": {
+      "changefreq": "yearly",
+      "priority": "0.6"
+    }
+  },
+  "index": {
+    "title": "Projects — Martin Zachariassen",
+    "description": "Selected work by Martin Zachariassen: backend systems, distributed architecture, data pipelines and the infrastructure around them.",
+    "eyebrow": "Selected work",
+    "heading": "Projects",
+    "intro": "Backend systems and the infrastructure around them. Each entry is a short case study — what the problem actually was, what I chose to build, and what changed once it shipped.",
+    "asideTiles": []
+  },
+  "caseEnd": {
+    "text": "Questions about any of this, or the parts that didn't fit on the page?",
+    "cta": "Email me",
+    "href": "mailto:hi@mlz.no",
+    "umamiEvent": "case-contact"
+  }
+}

@@ -1,0 +1,908 @@
+/* Case study page: the brief at the top (facts, outcome, section index), the
+   Problem/Approach/Result fields and their content blocks, and the
+   previous/next cards. The cards reuse the border and offset-shadow language
+   of .b-tile in bento.css on purpose — they are grid tiles, not a footer
+   navigation row.
+
+   One column, one left edge. An earlier version put each section's label in a
+   150px rail beside the content, which gave the page two left edges — the
+   title, summary and figures on one, everything inside a section on another —
+   and left a near-empty column down the side of a short case study. The label
+   sits above its heading at every width now.
+
+   The section index is the one thing that does sit beside the column, and only
+   from 1080px up, where it moves into the right-hand margin and sticks. That
+   margin was already empty — prose stops at --measure and the column runs on
+   for another 384px — so the rail costs the reader nothing and buys back the
+   one thing a 7000px page in a single column cannot give them: somewhere to
+   be. It is still the same list of anchors it is at phone width. No
+   scroll-spy, no sticky bar: nothing here can end up describing a position the
+   reader is not at.
+
+   The other edge is --measure (tokens.css): every run of body copy ends at the
+   same pixel whatever size it is set in, and figures and the metrics row take
+   the full column as the deliberate exception — code stops at --measure-wide,
+   for the reason written down beside that token. */
+
+/* --------------------------------------------------------------- progress */
+
+/* How much of this is left, for a page that can run to 7000px. The element is
+   empty and the whole behaviour is one scroll-driven animation, so there is no
+   script, no scroll listener and nothing to fall out of step with the page.
+
+   Hidden by default and shown only inside @supports: without scroll-driven
+   animations the bar would sit there permanently full, announcing that the
+   reader has finished a page they have not started.
+
+   The reduced-motion guard is not politeness, it is necessary — base.css
+   collapses every animation-duration to 0.01ms !important under that
+   preference, which for a scroll-linked animation means jumping straight to
+   the end rather than slowing anything down. */
+.read-progress {
+  display: none;
+}
+
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .read-progress {
+      display: block;
+      position: fixed;
+      inset-block-start: 0;
+      inset-inline: 0;
+      z-index: 10;
+      height: 2px;
+      background: var(--accent-deep);
+      transform: scaleX(0);
+      transform-origin: 0 50%;
+      animation: read-progress linear both;
+      animation-timeline: scroll(root block);
+    }
+
+    @keyframes read-progress {
+      from {
+        transform: scaleX(0);
+      }
+      to {
+        transform: scaleX(1);
+      }
+    }
+  }
+}
+
+/* ------------------------------------------------------------------ brief */
+
+/* Facts and the outcome numbers: what this was and what came of it, before the
+   prose starts. */
+.case-brief {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(22px, 3.5vw, 32px);
+  padding-bottom: clamp(28px, 5vw, 44px);
+}
+
+/* A wrapping row rather than a four-column grid. `role` and `team` are both
+   optional, so this is a list of three facts as often as four, and in four
+   fixed columns three of them were spread across the width of four with the
+   last quarter empty — a row that looks like somebody forgot to fill it in.
+   Packed left at their own widths, three facts look like three facts. */
+.case-facts {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px 32px;
+}
+
+.fact {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  /* Two to a row on a phone, sharing the width evenly — a fact on a line of
+     its own next to one that shares is the layout of an accident. Short
+     enough that a long stack wraps instead of taking the whole row. */
+  flex: 1 1 8rem;
+  max-width: 15rem;
+}
+
+@media (min-width: 720px) {
+  .case-facts {
+    column-gap: 48px;
+  }
+
+  /* Where there is room for all of them, each takes its own width instead:
+     with `grow`, three facts stretched to fill the width of four and the row
+     read as one somebody had forgotten to finish. */
+  .fact {
+    flex: 0 1 auto;
+  }
+}
+
+.fact dt {
+  font-size: var(--label-size);
+  letter-spacing: var(--label-track);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.fact dd {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Four sections is more than a reader can hold while scrolling 7000 pixels of
+   one column. Anchors only — there is no scroll-spy and no sticky bar, so
+   nothing here can drift out of step with the page.
+
+   A row under the brief at narrow widths; the media query at the foot of this
+   section turns the same markup into the sticky rail. */
+.case-index {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px 20px;
+  padding-bottom: clamp(28px, 5vw, 44px);
+}
+
+.case-index-label {
+  font-size: var(--label-size);
+  letter-spacing: var(--label-track);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.case-index a {
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--label-size);
+  letter-spacing: var(--label-track);
+  text-transform: uppercase;
+  color: var(--fg);
+  text-decoration: none;
+  transition:
+    color 0.2s var(--ease-soft),
+    border-color 0.2s var(--ease-soft);
+}
+
+.case-index a:hover,
+.case-index a:focus-visible {
+  color: var(--accent-deep);
+  border-bottom-color: var(--accent-deep);
+}
+
+/* ------------------------------------------------------------- the rail */
+
+/* From 1080px the page is two columns: everything in the first, the section
+   index alone in the second, where it sticks.
+
+   The grid is on .case-page rather than .page so the projects overview — which
+   shares .page and is a full-width mosaic — keeps the whole column. Every case
+   study gets it, including the two with too few sections to carry an index at
+   all: the rail's column is empty there, but the content column is the same
+   width on all eight pages, and a figure that changes size depending on how
+   many sections a project happens to have is the kind of inconsistency nobody
+   can name and everybody notices. */
+.case-page,
+.end-nav,
+.end-more {
+  --rail: 180px;
+  --rail-gap: clamp(32px, 4vw, 56px);
+}
+
+@media (min-width: 1080px) {
+  .case-page {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--rail);
+    column-gap: var(--rail-gap);
+    /* Load-bearing: see the span on .case-index below. */
+    row-gap: 0;
+  }
+
+  .case-page > * {
+    grid-column: 1;
+  }
+
+  .case-index {
+    grid-column: 2;
+    /* Negative grid lines are counted from the end of the *explicit* grid, and
+       this grid declares no rows at all — so `1 / -1`, the obvious way to
+       write "every row", would reach no further than row 1 and leave the rail
+       sticky inside a box its own height. A span longer than any case study's
+       child count does reach the bottom. The implicit rows it creates past the
+       content are empty and therefore zero-high, which is only true while
+       row-gap stays 0 above. */
+    grid-row: 1 / span 100;
+    align-self: start;
+    /* Same as .page-head's top padding, so the rail's label starts on the
+       eyebrow's line rather than above the title, where it read as something
+       the topbar had dropped. */
+    margin-top: clamp(20px, 5vw, 44px);
+    position: sticky;
+    top: clamp(24px, 6vh, 48px);
+    flex-direction: column;
+    align-items: start;
+    gap: 12px;
+    padding-bottom: 0;
+  }
+
+  /* A rail is a list, so the label is a heading for it rather than a word in
+     front of it. */
+  .case-index-label {
+    padding-bottom: 4px;
+  }
+}
+
+.case-summary {
+  margin: 0;
+  max-width: var(--measure);
+  padding-bottom: clamp(26px, 4vw, 40px);
+  font-size: clamp(16px, 2vw, 19px);
+  line-height: 1.65;
+}
+
+/* ------------------------------------------------------------- the fields */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  padding-block: clamp(34px, 6vw, 60px);
+  border-top: 1px solid var(--border);
+  /* Landing on a section from the index should show its rule and label, not
+     start the text at the very top edge of the window. */
+  scroll-margin-top: 32px;
+}
+
+/* The section takes focus when the index sends a keyboard there — that is what
+   its tabindex="-1" is for — and an outline around a section 800px tall reads
+   as a rendering fault rather than as an answer to "where am I now". Mark the
+   label instead: same colour, same meaning, at the size of the thing that
+   actually moved. */
+.field:focus {
+  outline: none;
+}
+
+.field-label {
+  margin: 0;
+  font-size: var(--label-size);
+  letter-spacing: var(--label-track);
+  text-transform: uppercase;
+  color: var(--accent-deep);
+}
+
+/* After .field-label, not before it: the more specific selector has to come
+   second or it is the one that loses a tie it should win. */
+.field:focus-visible .field-label {
+  outline: 2px solid var(--accent-deep);
+  outline-offset: 4px;
+}
+
+.field-heading {
+  margin: 0;
+  max-width: 22ch;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  font-variation-settings: "opsz" 40;
+  font-size: clamp(26px, 4.2vw, 40px);
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+}
+
+.prose {
+  margin: 0;
+  max-width: var(--measure);
+  font-size: clamp(14px, 1.7vw, 16px);
+  line-height: 1.75;
+  color: var(--fg-secondary);
+}
+
+/* An <h3> inside a section, an <h2> over the topics — headings, because that
+   is what they do, whatever they are set in. The weight reset is the whole
+   cost of saying so: everything else about the label style already overrides
+   the user agent. */
+.block-title {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--label-size);
+  font-weight: 400;
+  letter-spacing: var(--label-track);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.prose-list {
+  margin: 0;
+  padding-left: 1.5em;
+  max-width: var(--measure);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: clamp(14px, 1.7vw, 16px);
+  line-height: 1.7;
+  color: var(--fg-secondary);
+}
+
+.prose-list li::marker {
+  color: var(--accent-deep);
+}
+
+/* Vertical rhythm as the gap between two particular neighbours rather than one
+   flat `gap`, because the distance between two things is what says whether
+   they belong together: a list and the title above it are one unit, two
+   paragraphs in a row are one argument, and a figure after a paragraph is a
+   change of subject. A single value spells all three the same way.
+
+   Last in the section on purpose. Each of these resets a `margin` the rules
+   above set to 0, so they have to out-specify them — which they do — and
+   source order that agrees with specificity is the version a reader can
+   follow without counting selectors. */
+.field > * + * {
+  margin-top: 32px;
+}
+
+.field > .field-label + .field-heading {
+  margin-top: 12px;
+}
+
+.field > .field-heading + * {
+  margin-top: 24px;
+}
+
+.field > .prose + .prose {
+  margin-top: 18px;
+}
+
+.field > .block-title + * {
+  margin-top: 10px;
+}
+
+/* ------------------------------------------------------------------ media */
+
+.figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.figure-cover {
+  padding-bottom: clamp(4px, 2vw, 12px);
+}
+
+/* These are wide diagrams. Rather than let them shrink to an illegible strip
+   on a phone, they keep a readable minimum width and the frame scrolls. */
+.shot-frame {
+  display: block;
+  overflow-x: auto;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+}
+
+@media (max-width: 760px) {
+  .shot-frame .shot {
+    min-width: 620px;
+  }
+
+  /* And say so. Cut off at the frame's edge with nothing to mark it, half a
+     diagram looks like the whole diagram — the reader has no way to know the
+     other half is there.
+
+     A fade pinned to the right edge of the scrollport, which has to be drawn
+     over the diagram rather than behind it: every figure paints its own
+     background, so the usual scroll-shadow trick — gradients on the scroll
+     container's own `background`, some `local` and some `scroll` — would sit
+     underneath the image and never be seen. Hence a flex item that takes no
+     width (44px, pulled back by the same margin, so the scrollable width is
+     unchanged), sticks to the right, and paints last.
+
+     Whether there is anything left to scroll to is the scroll timeline's job,
+     the same mechanism as the progress bar above: the fade is opaque at the
+     left end and gone by the right one. A timeline on a container that does
+     not overflow is inactive, and an inactive timeline leaves the base style
+     in force — which is why that base style is `opacity: 0`. So between 620
+     and 760px, where the diagram already fits, the hint correctly never
+     appears, without anything having to measure anything. */
+  .shot-frame {
+    display: flex;
+  }
+
+  .shot-frame::after {
+    content: "";
+    flex: none;
+    width: 44px;
+    margin-left: -44px;
+    align-self: stretch;
+    position: sticky;
+    right: 0;
+    background: linear-gradient(to left, var(--bg), transparent);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  @supports (animation-timeline: scroll()) {
+    .shot-frame::after {
+      animation: shot-more linear both;
+      animation-timeline: scroll(nearest inline);
+    }
+
+    /* base.css collapses every animation-duration to 0.01ms under this
+       preference, which for a scroll-linked animation means landing on the
+       final keyframe and staying there. Better a fade that is always on — a
+       hint one edge too eager — than no hint at all. */
+    @media (prefers-reduced-motion: reduce) {
+      .shot-frame::after {
+        opacity: 1;
+      }
+    }
+  }
+
+  @keyframes shot-more {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+}
+
+.figure figcaption {
+  max-width: var(--measure);
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--fg-muted);
+}
+
+/* The way out of the scroll container: the file on its own, at whatever size
+   the reader's screen allows. A visible link in the caption rather than the
+   image being one — see figureCaption() in render.js for why.
+
+   The light/dark swap is the images' own, from bento.css: `.shot-dark` is
+   display:none until [data-theme="dark"] turns it back on. Nothing here needs
+   restating, because a link is happy being a block. */
+.figure-open {
+  display: block;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 2px;
+  color: var(--fg-secondary);
+  text-decoration: none;
+  transition:
+    color 0.2s var(--ease-soft),
+    border-color 0.2s var(--ease-soft);
+}
+
+.figure-open:hover,
+.figure-open:focus-visible {
+  color: var(--accent-deep);
+  border-bottom-color: var(--accent-deep);
+}
+
+.figure-open-mark {
+  padding-left: 6px;
+}
+
+/* -------------------------------------------------------------- code block */
+
+.code {
+  margin: 0;
+  /* Not the whole column: see --measure-wide in tokens.css. */
+  max-width: var(--measure-wide);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: color-mix(in oklch, var(--fg) 3%, transparent);
+}
+
+.code-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 14px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--label-size);
+  line-height: 1.5;
+  color: var(--fg-muted);
+}
+
+.code-lang {
+  letter-spacing: var(--label-track);
+  text-transform: uppercase;
+  color: var(--accent-deep);
+}
+
+.code pre {
+  margin: 0;
+  padding: 16px;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.7;
+  tab-size: 2;
+}
+
+@media (min-width: 640px) {
+  .code pre {
+    padding: 20px 24px;
+    font-size: 13px;
+  }
+}
+
+/* ---------------------------------------------------------------- metrics */
+
+/* The same dl in two places: a project's `outcome` renders it inside the
+   brief, where the numbers a reader came for are in the first screen rather
+   than four sections down, and a `metrics` block renders it inside a section.
+   .case-outcome only says which — the styling is deliberately identical. */
+/* auto-fit, and the hairlines drawn by the cells rather than by the row.
+   Four fixed columns meant a project with three numbers — `outcome` allows two
+   to four — got a fourth cell with nothing in it, and because the separators
+   were the container's own background showing through a 1px gap, that empty
+   cell was a solid block of border colour a quarter of the row wide. Cells
+   that carry their own outline have nothing to show through: a count that does
+   not divide evenly leaves background, not a shape. */
+.metrics {
+  margin: 0;
+  display: grid;
+  gap: 1px;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 10px;
+  padding: 20px 18px;
+  background: var(--bg);
+  /* Each cell outlines itself; neighbours' outlines meet inside the 1px gap
+     and read as one line, and the outermost ones land under the row's border
+     and are clipped by its overflow. */
+  box-shadow: 0 0 0 1px var(--border);
+}
+
+.metric dt {
+  font-size: var(--label-size);
+  letter-spacing: var(--label-track);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.metric dd {
+  margin: 0;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  font-variation-settings: "opsz" 32;
+  font-size: clamp(24px, 3.4vw, 32px);
+  line-height: 1;
+}
+
+/* -------------------------------------------------------- quote and aside */
+
+.pull {
+  margin: 0;
+  max-width: var(--measure);
+  padding-left: clamp(16px, 3vw, 28px);
+  border-left: 2px solid var(--accent-deep);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.pull p {
+  margin: 0;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-variation-settings: "opsz" 28;
+  font-size: clamp(19px, 2.6vw, 25px);
+  line-height: 1.4;
+}
+
+.pull cite {
+  font-style: normal;
+  font-size: var(--label-size);
+  letter-spacing: var(--label-track);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.note {
+  max-width: var(--measure);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: clamp(18px, 3vw, 26px);
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius);
+}
+
+.note p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--fg-secondary);
+}
+
+/* An <h3>, like a list's title and for the same reason — hence the two resets
+   the sibling rule above already makes for the paragraphs. */
+.note .note-title {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--label-size);
+  font-weight: 400;
+  letter-spacing: var(--label-track);
+  text-transform: uppercase;
+  color: var(--accent-deep);
+}
+
+/* ----------------------------------------------------------------- topics */
+
+/* A line of text, not a row of chips. Nothing here filters anything — there
+   is no index to filter — and a bordered, uppercase pill promises a link that
+   isn't there. */
+.case-topics {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: clamp(30px, 5vw, 46px);
+  border-top: 1px solid var(--border);
+}
+
+.tag-list {
+  margin: 0;
+  padding: 0;
+  max-width: var(--measure);
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--fg-muted);
+}
+
+.tag-list li + li::before {
+  content: "·";
+  padding-inline: 8px;
+  color: var(--border);
+}
+
+/* --------------------------------------------------------- previous / next */
+
+.end-nav {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+/* These sit directly under the last thing in the column and read as a
+   continuation of it, so they end where it ends. Both live outside <main> and
+   cannot be grid items of .case-page, so they reserve the rail's width
+   themselves — on top of the gutter every .wrap already has. */
+@media (min-width: 1080px) {
+  .end-nav,
+  .end-more {
+    padding-right: calc(var(--gutter) + var(--rail) + var(--rail-gap));
+  }
+}
+
+.end-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: clamp(20px, 3vw, 28px);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--fg);
+  text-decoration: none;
+  transition:
+    transform 0.26s var(--ease),
+    box-shadow 0.26s var(--ease),
+    border-color 0.26s var(--ease);
+}
+
+.end-card:hover,
+.end-card:focus-visible {
+  border-color: var(--accent-deep);
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 0 var(--accent-deep);
+}
+
+.end-next {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.end-label {
+  font-size: var(--label-size);
+  letter-spacing: var(--label-track);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.end-title {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  font-variation-settings: "opsz" 32;
+  font-size: clamp(20px, 3vw, 27px);
+  line-height: 1.1;
+}
+
+/* What the next project actually is: a name alone is not enough to decide on,
+   and these cards are the only thing offering the decision. Three lines fits
+   every tagline the site has at both card widths, so the clamp is a ceiling
+   against a future one that runs long rather than something a reader meets —
+   which matters because a clamped line ends without a mark to say so when the
+   card is the right-aligned one. */
+.end-tagline {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--fg-secondary);
+}
+
+/* One card per row on a phone, so there is no left card to mirror: the right
+   alignment was there to put the two cards' labels at the outside edges of a
+   row, and stacked it only makes the clamped last line end in mid-air on the
+   side a reader isn't reading from. */
+@media (max-width: 559px) {
+  .end-next {
+    align-items: flex-start;
+    text-align: left;
+  }
+}
+
+/* ------------------------------------------------------------ the way out */
+
+/* The row above is a closed loop — previous, next, previous. This is the way
+   out of the series: the overview, and the one thing a convinced reader might
+   actually want to do. */
+/* margin-block, not margin: .wrap centres itself with `margin-inline: auto`
+   and a <p>'s only problem is the block margin the user agent gives it. */
+/* Two rows, by construction rather than by wrapping: the question, then the
+   two things to do about it. Left to wrap on its own the first link squeezed
+   onto the end of the question and the second dropped alone to the next line,
+   which is the layout you get when nobody decided one.
+
+   margin-block, not margin: .wrap centres itself with `margin-inline: auto`
+   and a <p>'s only problem is the block margin the user agent gives it. */
+.end-more {
+  margin-block: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: 14px;
+  padding-top: clamp(24px, 4vw, 36px);
+  padding-bottom: clamp(48px, 8vw, 88px);
+}
+
+/* Sentence case: the label style the links use is for two or three words, not
+   for a question. */
+.end-more-text {
+  max-width: var(--measure);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--fg-muted);
+}
+
+.end-more-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+}
+
+.end-more-link {
+  display: inline-flex;
+  align-items: baseline;
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--label-size);
+  letter-spacing: var(--label-track);
+  text-transform: uppercase;
+  color: var(--fg);
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    color 0.2s var(--ease-soft),
+    border-color 0.2s var(--ease-soft);
+}
+
+.end-more-link:hover,
+.end-more-link:focus-visible {
+  color: var(--accent-deep);
+  border-bottom-color: var(--accent-deep);
+}
+
+.end-more-mark {
+  padding-left: 8px;
+}
+
+/* ------------------------------------------------------------------ print */
+
+/* A case study is the thing on this site somebody prints or saves as a PDF,
+   and every piece of chrome on it is either a control that does nothing on
+   paper or a link to somewhere paper cannot go.
+
+   Light palette regardless of the reader's theme, because the alternative is
+   a page of ink. [data-theme] is on <html> and beats :root's own values, so
+   this has to out-specify it rather than restate the tokens. */
+@media print {
+  html[data-theme],
+  html {
+    --bg: #fff;
+    --surface: #fff;
+    --sunken: #fff;
+    --fg: #000;
+    --fg-secondary: #222;
+    --fg-muted: #444;
+    --border: #bbb;
+    --accent-deep: #333;
+
+    color-scheme: light;
+  }
+
+  .topbar,
+  .read-progress,
+  .case-index,
+  .end-nav,
+  .end-more,
+  footer,
+  .figure-open {
+    display: none;
+  }
+
+  /* The light figure on paper whatever the reader's theme is, to match the
+     palette forced above. bento.css owns the theme swap and loads *after* this
+     file, so an equally specific rule here would lose the tie — hence the
+     `html`, which buys the one point of specificity that settles it. */
+  .shot-dark,
+  html[data-theme="dark"] .shot-dark {
+    display: none;
+  }
+
+  html[data-theme="dark"] .shot-light {
+    display: block;
+  }
+
+  /* Nothing scrolls on paper: the frame has to show the whole diagram, and
+     the 620px floor that keeps it legible on a phone would crop it here. */
+  .shot-frame {
+    display: block;
+    overflow: visible;
+  }
+
+  .shot-frame .shot {
+    min-width: 0;
+  }
+
+  /* A section that starts two lines before a page break is worse than one
+     that starts at the top of the next. */
+  .field {
+    break-inside: auto;
+    padding-block: 24px;
+  }
+
+  .field-heading,
+  .block-title,
+  .note-title {
+    break-after: avoid;
+  }
+
+  .figure,
+  .code,
+  .metrics,
+  .pull,
+  .note {
+    break-inside: avoid;
+  }
+}

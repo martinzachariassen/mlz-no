@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 590" width="1600" height="590" role="img">
+  <rect width="1600" height="590" fill="{{bg}}" />
+
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">
+    <text x="64" y="88" font-size="24" letter-spacing="4" fill="{{fg}}">SUSTAINED THROUGHPUT</text>
+    <text x="1536" y="88" font-size="14" letter-spacing="3" fill="{{muted}}" text-anchor="end">EVENTS / SEC · P50 OVER 5 MIN</text>
+    <line x1="64" y1="112" x2="1536" y2="112" stroke="{{border}}" stroke-width="2" />
+
+    <!-- gridlines -->
+    <g stroke="{{border}}" stroke-width="1">
+      <line x1="180" y1="180" x2="1536" y2="180" />
+      <line x1="180" y1="253" x2="1536" y2="253" />
+      <line x1="180" y1="325" x2="1536" y2="325" />
+      <line x1="180" y1="398" x2="1536" y2="398" />
+    </g>
+    <line x1="180" y1="470" x2="1536" y2="470" stroke="{{muted}}" stroke-width="2" />
+
+    <!-- y axis -->
+    <g font-size="13" fill="{{muted}}" text-anchor="end">
+      <text x="156" y="185">20k</text>
+      <text x="156" y="258">15k</text>
+      <text x="156" y="330">10k</text>
+      <text x="156" y="403">5k</text>
+      <text x="156" y="475">0</text>
+    </g>
+
+    <!-- area under the new curve -->
+    <path
+      d="M760 395 L790 302 L840 279 L890 290 L940 264 L990 270 L1040 250 L1090 258 L1140 235 L1190 244 L1240 224 L1290 229 L1340 212 L1390 218 L1440 203 L1490 209 L1536 197 L1536 470 L760 470 Z"
+      fill="{{accent}}" fill-opacity="0.14" />
+
+    <!-- before cutover -->
+    <polyline
+      points="180,383 230,371 280,389 330,351 380,406 430,360 480,380 530,340 580,415 630,366 680,383 730,345 760,395"
+      fill="none" stroke="{{muted}}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" />
+
+    <!-- after cutover -->
+    <polyline
+      points="760,395 790,302 840,279 890,290 940,264 990,270 1040,250 1090,258 1140,235 1190,244 1240,224 1290,229 1340,212 1390,218 1440,203 1490,209 1536,197"
+      fill="none" stroke="{{accentDeep}}" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round" />
+
+    <!-- cutover marker -->
+    <line x1="760" y1="164" x2="760" y2="478" stroke="{{warm}}" stroke-width="2" stroke-dasharray="7 7" />
+    <circle cx="760" cy="395" r="6" fill="{{bg}}" stroke="{{warm}}" stroke-width="3" />
+    <text x="774" y="152" font-size="14" letter-spacing="3" fill="{{warm}}">CUTOVER</text>
+
+    <!-- x axis -->
+    <g font-size="13" fill="{{muted}}" text-anchor="middle">
+      <text x="180" y="500">T-6W</text>
+      <text x="470" y="500">T-3W</text>
+      <text x="760" y="500">T</text>
+      <text x="1150" y="500">+4W</text>
+      <text x="1490" y="500">+8W</text>
+    </g>
+
+    <!-- legend -->
+    <g font-size="13" letter-spacing="2" fill="{{muted}}">
+      <line x1="180" y1="546" x2="216" y2="546" stroke="{{muted}}" stroke-width="2.5" />
+      <text x="228" y="551">CRON BATCH (LEGACY)</text>
+      <line x1="512" y1="546" x2="548" y2="546" stroke="{{accentDeep}}" stroke-width="3.5" />
+      <text x="560" y="551" fill="{{accentDeep}}">STREAMING PIPELINE</text>
+    </g>
+  </g>
+</svg>

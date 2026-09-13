@@ -1,0 +1,393 @@
+/* Bento grid for /projects, plus the light/dark image swap that case-study.css
+   also relies on — which is why a case study loads this file too.
+
+   The grid is six columns and a tile occupies a rectangle of them, so tiles
+   interlock vertically as well as horizontally. Nothing here chooses a tile's
+   rectangle: scripts/generator/bento.js cuts the run of projects into bands
+   that fill the grid exactly and writes the answer out as a `b-lg-4x2`-style
+   class — columns by rows. This file turns those into spans, and reacts to how
+   big the tile turned out through `--cols` and `--rows`. */
+
+.bento {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* Every tile is full width and two rows' worth of room until a grid with
+   columns exists to say otherwise — which is also the single-column layout
+   below 720px, where every tile is a phone wide. */
+.b-tile {
+  --cols: 6;
+  --rows: 2;
+}
+
+@media (min-width: 720px) {
+  .bento {
+    gap: 16px;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    /* The row unit the shapes are counted in. `auto` as the maximum means a
+       tile whose copy needs more than the unit pushes its row taller instead
+       of clipping — the mosaic is spans, not pixels, so it survives that. */
+    grid-auto-rows: minmax(168px, auto);
+  }
+
+  .b-tile {
+    min-height: 0;
+  }
+}
+
+/* Two grids: three tiles across at desktop width, two below it, because six
+   columns split three ways at 900px is narrower than a display-face title can
+   carry. The ranges don't overlap, so neither block overrides the other. */
+@media (min-width: 720px) and (max-width: 1023.98px) {
+  .b-md-3x1 {
+    --cols: 3;
+    --rows: 1;
+    grid-column: span 3;
+    grid-row: span 1;
+  }
+  .b-md-3x2 {
+    --cols: 3;
+    --rows: 2;
+    grid-column: span 3;
+    grid-row: span 2;
+  }
+  .b-md-6x1 {
+    --cols: 6;
+    --rows: 1;
+    grid-column: span 6;
+    grid-row: span 1;
+  }
+  .b-md-6x2 {
+    --cols: 6;
+    --rows: 2;
+    grid-column: span 6;
+    grid-row: span 2;
+  }
+}
+
+@media (min-width: 1024px) {
+  .bento {
+    gap: 18px;
+    /* Deeper than the narrow grid's row, and deliberately: six columns split
+       three ways is 550px, so a one-row half would be a 3:1 slab. At 230px
+       every shape the catalogue can emit lands between 1.15:1 and 1.6:1 — and
+       the thirds, which carry no figure, stop having to fit a title, a tagline
+       and a footer into 148px. */
+    grid-auto-rows: minmax(230px, auto);
+  }
+  .b-lg-2x1 {
+    --cols: 2;
+    --rows: 1;
+    grid-column: span 2;
+    grid-row: span 1;
+  }
+  .b-lg-3x2 {
+    --cols: 3;
+    --rows: 2;
+    grid-column: span 3;
+    grid-row: span 2;
+  }
+  .b-lg-4x2 {
+    --cols: 4;
+    --rows: 2;
+    grid-column: span 4;
+    grid-row: span 2;
+  }
+  .b-lg-6x2 {
+    --cols: 6;
+    --rows: 2;
+    grid-column: span 6;
+    grid-row: span 2;
+  }
+}
+
+/* Staggered entrance as nth-child rules rather than inline styles or JS —
+   style-src is 'self' with no 'unsafe-inline'. */
+.bento > * {
+  animation: rise 0.9s var(--ease) backwards;
+}
+
+.bento > :nth-child(1) {
+  animation-delay: 0.45s;
+}
+.bento > :nth-child(2) {
+  animation-delay: 0.55s;
+}
+.bento > :nth-child(3) {
+  animation-delay: 0.65s;
+}
+.bento > :nth-child(n + 4) {
+  animation-delay: 0.75s;
+}
+
+.b-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 170px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--fg);
+  text-decoration: none;
+  overflow: hidden;
+  transition:
+    transform 0.26s var(--ease),
+    box-shadow 0.26s var(--ease),
+    border-color 0.26s var(--ease);
+}
+
+/* The off-site cards never carry a figure, so without this they read as a
+   project tile that happens to be missing its image. A filled ground says
+   "different kind of thing" without another border or a second accent. */
+.b-aside {
+  background: var(--surface);
+}
+
+.b-tile:hover,
+.b-tile:focus-visible {
+  border-color: var(--accent-deep);
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0 0 var(--accent-deep);
+}
+
+/* An SVG loaded through <img> is its own document: it cannot read the page's
+   custom properties or [data-theme]. Each figure therefore ships as two files
+   and the page picks one. display:none also takes the hidden copy out of the
+   accessibility tree, so the alt text is announced once. */
+.shot {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.shot-dark {
+  display: none;
+}
+
+[data-theme="dark"] .shot-light {
+  display: none;
+}
+
+[data-theme="dark"] .shot-dark {
+  display: block;
+}
+
+/* A band of a fixed shape rather than the figure's own. These diagrams range
+   from 1.4:1 to 2.8:1, and letting each tile take its cover's aspect ratio
+   means the bodies of two tiles beside each other start at different heights —
+   the one thing that makes a mosaic look like an accident.
+
+   The ratio is on the image, not on this box: an `aspect-ratio` here would
+   give the box a definite height that the image's own `height: 100%` could not
+   resolve against (the flex line it sits in is still content-sized), so the
+   image would keep its intrinsic height and get clipped by the band it was
+   supposed to fit inside.
+
+   `contain` means a diagram is never cropped — an edge cut off is worse than
+   air — and the air is invisible because every figure paints `{{bg}}` as its
+   own background and this band is the same colour. */
+.b-media {
+  /* The single-column layout, where the tile is a phone wide and the two
+     families of figure — the ~2.6:1 diagrams and the ~1.45:1 panels — are
+     both a long way from it. Halfway between them costs each a little air
+     and leaves neither looking like a mistake. */
+  --media-ratio: 16 / 9;
+  display: block;
+  padding: clamp(10px, 1.4vw, 16px);
+  border-bottom: 1.5px solid var(--border);
+  background: var(--bg);
+  transition: border-color 0.26s var(--ease);
+}
+
+.b-media .shot {
+  width: 100%;
+  height: auto;
+  aspect-ratio: var(--media-ratio);
+  object-fit: contain;
+}
+
+/* Only the two-row shapes carry a figure at all — see bento.js. Their bands
+   are deliberately shallow: a tall tile sets the height of the row band it
+   spans, so every extra pixel of figure is also a pixel of dead space in the
+   small tiles beside it. Wide and short costs these diagrams nothing, because
+   they are wide to begin with and the letterboxing is invisible. */
+@media (min-width: 720px) and (max-width: 1023.98px) {
+  .b-md-3x2 .b-media {
+    --media-ratio: 2 / 1;
+  }
+  .b-md-6x2 .b-media {
+    --media-ratio: 3 / 1;
+  }
+}
+
+@media (min-width: 1024px) {
+  .b-lg-3x2 .b-media {
+    --media-ratio: 2 / 1;
+  }
+  .b-lg-4x2 .b-media,
+  .b-lg-6x2 .b-media {
+    --media-ratio: 3 / 1;
+  }
+}
+
+.b-tile:hover .b-media,
+.b-tile:focus-visible .b-media {
+  border-color: var(--accent-deep);
+}
+
+/* Padding and type scale off the rectangle the tile actually got, so a
+   two-column tile isn't a four-column tile with the words wrapped tighter.
+   The vw terms are the single-column layout, where --cols is 6 but the tile is
+   a phone wide. */
+.b-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  padding: min(calc(8px + var(--cols) * 3px), 6vw);
+}
+
+.b-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 14px;
+  font-size: var(--label-size);
+  letter-spacing: var(--label-track);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+/* Only a status that isn't the one most projects share reaches the tile at
+   all — see render.js. This is the exception's colour, not the rule's. */
+.b-status {
+  color: var(--accent-deep);
+}
+
+.b-label {
+  font-size: var(--label-size);
+  letter-spacing: var(--label-track);
+  text-transform: uppercase;
+  color: var(--accent-deep);
+}
+
+.b-title {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  font-variation-settings: "opsz" 40;
+  /* Three terms: the tile's rectangle, a ceiling per row count, and the
+     single-column layout. The ceiling is what stops the full-width strip at
+     the foot of the narrow grid — six columns but only one row — from
+     carrying larger type than the feature tiles above it. Height is what
+     makes a tile a feature here; width on its own doesn't. */
+  font-size: min(
+    calc(12px + var(--cols) * 4px + var(--rows) * 3px),
+    calc(15px + var(--rows) * 12px),
+    8.5vw
+  );
+  line-height: 1.06;
+  letter-spacing: -0.01em;
+}
+
+.b-tagline {
+  max-width: 52ch;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--fg-secondary);
+}
+
+.b-stack {
+  font-size: var(--label-size);
+  letter-spacing: var(--label-track);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.b-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 8px;
+  font-size: var(--label-size);
+  letter-spacing: var(--label-track);
+  text-transform: uppercase;
+  color: var(--fg);
+}
+
+.b-arrow {
+  color: var(--accent-deep);
+  transition: transform 0.26s var(--ease);
+}
+
+.b-tile:hover .b-arrow,
+.b-tile:focus-visible .b-arrow {
+  transform: translateX(4px);
+}
+
+/* Everything that depends on how big the tile turned out, last, so each of
+   these refines a rule that has already been stated.
+
+   A tile too small for its cover figure drops to copy only and spends the
+   room on the title instead — and gives up the stack line, the space-between
+   meta row (which at that size reads as two words pinned apart rather than a
+   header's two ends) and the tail of a long tagline. bento.js owns the
+   thresholds and marks the tile per breakpoint; this is the whole of what the
+   mark means.
+
+   Both blocks are inside their breakpoint's query even though the class is on
+   the element at every width, because the mark is only true at the breakpoint
+   that set it: below 720px there is one column and no tile is small, so a
+   tile marked compact for the desktop grid must still show everything there.
+   The two rule sets are identical and deliberately not factored together —
+   `:is(.b-md-compact, .b-lg-compact)` would match outside both ranges. */
+@media (min-width: 720px) and (max-width: 1023.98px) {
+  .b-md-compact .b-media {
+    display: none;
+  }
+
+  .b-md-compact .b-stack {
+    display: none;
+  }
+
+  .b-md-compact .b-meta {
+    justify-content: flex-start;
+  }
+
+  .b-md-compact .b-tagline {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+}
+
+@media (min-width: 1024px) {
+  .b-lg-compact .b-media {
+    display: none;
+  }
+
+  .b-lg-compact .b-stack {
+    display: none;
+  }
+
+  .b-lg-compact .b-meta {
+    justify-content: flex-start;
+  }
+
+  /* A line more than the narrow grid allows: this row is 230px deep where
+     that one is 168px, and clamping to three here truncates a tagline the
+     tile has the room for — an ellipsis above visible empty space. Four is
+     still a ceiling, so a long tagline can't push the row taller and strand
+     the tiles beside it. */
+  .b-lg-compact .b-tagline {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+  }
+}

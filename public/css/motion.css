@@ -19,9 +19,6 @@
 .delay-600 {
   animation-delay: 0.6s;
 }
-.delay-700 {
-  animation-delay: 0.7s;
-}
 .delay-750 {
   animation-delay: 0.75s;
 }
@@ -37,5 +34,57 @@
   to {
     opacity: 1;
     transform: translate3d(0, 0, 0);
+  }
+}
+
+/* ----------------------------------------------------------------- glitch */
+
+/* One-shot per-character chromatic aberration, retriggered on a timer by
+   /js/glitch.js. It lives here, not in hero.css, because glitch.js ships in
+   the footer region of *every* page and splits every [data-glitch] zone into
+   one .glitch span per character — so a page that loads the script without
+   these rules pays the DOM cost and shows nothing. motion.css is the one
+   stylesheet every page already links. */
+.glitch {
+  display: inline-block;
+}
+
+.glitch.is-glitching {
+  animation: glitch 0.4s steps(1, end);
+}
+
+@keyframes glitch {
+  0%,
+  100% {
+    transform: translate(0);
+    text-shadow: none;
+  }
+  18% {
+    transform: translate(-2px, -1px);
+    text-shadow:
+      2px 0 var(--accent),
+      -2px 0 var(--glitch-2);
+  }
+  34% {
+    transform: translate(2px, 1px);
+    text-shadow:
+      -2px 0 var(--glitch-2),
+      2px 0 var(--accent);
+  }
+  50% {
+    transform: translate(-1px, 0);
+    opacity: 0.75;
+  }
+  66% {
+    transform: translate(2px, -1px);
+    text-shadow:
+      -2px 0 var(--accent),
+      2px 0 var(--glitch-2);
+  }
+  82% {
+    transform: translate(-1px, 1px);
+    text-shadow:
+      1px 0 var(--accent),
+      -1px 0 var(--glitch-2);
   }
 }

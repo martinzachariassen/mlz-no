@@ -1,0 +1,100 @@
+{
+  "slug": "audit-trail",
+  "order": 5,
+  "name": "Audit Trail",
+  "tagline": "A hash-linked record of every privileged action, cheap enough to write on the hot path and hard enough to argue with in an audit.",
+  "period": "2022",
+  "role": "Backend developer",
+  "stack": ["Go", "PostgreSQL"],
+  "tags": ["Compliance", "Append-only", "Security"],
+  "status": "In production",
+  "lastmod": "2026-09-13",
+  "seo": {
+    "title": "Audit Trail — Martin Zachariassen",
+    "description": "A hash-linked, append-only audit log in Go and PostgreSQL: written on the hot path, sealed daily, and provably untampered."
+  },
+  "cover": {
+    "figure": "audit-chain",
+    "alt": "Four stacked audit records, each naming the hash of the one before it, ending in a daily seal record that anchors the chain.",
+    "caption": "Each record names the one before it, so a deletion is as visible as an edit."
+  },
+  "outcome": [
+    {
+      "value": "0.4 ms",
+      "label": "Added write latency, p99"
+    },
+    {
+      "value": "1",
+      "label": "Systems to export from"
+    },
+    {
+      "value": "daily",
+      "label": "Chain seal, automated"
+    }
+  ],
+  "summary": "Access logs lived in three systems, none of which could prove they had not been edited. I replaced them with one append-only table where every record carries the hash of the record before it, and a daily seal anchors the chain — which turns \"who changed this?\" from an investigation into a query.",
+  "sections": [
+    {
+      "label": "Problem",
+      "heading": "Three logs, no answers",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Privileged actions were logged by whichever service happened to perform them: the admin API wrote rows, the support tool wrote to a file, and the data platform wrote nothing at all. Reconstructing a single incident meant three exports, three clock skews and a spreadsheet."
+        },
+        {
+          "type": "list",
+          "title": "What an auditor actually asked for",
+          "items": [
+            "Every action against a customer record, in one place, in order.",
+            "Evidence that nothing had been removed from that list after the fact.",
+            "A retention story that did not depend on anyone remembering to run something."
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Approach",
+      "heading": "Make deletion as loud as editing",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Every record stores the hash of its own contents and the hash of the record before it. Editing a row breaks the chain from that point on; deleting one breaks it too. Neither is prevented — the database can always be written to — but neither can happen quietly, which is the property an audit actually needs."
+        },
+        {
+          "type": "code",
+          "language": "SQL",
+          "caption": "The chain is a column, not a service. Appending is one insert, and the constraint is what makes it a chain.",
+          "lines": [
+            "CREATE TABLE audit_record (",
+            "  seq        BIGSERIAL PRIMARY KEY,",
+            "  actor      TEXT        NOT NULL,",
+            "  action     TEXT        NOT NULL,",
+            "  subject    TEXT        NOT NULL,",
+            "  at         TIMESTAMPTZ NOT NULL DEFAULT now(),",
+            "",
+            "  -- sha256(prev_hash || canonical_json(payload))",
+            "  prev_hash  BYTEA       NOT NULL,",
+            "  self_hash  BYTEA       NOT NULL UNIQUE",
+            ");"
+          ]
+        },
+        {
+          "type": "note",
+          "title": "Why not a ledger database",
+          "value": "We costed one. It solved the tamper-evidence problem we had and introduced an operational surface nobody on the team knew how to run at 3am. A column in the database we already operate was the cheaper trade, and it is the trade I would make again."
+        }
+      ]
+    },
+    {
+      "label": "Result",
+      "heading": "The question became a query",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Verification walks the chain and takes about eleven seconds over a year of records, which is fast enough that it runs nightly rather than on request. The first run found no tampering and two application bugs writing records with the wrong subject — which was worth the whole project on its own."
+        }
+      ]
+    }
+  ]
+}

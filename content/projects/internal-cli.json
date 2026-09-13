@@ -1,0 +1,104 @@
+{
+  "slug": "internal-cli",
+  "order": 3,
+  "name": "Internal CLI",
+  "tagline": "A single onboarding-to-deploy CLI that replaced a wiki page of copy-pasted shell commands.",
+  "period": "2020 — 2021",
+  "role": "Backend developer",
+  "stack": ["Rust"],
+  "tags": ["Developer tooling", "CLI"],
+  "status": "In production",
+  "lastmod": "2026-09-13",
+  "seo": {
+    "title": "Internal CLI — Martin Zachariassen",
+    "description": "A single onboarding-to-deploy CLI, built in Rust, that replaced a wiki page of copy-pasted shell commands."
+  },
+  "cover": {
+    "figure": "cli-session",
+    "alt": "A terminal session running dev up, dev deploy --local and dev doctor, each completing in under twenty seconds.",
+    "caption": "One command instead of a wiki page."
+  },
+  "outcome": [
+    {
+      "value": "1 day → 18 min",
+      "label": "Time to a new engineer's first build"
+    },
+    {
+      "value": "31 → 1",
+      "label": "Setup steps followed by hand"
+    },
+    {
+      "value": "6",
+      "label": "Teams that adopted it unasked"
+    }
+  ],
+  "summary": "New engineers spent their first week running commands copied from a wiki page that was out of date as often as not. I built a single CLI covering environment setup, local services and deploys, versioned alongside the infrastructure it drove so it could never drift from what the wiki described.",
+  "sections": [
+    {
+      "label": "Problem",
+      "heading": "The wiki page was the build system",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Getting set up to work on the checkout service took a new engineer the better part of a day, spent copying thirty-one commands out of a page nobody owned and everybody edited. The page was not wrong so much as partly right: some of it described the infrastructure as it had been eighteen months earlier, and there was no way to tell which parts by reading it."
+        },
+        {
+          "type": "list",
+          "title": "What a wiki page cannot do",
+          "items": [
+            "Fail. A stale command runs perfectly well and leaves you with the wrong environment.",
+            "Tell you which of its steps you have already done, or which you can skip.",
+            "Change when the infrastructure it describes changes — it lived in a different system, edited by different people, on a different week.",
+            "Say which version of itself you followed, when you ask for help two hours later."
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Approach",
+      "heading": "Stop writing the steps down and run them",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "The instructions were already a program. They were just being executed by a person, slowly, with no error handling. I moved them into one binary and put it in the same repository as the Terraform and Helm charts it drives, so that changing the infrastructure and changing the command that sets it up is one commit and one review — and neither can be done without the other."
+        },
+        {
+          "type": "code",
+          "language": "TOML",
+          "caption": "Each repository declares what it needs; the CLI is the part that knows how to provide it. A new service gets a working environment by adding eight lines, and gets every later improvement for free.",
+          "lines": [
+            "[dev]",
+            "toolchain = \"2021.3\"            # pinned; `dev up` installs it",
+            "",
+            "[dev.services]",
+            "postgres = { version = \"13\", seed = \"fixtures/dev.sql\" }",
+            "kafka    = { version = \"2.8\", topics = [\"orders\", \"orders.dlq\"] }",
+            "",
+            "[dev.deploy]",
+            "target = \"staging\"             # `dev deploy --local` overrides this",
+            "chart  = \"charts/checkout\""
+          ]
+        },
+        {
+          "type": "note",
+          "title": "Why Rust, honestly",
+          "value": "Not for the speed — it is a program that shells out and waits. It was a single static binary with nothing to install first, which mattered more than anything else about it: the whole point was to avoid asking somebody to set up a runtime before they could set anything else up. Any language that produced one would have done, and Go nearly did."
+        }
+      ]
+    },
+    {
+      "label": "Result",
+      "heading": "One command instead of a wiki page",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Time to a first local build for a new engineer went from roughly a day of following stale instructions to under twenty minutes, and the tool itself became the source of truth the wiki page used to be."
+        },
+        {
+          "type": "text",
+          "value": "The subcommand I did not plan was the one that got it adopted: dev doctor, which checks the environment and names the assumption that is broken. It turned every \"it doesn't work on my machine\" from a conversation into a paste. Five other teams asked for the tool in the first quarter; the sixth added support for their own stack and sent it back."
+        }
+      ]
+    }
+  ]
+}

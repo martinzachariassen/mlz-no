@@ -8,6 +8,9 @@ on:
 
 permissions:
   contents: read
+  # Required by `comment-summary-in-pr` below — without it the scan still
+  # blocks the PR, but the summary explaining *why* is never posted.
+  pull-requests: write
 
 concurrency:
   group: dep-review-${{ github.workflow }}-${{ github.ref }}

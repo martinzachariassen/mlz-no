@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="color-scheme" content="light dark" />
+    <script src="/theme-init.js"></script>
+    <meta name="format-detection" content="telephone=no" />
+    <title>Internal CLI — Martin Zachariassen</title>
+    <meta
+      name="description"
+      content="A single onboarding-to-deploy CLI, built in Rust, that replaced a wiki page of copy-pasted shell commands."
+    />
+    <link rel="canonical" href="https://mlz.no/projects/internal-cli" />
+    <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/assets/icons/favicon-32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="192x192"
+      href="/assets/icons/favicon-192.png"
+    />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/assets/icons/apple-touch-icon.png"
+    />
+    <link rel="manifest" href="/assets/site.webmanifest" />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: light)"
+      content="oklch(0.95 0.006 250)"
+    />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: dark)"
+      content="oklch(0.2 0.006 265)"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Martin Zachariassen" />
+    <meta property="og:url" content="https://mlz.no/projects/internal-cli" />
+    <meta property="og:title" content="Internal CLI — Martin Zachariassen" />
+    <meta
+      property="og:description"
+      content="A single onboarding-to-deploy CLI, built in Rust, that replaced a wiki page of copy-pasted shell commands."
+    />
+    <meta property="og:locale" content="en_GB" />
+    <meta property="og:image" content="https://mlz.no/assets/social/og.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Martin Zachariassen — Senior Software Developer"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="stylesheet" href="/css/tokens.css" />
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/topbar.css" />
+    <link rel="stylesheet" href="/css/page-head.css" />
+    <link rel="stylesheet" href="/css/case-study.css" />
+    <link rel="stylesheet" href="/css/bento.css" />
+    <link rel="stylesheet" href="/css/footer.css" />
+    <link rel="stylesheet" href="/css/motion.css" />
+    <script
+      defer
+      src="https://cloud.umami.is/script.js"
+      data-website-id="e73d093f-ea9e-4839-8c5f-3dd4888a3c36"
+    ></script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "CreativeWork",
+        "name": "Internal CLI",
+        "url": "https://mlz.no/projects/internal-cli",
+        "abstract": "A single onboarding-to-deploy CLI that replaced a wiki page of copy-pasted shell commands.",
+        "description": "New engineers spent their first week running commands copied from a wiki page that was out of date as often as not. I built a single CLI covering environment setup, local services and deploys, versioned alongside the infrastructure it drove so it could never drift from what the wiki described.",
+        "author": {
+          "@type": "Person",
+          "name": "Martin Zachariassen",
+          "url": "https://mlz.no"
+        },
+        "dateModified": "2026-09-13",
+        "image": "https://mlz.no/assets/social/og.png",
+        "keywords": "Developer tooling, CLI",
+        "isPartOf": {
+          "@type": "CollectionPage",
+          "name": "Projects",
+          "url": "https://mlz.no/projects"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div class="read-progress" aria-hidden="true"></div>
+    <header class="wrap topbar rise delay-50">
+      <a href="/" aria-label="MLZ home" class="brand">
+        <svg
+          class="brand-mark"
+          width="16"
+          height="16"
+          viewBox="0 0 32 32"
+          fill="none"
+          role="img"
+          aria-label="MLZ"
+        >
+          <rect x="1" y="1" width="30" height="30" rx="6" fill="var(--fg)" />
+          <polygon
+            points="7,25 7,7 11.5,7 16,18.5 20.5,7 25,7 25,25"
+            fill="var(--bg)"
+          />
+        </svg>
+        <span class="brand-word" data-glitch>mlz<span class="period">.</span></span>
+      </a>
+      <div class="topbar-right">
+        <a class="nav-link active" href="/projects" data-umami-event="nav-projects" data-glitch>Projects</a>
+        <button
+          type="button"
+          class="theme-toggle"
+          data-theme-toggle
+          aria-label="Toggle colour theme"
+        >
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+          </svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+          </svg>
+        </button>
+      </div>
+    </header>
+    <main class="wrap page case-page">
+      <header class="page-head rise delay-150">
+        <p class="page-eyebrow">
+          <span data-glitch>2020 — 2021</span>
+          <span class="sep" aria-hidden="true">/</span>
+          <span data-glitch>2 min read</span>
+        </p>
+        <h1 class="page-title">Internal CLI</h1>
+        <p class="page-intro">A single onboarding-to-deploy CLI that replaced a wiki page of copy-pasted shell commands.</p>
+      </header>
+      <p class="case-summary rise delay-450">New engineers spent their first week running commands copied from a wiki page that was out of date as often as not. I built a single CLI covering environment setup, local services and deploys, versioned alongside the infrastructure it drove so it could never drift from what the wiki described.</p>
+      <div class="case-brief rise delay-550">
+        <dl class="case-facts">
+          <div class="fact">
+            <dt data-glitch>Role</dt>
+            <dd>Backend developer</dd>
+          </div>
+          <div class="fact">
+            <dt data-glitch>Status</dt>
+            <dd>In production</dd>
+          </div>
+          <div class="fact">
+            <dt data-glitch>Stack</dt>
+            <dd>Rust</dd>
+          </div>
+        </dl>
+        <dl class="metrics case-outcome">
+          <div class="metric">
+            <dt>Time to a new engineer's first build</dt>
+            <dd>1 day → 18 min</dd>
+          </div>
+          <div class="metric">
+            <dt>Setup steps followed by hand</dt>
+            <dd>31 → 1</dd>
+          </div>
+          <div class="metric">
+            <dt>Teams that adopted it unasked</dt>
+            <dd>6</dd>
+          </div>
+        </dl>
+      </div>
+      <nav class="case-index rise delay-550" aria-label="Sections">
+        <span class="case-index-label" data-glitch>On this page</span>
+        <a href="#problem">Problem</a>
+        <a href="#approach">Approach</a>
+        <a href="#result">Result</a>
+      </nav>
+      <figure class="figure figure-cover rise delay-600">
+        <span class="shot-frame" tabindex="0">
+          <img class="shot shot-light" src="/assets/figures/cli-session-light.svg"
+            alt="A terminal session running dev up, dev deploy --local and dev doctor, each completing in under twenty seconds." width="900" height="572" loading="eager" decoding="async" />
+          <img class="shot shot-dark" src="/assets/figures/cli-session-dark.svg"
+            alt="A terminal session running dev up, dev deploy --local and dev doctor, each completing in under twenty seconds." width="900" height="572" loading="eager" decoding="async" />
+        </span>
+        <figcaption>
+          <span class="figure-note">One command instead of a wiki page.</span>
+          <a class="figure-open shot-light" href="/assets/figures/cli-session-light.svg"
+            target="_blank" rel="noopener">Open full size<span class="figure-open-mark" aria-hidden="true">↗</span></a>
+          <a class="figure-open shot-dark" href="/assets/figures/cli-session-dark.svg"
+            target="_blank" rel="noopener">Open full size<span class="figure-open-mark" aria-hidden="true">↗</span></a>
+        </figcaption>
+      </figure>
+      <section class="field" id="problem" tabindex="-1">
+        <p class="field-label" data-glitch>Problem</p>
+        <h2 class="field-heading">The wiki page was the build system</h2>
+        <p class="prose">Getting set up to work on the checkout service took a new engineer the better part of a day, spent copying thirty-one commands out of a page nobody owned and everybody edited. The page was not wrong so much as partly right: some of it described the infrastructure as it had been eighteen months earlier, and there was no way to tell which parts by reading it.</p>
+        <h3 class="block-title" data-glitch>What a wiki page cannot do</h3>
+        <ul class="prose-list">
+          <li>Fail. A stale command runs perfectly well and leaves you with the wrong environment.</li>
+          <li>Tell you which of its steps you have already done, or which you can skip.</li>
+          <li>Change when the infrastructure it describes changes — it lived in a different system, edited by different people, on a different week.</li>
+          <li>Say which version of itself you followed, when you ask for help two hours later.</li>
+        </ul>
+      </section>
+      <section class="field" id="approach" tabindex="-1">
+        <p class="field-label" data-glitch>Approach</p>
+        <h2 class="field-heading">Stop writing the steps down and run them</h2>
+        <p class="prose">The instructions were already a program. They were just being executed by a person, slowly, with no error handling. I moved them into one binary and put it in the same repository as the Terraform and Helm charts it drives, so that changing the infrastructure and changing the command that sets it up is one commit and one review — and neither can be done without the other.</p>
+        <figure class="code">
+          <figcaption class="code-head">
+            <span class="code-lang" data-glitch>TOML</span>
+            <span>Each repository declares what it needs; the CLI is the part that knows how to provide it. A new service gets a working environment by adding eight lines, and gets every later improvement for free.</span>
+          </figcaption>
+          <pre tabindex="0"><code>[dev]
+toolchain = &quot;2021.3&quot;            # pinned; `dev up` installs it
+
+[dev.services]
+postgres = { version = &quot;13&quot;, seed = &quot;fixtures/dev.sql&quot; }
+kafka    = { version = &quot;2.8&quot;, topics = [&quot;orders&quot;, &quot;orders.dlq&quot;] }
+
+[dev.deploy]
+target = &quot;staging&quot;             # `dev deploy --local` overrides this
+chart  = &quot;charts/checkout&quot;</code></pre>
+        </figure>
+        <aside class="note">
+          <h3 class="note-title" data-glitch>Why Rust, honestly</h3>
+          <p>Not for the speed — it is a program that shells out and waits. It was a single static binary with nothing to install first, which mattered more than anything else about it: the whole point was to avoid asking somebody to set up a runtime before they could set anything else up. Any language that produced one would have done, and Go nearly did.</p>
+        </aside>
+      </section>
+      <section class="field" id="result" tabindex="-1">
+        <p class="field-label" data-glitch>Result</p>
+        <h2 class="field-heading">One command instead of a wiki page</h2>
+        <p class="prose">Time to a first local build for a new engineer went from roughly a day of following stale instructions to under twenty minutes, and the tool itself became the source of truth the wiki page used to be.</p>
+        <p class="prose">The subcommand I did not plan was the one that got it adopted: dev doctor, which checks the environment and names the assumption that is broken. It turned every &quot;it doesn't work on my machine&quot; from a conversation into a paste. Five other teams asked for the tool in the first quarter; the sixth added support for their own stack and sent it back.</p>
+      </section>
+      <div class="case-topics">
+        <h2 class="block-title" data-glitch>Topics</h2>
+        <ul class="tag-list">
+          <li>Developer tooling</li>
+          <li>CLI</li>
+        </ul>
+      </div>
+    </main>
+    <nav class="end-nav wrap" aria-label="More projects">
+      <a class="end-card" href="/projects/config-service">
+        <span class="end-label" data-glitch>← Previous</span>
+        <span class="end-title">Config Service</span>
+        <span class="end-tagline">A typed, versioned configuration store that replaced a shared YAML file and its merge conflicts.</span>
+      </a>
+      <a class="end-card end-next" href="/projects/search-relevance">
+        <span class="end-label" data-glitch>Next →</span>
+        <span class="end-title">Search Relevance Service</span>
+        <span class="end-tagline">A standalone ranking service that took relevance tuning out of a monolith and into something product could iterate on weekly.</span>
+      </a>
+    </nav>
+    <p class="end-more wrap">
+      <span class="end-more-text">Questions about any of this, or the parts that didn't fit on the page?</span>
+      <span class="end-more-links">
+        <a class="end-more-link" href="mailto:hi@mlz.no"
+          data-umami-event="case-contact"><span data-glitch>Email me</span><span class="end-more-mark" aria-hidden="true">↗</span></a>
+        <a class="end-more-link" href="/projects"><span data-glitch>All projects</span><span class="end-more-mark" aria-hidden="true">→</span></a>
+      </span>
+    </p>
+    <footer class="rise delay-750">
+      <div class="wrap footer-row">
+        <span data-glitch>© <span data-year>2026</span> · Martin Zachariassen</span>
+        <span data-glitch>59°N · 10°E</span>
+      </div>
+    </footer>
+    <script src="/js/theme-toggle.js" defer></script>
+    <script src="/js/year.js" defer></script>
+    <script src="/js/glitch.js" defer></script>
+  </body>
+</html>

@@ -12,10 +12,12 @@
       "**/.*",
       "**/node_modules/**"
     ],
-    // The build emits real .html files at fixed paths and there is no
-    // client-side router, so URLs are taken literally. Leaving both off keeps an
-    // unknown path a genuine 404 rather than a redirect to a normalized form.
-    "cleanUrls": false,
+    // Real .html files at fixed paths, no client-side router. cleanUrls only
+    // hides the .html suffix (/projects/event-pipeline serves
+    // public/projects/event-pipeline.html, and the .html URL 301s to it) — a
+    // path with no matching file is still a genuine 404, which ci.yml asserts.
+    // trailingSlash stays off so each page has exactly one canonical URL.
+    "cleanUrls": true,
     "trailingSlash": false,
     // public/404.html is served with a real 404 status for unknown paths.
     // That is Hosting's built-in behaviour for a 404.html in the deploy root —

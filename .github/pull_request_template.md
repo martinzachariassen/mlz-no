@@ -10,10 +10,10 @@
 
 ## Checklist
 
-- [ ] `npm run typecheck`, `npm run lint`, and `npm test` pass locally
+- [ ] `bun run lint` passes locally (runs Biome, tests, and `check:content`)
 - [ ] Tests added or updated for the change, if applicable
 - [ ] README updated, if this changes setup, configuration, or the tool list
-- [ ] A changeset was added via `npx changeset`, if this is user-facing (see [CONTRIBUTING.md](../CONTRIBUTING.md#changelog-entries))
+- [ ] Content changes were made in `content/` and `bun run build:content` was run, not hand-edited under `public/`
 
 ## How was this tested?
 

@@ -1,0 +1,108 @@
+{
+  "slug": "config-service",
+  "order": 2,
+  "name": "Config Service",
+  "tagline": "A typed, versioned configuration store that replaced a shared YAML file and its merge conflicts.",
+  "period": "2021 — 2022",
+  "role": "Backend developer",
+  "stack": ["Go", "PostgreSQL"],
+  "tags": ["Developer tooling", "Config management"],
+  "status": "In production",
+  "lastmod": "2026-09-13",
+  "seo": {
+    "title": "Config Service — Martin Zachariassen",
+    "description": "A typed, versioned configuration store built in Go and PostgreSQL, replacing a shared YAML file across services."
+  },
+  "cover": {
+    "figure": "config-diff",
+    "alt": "A config publish view showing a timeout and retry value changed and validated against a schema before publishing.",
+    "caption": "A config change is validated and published, not merged and deployed."
+  },
+  "outcome": [
+    {
+      "value": "9 min → 4 s",
+      "label": "Time to change one value"
+    },
+    {
+      "value": "0",
+      "label": "Incidents from a bad value, since"
+    },
+    {
+      "value": "12",
+      "label": "Services that shared one file"
+    }
+  ],
+  "summary": "A dozen services shared one YAML file in a config repo, edited by hand and deployed by CI. Merge conflicts and silent typos were routine. I built a small typed config service with schema validation and an audit log, so a bad value fails at publish time instead of at runtime in a service nobody was watching.",
+  "sections": [
+    {
+      "label": "Problem",
+      "heading": "One file, twelve owners",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Twelve services read their settings from a single file in a repository they all deployed from. Changing one timeout meant a pull request against a file four other teams were editing that week, a review from whoever was free rather than whoever knew, and a deploy that carried everyone else's pending changes out with yours."
+        },
+        {
+          "type": "list",
+          "title": "How it actually went wrong",
+          "items": [
+            "Conflicts in a format with no structure to merge along — YAML is indentation, and a badly resolved conflict is usually still valid YAML.",
+            "The same timeout: 30 meaning seconds in one service and milliseconds in the next, with nothing anywhere to say which.",
+            "A misspelled key. The service read its default instead, started cleanly, and behaved strangely for two days.",
+            "No way to answer \"when did this change, and who decided that?\" without reading a repository's history and guessing."
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Approach",
+      "heading": "Let the service own the schema, and validate at publish",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Each service declares the configuration it reads and owns that declaration. Publishing a value validates it against the declaration and stores it as a new version — the store is append-only, so the value it replaced is always still there to go back to. Services subscribe and see a change within a couple of seconds, which is the part that matters: a config change stopped being a deploy."
+        },
+        {
+          "type": "code",
+          "language": "Go",
+          "caption": "A key with no declaration cannot be published, and a declared key cannot be published with the wrong type or outside its bounds. Both of those used to be things you found out about in production.",
+          "lines": [
+            "// Declared once, by the service that reads it: type, bounds,",
+            "// and a default that is known to be safe.",
+            "var conf = config.Declare(\"checkout\", config.Keys{",
+            "    \"http.timeout\": config.Duration().",
+            "        Between(time.Second, 30*time.Second).",
+            "        Default(5 * time.Second),",
+            "    \"retry.budget\": config.Int().Between(0, 10).Default(3),",
+            "})",
+            "",
+            "// Reads are typed and cannot fail here: a value that would not",
+            "// satisfy the declaration was refused at publish time, so there",
+            "// is no error to handle at the call site and no default to",
+            "// fall back to by accident.",
+            "timeout := conf.Duration(\"http.timeout\")"
+          ]
+        },
+        {
+          "type": "note",
+          "title": "The part I got wrong twice",
+          "value": "Delivering a change to subscribers was harder than storing one, and I underestimated it in both directions. The first version polled every thirty seconds, which was fine until a service running two hundred pods made it the busiest query in the database. The second used the database's own notifications and quietly lost updates whenever a connection dropped. What runs today polls one version counter and only fetches when it moves — less elegant than either, and the first one that has never woken anybody."
+        }
+      ]
+    },
+    {
+      "label": "Result",
+      "heading": "Config errors caught before rollout, not after",
+      "blocks": [
+        {
+          "type": "text",
+          "value": "Every config change is validated against the owning service's schema before it publishes, and every publish is attributed and reversible. The class of incident caused by a bad config value reaching production dropped to zero in the following year."
+        },
+        {
+          "type": "text",
+          "value": "The change I did not anticipate was to how people behaved. When changing a value took nine minutes and a deploy, values were changed rarely and in batches, which is exactly the shape of change that is hardest to attribute when something breaks. At four seconds and a one-click revert, they get changed one at a time — and one at a time is the version you can reason about."
+        }
+      ]
+    }
+  ]
+}

@@ -2,22 +2,35 @@ name: Deploy
 
 # Publishes public/ to Firebase Hosting; no build step.
 #
+# Runs only *after* CI has gone green on main, never alongside it: a push
+# triggers CI, and CI finishing successfully is what triggers this. That is the
+# whole reason for the workflow_run trigger — on `push` the two workflows race,
+# so a commit could reach production while its own checks were still running,
+# or after they had already failed.
+#
 # Keyless auth: GitHub's OIDC token is exchanged via Workload Identity
 # Federation for short-lived credentials impersonating the deploy service
 # account, locked to this repo via an attribute condition. Nothing secret
 # lives here, so these are repo *variables*, not secrets:
 #   GCP_WORKLOAD_IDENTITY_PROVIDER, GCP_SERVICE_ACCOUNT
 on:
-  push:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
     branches: [main]
+  # Manual re-deploy of whatever is on main. Still refuses to ship a commit CI
+  # hasn't passed — see the guard in the deploy job.
   workflow_dispatch:
 
 permissions:
   contents: read
   # Required for GitHub to mint the OIDC token that WIF exchanges.
   id-token: write
+  # Lets the workflow_dispatch guard read CI's conclusion for the commit.
+  actions: read
 
-# Newest commit wins, but an in-flight deploy finishes rather than shipping half-uploaded assets.
+# Deploys are serialised in trigger order and never cancelled: a half-uploaded
+# site is worse than a slightly late one.
 concurrency:
   group: deploy-${{ github.workflow }}
   cancel-in-progress: false
@@ -25,6 +38,10 @@ concurrency:
 jobs:
   deploy:
     name: deploy to Firebase Hosting
+    # workflow_run also fires when CI fails, is cancelled, or is skipped.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment:
@@ -34,6 +51,28 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
+          # A workflow_run job defaults to the tip of the default branch. Deploy
+          # the exact commit CI tested instead, or a push landing in between
+          # would ship an untested tree.
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      # The workflow_run path is gated by the `if` above. This closes the manual
+      # one, so there is no route to production that skips CI.
+      - name: Require a successful CI run for this commit
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          passed="$(gh api \
+            "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$SHA&status=success" \
+            --jq '.workflow_runs | length')"
+          if [ "$passed" -eq 0 ]; then
+            echo "No successful CI run for $SHA. Let CI finish, then re-run this."
+            exit 1
+          fi
+          echo "CI passed for $SHA"
 
       - name: Set up mise (installs Bun from mise.toml)
         uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4
@@ -54,3 +93,23 @@ jobs:
       # Uses the devDependency-pinned firebase-tools, same version CI tested — not a marketplace action's own resolution.
       - name: Deploy
         run: bunx firebase-tools deploy --only hosting --project mlz-no --non-interactive
+
+  # `firebase deploy` reporting success only means the upload was accepted. This
+  # runs the same assertions CI ran against the emulator, now against the real
+  # origin, and compares every file in public/ byte-for-byte with what mlz.no
+  # returns — so a partial upload, a wrong cache header on the live CDN, or a
+  # deploy that never propagated fails here instead of being found by a visitor.
+  verify:
+    name: verify production
+    needs: deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      # Only bash and curl — nothing is built, the site is compared as committed.
+      - name: Smoke test https://mlz.no
+        run: scripts/smoke.sh https://mlz.no
