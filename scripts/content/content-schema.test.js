@@ -205,6 +205,61 @@ describe("validateContent", () => {
     });
   });
 
+  describe("analytics events", () => {
+    const asideTile = (umamiEvent) => ({
+      size: "normal",
+      label: "L",
+      title: "T",
+      text: "X",
+      cta: "Go",
+      href: "https://example.com",
+      umamiEvent,
+    });
+
+    test("rejects two aside tiles sharing an umamiEvent", () => {
+      const message = messageFor({
+        site: {
+          ...validSite,
+          index: {
+            ...validSite.index,
+            asideTiles: [asideTile("dupe"), asideTile("dupe")],
+          },
+        },
+      });
+      expect(message).toContain("umamiEvent");
+      expect(message).toContain("already used by");
+    });
+
+    test("rejects an aside tile reusing a project's automatic project-<slug> event", () => {
+      const message = messageFor({
+        site: {
+          ...validSite,
+          index: {
+            ...validSite.index,
+            // validProject's slug is "demo", so its tile gets "project-demo".
+            asideTiles: [asideTile("project-demo")],
+          },
+        },
+      });
+      expect(message).toContain("umamiEvent");
+      expect(message).toContain("already used by");
+    });
+
+    test("accepts aside tiles with distinct events, alongside the project's own", () => {
+      expect(() =>
+        validate({
+          site: {
+            ...validSite,
+            index: {
+              ...validSite.index,
+              asideTiles: [asideTile("aside-one"), asideTile("aside-two")],
+            },
+          },
+        }),
+      ).not.toThrow();
+    });
+  });
+
   describe("SEO copy length", () => {
     test("accepts a title and description at the limit", () => {
       expect(() =>

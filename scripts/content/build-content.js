@@ -38,7 +38,7 @@ import { createRenderer } from "./render.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const contentDir = join(root, "content");
-const publicDir = join(root, "public");
+export const publicDir = join(root, "public");
 
 const rel = (path) => path.slice(root.length + 1);
 
@@ -273,14 +273,16 @@ const STATIC_EXTENSION = /\.[a-z0-9]+$/i;
 const REFERENCE =
   /\s(?:href|src)="([^"]+)"|<loc>([^<]+)<\/loc>|property="og:image"\s+content="([^"]+)"/g;
 
-function checkAssetLinks(outputs, site) {
+export function checkAssetLinks(outputs, site) {
   /** A root-relative site path from a ref, or null if it's not this site's. */
   const localAssetPath = (ref) => {
     const path = ref.split("#")[0].split("?")[0];
     if (path.startsWith(`${site.origin}/`)) {
       return path.slice(site.origin.length);
     }
-    if (path.startsWith("/")) return path;
+    // A protocol-relative URL ("//cdn.example/x.js") also starts with "/",
+    // but it names a different host, not a root-relative path on this one.
+    if (path.startsWith("/") && !path.startsWith("//")) return path;
     return null; // external, mailto:, tel: — not something public/ can serve
   };
 

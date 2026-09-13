@@ -346,7 +346,10 @@ function figureRefs(project) {
  * Checks that span files: references that must resolve, values that must be
  * unique, and output that would be generated but never used.
  */
-function crossCheck({ projects, figures, figureFiles, tokens }, problems) {
+function crossCheck(
+  { site, projects, figures, figureFiles, tokens },
+  problems,
+) {
   const add = (file, message) => problems.push({ file, message });
 
   // content/figures/ is read as a directory, so anything an editor or the OS
@@ -419,6 +422,36 @@ function crossCheck({ projects, figures, figureFiles, tokens }, problems) {
       add(`content/figures/${name}.svg`, "not referenced by any project");
     }
   }
+
+  // A project's tile gets `project-<slug>` for free; an aside tile's
+  // `umamiEvent` shares that same namespace. Two tiles reusing a name, or a
+  // tile reusing a project's, doesn't fail the build — it just merges two
+  // different things into one count in Umami, silently.
+  const events = new Map();
+  const recordEvent = (name, file, path) => {
+    if (typeof name !== "string") return;
+    const owner = events.get(name);
+    if (owner) {
+      add(
+        file,
+        `${path}: umamiEvent ${quote(name)} is already used by ${owner}`,
+      );
+    } else {
+      events.set(name, `${file}: ${path}`);
+    }
+  };
+  for (const { file, data } of projects) {
+    if (typeof data.slug === "string") {
+      recordEvent(`project-${data.slug}`, file, "slug");
+    }
+  }
+  site?.index?.asideTiles?.forEach((tile, i) => {
+    recordEvent(
+      tile?.umamiEvent,
+      "content/site.json",
+      `index.asideTiles[${i}].umamiEvent`,
+    );
+  });
 }
 
 /* ------------------------------------------------------------- entry point */
