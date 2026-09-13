@@ -45,51 +45,10 @@
   color: var(--accent-deep);
 }
 
-/* one-shot per-character glitch, retriggered on a timer by script.js */
-.glitch {
-  display: inline-block;
-}
-
+/* A static accent colour, not part of the animated effect in motion.css —
+   404.html paints the middle digit of "404" with it. The animation that
+   /js/glitch.js drives lives in motion.css, because that script ships on
+   every page and this stylesheet does not. */
 .glitch-accent {
   color: var(--accent-deep);
-}
-
-.glitch.is-glitching {
-  animation: glitch 0.4s steps(1, end);
-}
-
-@keyframes glitch {
-  0%,
-  100% {
-    transform: translate(0);
-    text-shadow: none;
-  }
-  18% {
-    transform: translate(-2px, -1px);
-    text-shadow:
-      2px 0 var(--accent),
-      -2px 0 var(--glitch-2);
-  }
-  34% {
-    transform: translate(2px, 1px);
-    text-shadow:
-      -2px 0 var(--glitch-2),
-      2px 0 var(--accent);
-  }
-  50% {
-    transform: translate(-1px, 0);
-    opacity: 0.75;
-  }
-  66% {
-    transform: translate(2px, -1px);
-    text-shadow:
-      -2px 0 var(--accent),
-      2px 0 var(--glitch-2);
-  }
-  82% {
-    transform: translate(-1px, 1px);
-    text-shadow:
-      1px 0 var(--accent),
-      -1px 0 var(--glitch-2);
-  }
 }

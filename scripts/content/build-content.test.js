@@ -235,15 +235,23 @@ describe("readTokens", () => {
 });
 
 /**
- * site.webmanifest can't reference tokens.css's custom properties (the Web
- * Manifest spec is plain JSON), so its background_color/theme_color are a
- * second, hand-maintained copy of --bg that no other test or the build's
- * own checks would notice drifting. This converts the real --bg to sRGB the
- * same way a browser would and pins it against the manifest's hex value, so
- * a future palette change that forgets this file fails loudly instead of
- * silently.
+ * Two files under public/ can't reference tokens.css's custom properties and
+ * therefore carry hand-maintained hex copies of the palette, which no other
+ * test and none of the build's own checks would notice drifting:
+ *
+ *   site.webmanifest   the Web Manifest spec is plain JSON — background_color
+ *                      and theme_color are literal colours, both --bg
+ *   favicon.svg        loaded through <link rel="icon">, so it is its own
+ *                      document and cannot see the page's custom properties;
+ *                      it carries --fg for each theme, picked with its own
+ *                      prefers-color-scheme query
+ *
+ * These convert the real token to sRGB the same way a browser would and pin
+ * it against what each file says, so a palette change that forgets one fails
+ * loudly instead of silently. The favicon's dark value had drifted to the
+ * light --bg hex before this covered it.
  */
-describe("site.webmanifest colours", () => {
+describe("hand-maintained colour copies", () => {
   /** Per Björn Ottosson's OKLab reference conversion to sRGB. */
   function oklchToHex(oklch) {
     const [, L, C, H] = oklch.match(
@@ -272,7 +280,7 @@ describe("site.webmanifest colours", () => {
     return `#${lin.map(toHex).join("")}`;
   }
 
-  test("background_color and theme_color match --bg's light value", () => {
+  test("the manifest's background_color and theme_color match --bg's light value", () => {
     const manifest = JSON.parse(
       readFileSync(join(publicDir, "assets", "site.webmanifest"), "utf8"),
     );
@@ -280,5 +288,20 @@ describe("site.webmanifest colours", () => {
     const bgHex = oklchToHex(light.bg);
     expect(manifest.background_color).toBe(bgHex);
     expect(manifest.theme_color).toBe(bgHex);
+  });
+
+  test("the favicon's two fills match --fg in each theme", () => {
+    const svg = readFileSync(
+      join(publicDir, "assets", "icons", "favicon.svg"),
+      "utf8",
+    );
+    // The dark fill is the one inside the prefers-color-scheme block; the
+    // light fill is the rule before it.
+    const [light, dark] = [...svg.matchAll(/fill:\s*(#[0-9a-f]{6})/g)].map(
+      ([, hex]) => hex,
+    );
+    const tokens = readTokens();
+    expect(light).toBe(oklchToHex(tokens.light.fg));
+    expect(dark).toBe(oklchToHex(tokens.dark.fg));
   });
 });

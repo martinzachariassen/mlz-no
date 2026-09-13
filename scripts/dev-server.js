@@ -100,14 +100,23 @@ function rebuildContent() {
     });
 }
 
-let debounce = null;
+// One timer per kind of change, not one shared between both watchers: a
+// public/ event arriving inside a pending rebuild's 80ms window used to clear
+// that rebuild's timer and reschedule itself as a plain reload, so the
+// content/ edit was never built and the browser reloaded the stale output.
+const debounce = { rebuild: null, reload: null };
+
 function onChange(rebuild) {
   // The rebuild's own writes into public/ re-trigger the ROOT watcher below;
   // without this it would broadcast a second, redundant reload on top of the
   // one rebuildContent() already sends when the build finishes.
   if (!rebuild && isRebuilding) return;
-  clearTimeout(debounce);
-  debounce = setTimeout(() => (rebuild ? rebuildContent() : broadcast()), 80);
+  const kind = rebuild ? "rebuild" : "reload";
+  clearTimeout(debounce[kind]);
+  debounce[kind] = setTimeout(
+    () => (rebuild ? rebuildContent() : broadcast()),
+    80,
+  );
 }
 
 watch(ROOT, { recursive: true }, () => onChange(false));

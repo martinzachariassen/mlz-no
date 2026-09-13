@@ -7,7 +7,7 @@
   },
   "files": {
     "includes": [
-      "public/*.js",
+      "public/**/*.js",
       "public/css/*.css",
       "scripts/**/*.js",
       "content/**/*.json"

@@ -29,12 +29,14 @@ served as-is by Firebase Hosting.
 
 ```sh
 bun install
-bun run dev     # serves public/ via the Firebase Hosting emulator
+bun run dev        # serves public/ via the Firebase Hosting emulator
+bun run dev:watch  # static server on :8080 with live reload, no CSP — pixels only
 ```
 
 ```sh
-bun run lint    # biome ci . + check that generated content is in sync
-bun run format  # biome check --write .
+bun run lint       # biome ci . + bun run test + check that generated content is in sync
+bun run test       # the content pipeline's own tests
+bun run format     # biome check --write .
 ```
 
 ## Writing a project

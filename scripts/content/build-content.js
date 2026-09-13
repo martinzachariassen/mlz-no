@@ -203,6 +203,18 @@ const CHROME_PAGES = [
   },
 ];
 
+/**
+ * The regions every page in CHROME_PAGES carries, and what to call the
+ * renderer with for a given page. `theme-color` takes no per-page argument —
+ * it is here because it is a literal copy of a tokens.css colour, and the
+ * point of generating it is that there is nowhere left to hand-write one.
+ */
+const chromeBlocks = (renderer, page) => ({
+  topbar: renderer.topbar(page.topbar),
+  footer: renderer.footer(page.footer),
+  "theme-color": renderer.themeColor(),
+});
+
 const REGION =
   /^([ \t]*)<!-- generated:([\w-]+) -->\n[\s\S]*?^[ \t]*<!-- \/generated:\2 -->$/gm;
 
@@ -250,10 +262,7 @@ function chromeFiles(renderer) {
       path: page.path,
       content: spliceChrome(
         readFileSync(path, "utf8"),
-        {
-          topbar: renderer.topbar(page.topbar),
-          footer: renderer.footer(page.footer),
-        },
+        chromeBlocks(renderer, page),
         rel(path),
       ),
     };

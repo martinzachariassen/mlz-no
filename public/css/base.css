@@ -34,13 +34,21 @@ a {
   color: inherit;
 }
 
+/* The delays matter as much as the durations here: .rise and the bento
+   stagger animate with `backwards`, so the `from` state (opacity: 0) applies
+   for the whole animation-delay. Collapsing only the duration would leave a
+   reduced-motion reader looking at a blank page for up to .delay-850's 0.85s
+   and then have everything appear at once. A negative delay starts each
+   animation already finished instead. */
 @media (prefers-reduced-motion: reduce) {
   *,
   ::before,
   ::after {
     animation-duration: 0.01ms !important;
+    animation-delay: -1ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
   }
 }
 

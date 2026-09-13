@@ -110,6 +110,30 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
 
   /* ------------------------------------------------------------ partials */
 
+  /**
+   * The browser-chrome colour, as a literal value per theme. It cannot be a
+   * var(--bg) reference — this is a <meta> tag, not CSS — so it is the third
+   * place on the site that would otherwise carry a hand-written copy of the
+   * palette, after site.webmanifest and favicon.svg (both pinned by a test in
+   * build-content.test.js, because neither is generated). This one *is*
+   * generated: pages built here get it from head() below, and the two
+   * hand-written pages have it spliced into a `<!-- generated:theme-color -->`
+   * region, so tokens.css stays the only place the colour is written down.
+   */
+  function themeColor() {
+    return output(html`
+      <meta
+        name="theme-color"
+        media="(prefers-color-scheme: light)"
+        content="${tokens.light.bg}"
+      />
+      <meta
+        name="theme-color"
+        media="(prefers-color-scheme: dark)"
+        content="${tokens.dark.bg}"
+      />`);
+  }
+
   function head({ title, description, canonical, styles }) {
     const url = `${site.origin}${canonical}`;
     return html`
@@ -147,16 +171,7 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
         href="/assets/icons/apple-touch-icon.png"
       />
       <link rel="manifest" href="/assets/site.webmanifest" />
-      <meta
-        name="theme-color"
-        media="(prefers-color-scheme: light)"
-        content="${tokens.light.bg}"
-      />
-      <meta
-        name="theme-color"
-        media="(prefers-color-scheme: dark)"
-        content="${tokens.dark.bg}"
-      />
+      ${themeColor()}
       <meta property="og:type" content="website" />
       <meta property="og:site_name" content="${esc(site.author)}" />
       <meta property="og:url" content="${esc(url)}" />
@@ -495,7 +510,7 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
         },
       },
       body: html`
-        <main class="wrap page case">
+        <main class="wrap page">
           <header class="page-head rise delay-150">
             <p class="page-eyebrow">
               <span data-glitch>${esc(project.period)}</span>
@@ -572,6 +587,7 @@ export function createRenderer({ site, projects: unordered, figures, tokens }) {
     /** The shared chrome, for splicing into the hand-written pages. */
     topbar,
     footer,
+    themeColor,
 
     /**
      * Every file generated from content/, at paths relative to public/.

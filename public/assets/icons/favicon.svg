@@ -3,7 +3,7 @@
   <style>
     polygon { fill: #101214; }
     @media (prefers-color-scheme: dark) {
-      polygon { fill: #ebeff2; }
+      polygon { fill: #e9ebef; }
     }
   </style>
   <polygon points="7,25 7,7 11.5,7 16,18.5 20.5,7 25,7 25,25"/>

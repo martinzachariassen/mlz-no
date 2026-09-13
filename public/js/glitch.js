@@ -58,7 +58,8 @@
 
   const scheduleBurst = () => {
     const delay =
-      MIN_BURST_DELAY_MS + Math.random() * (MAX_BURST_DELAY_MS - MIN_BURST_DELAY_MS);
+      MIN_BURST_DELAY_MS +
+      Math.random() * (MAX_BURST_DELAY_MS - MIN_BURST_DELAY_MS);
     setTimeout(() => {
       if (!document.hidden) burst();
       scheduleBurst();

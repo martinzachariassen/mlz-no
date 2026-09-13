@@ -130,17 +130,25 @@ matches() {
 }
 
 served=0
+missing=0
 while IFS= read -r file; do
   # Reached by unknown paths, not by its own URL — asserted above instead.
   [ "$file" = "404.html" ] && continue
   if matches "$root/public/$file" "$base$(url_for "$file")"; then
     served=$((served + 1))
   else
+    missing=$((missing + 1))
     bad "public/$file is not served as it sits on disk"
   fi
 done < <(cd "$root/public" && find . -type f \
   -not -path '*/.*' -not -path './node_modules/*' |
   sed 's|^\./||' | sort)
-ok "$served files served byte-for-byte from public/"
+# Each mismatch already reported itself above; this is the tally, so it must
+# not read as a pass when some of them failed.
+if [ "$missing" -eq 0 ]; then
+  ok "$served files served byte-for-byte from public/"
+else
+  bad "$served of $((served + missing)) files served byte-for-byte from public/"
+fi
 
 exit "$fail"
