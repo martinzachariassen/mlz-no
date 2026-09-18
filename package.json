@@ -18,7 +18,7 @@
     "lint": "biome ci ."
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.12",
-    "firebase-tools": "^15.29.0"
+    "@biomejs/biome": "^2.5.13",
+    "firebase-tools": "^15.30.0"
   }
 }
