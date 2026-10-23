@@ -18,10 +18,23 @@ it to `tokens.json` in the source repo rather than to a single project.
 Paste this into a project's `CLAUDE.md`, `AGENTS.md` or README:
 
 ```md
-Brand: follow https://mlz.no/brand/BRAND.md. Tokens: https://mlz.no/brand/tokens.json
-(hex lookup: https://mlz.no/brand/brand.json). Logos: https://mlz.no/brand/logo/.
-Don't invent colours or fonts. Use the CSS variables / Tailwind classes from the brand files.
+## Brand
+Follow the mlz brand: https://mlz.no/brand/BRAND.md (read it before any UI work).
+- CSS: link https://mlz.no/brand/tokens.css and use its variables (--bg, --fg, --accent-deep, --font-mono, …).
+- Tailwind v4: vendor https://mlz.no/brand/tailwind.css (curl) and @import it.
+- Hex colours, font files and every logo URL: https://mlz.no/brand/brand.json.
+- Don't invent colours, fonts or logo variants.
 ```
+
+What to use for what:
+
+| You need | Use |
+| --- | --- |
+| Colours, fonts, radius, easing in CSS | `tokens.css` (`<link>`), variables in [Colour](#colour) |
+| The same in Tailwind v4 | `tailwind.css`, vendored ([Tailwind](#tailwind-css-v4)) |
+| Values in code, native apps, design tools | `brand.json` (hex) or `tokens.json` (full source) |
+| Logo, favicon, app icon | [`logo/`](#logo) files, listed in `brand.json` → `logo` |
+| How things should look and move | This guide
 
 ## Quick start
 
@@ -197,6 +210,19 @@ Rules:
   the period in `--accent-deep`), vertically centred. Proportions: font size
   0.85 × the mark, gap 0.4 × the mark (mark 40px → text 34px, gap 16px). An
   SVG wordmark isn't available yet; use the PNG lockup or set the text live.
+
+## Favicon and app icon
+
+```html
+<link rel="icon" href="https://mlz.no/brand/logo/mark.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="https://mlz.no/brand/logo/png/mark-dark-256.png" />
+<meta name="theme-color" content="#ebeff2" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#151619" media="(prefers-color-scheme: dark)" />
+```
+
+`mark.svg` follows the viewer's colour scheme, so one file covers both tab
+bars. Copy the files into your project instead of hotlinking if you want
+the icon to keep working offline or under a strict CSP.
 
 ## Changing the baseline
 

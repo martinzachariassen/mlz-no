@@ -130,6 +130,16 @@ jobs:
             fi
           done
 
+          # Folder URLs handed out in BRAND.md must not 404 (no directory listing).
+          for path in /brand /brand/ /brand/logo/; do
+            loc="$(headers "$base$path" | grep -i '^location:' || true)"
+            if echo "$loc" | grep -q '/brand/BRAND.md'; then
+              ok "$path redirects to the brand guide"
+            else
+              bad "$path does not redirect to /brand/BRAND.md"
+            fi
+          done
+
           # Stable URLs that change with the baseline: cached, never immutable.
           brand_cc="$(headers "$base/brand/tokens.css" | grep -i '^cache-control:' || true)"
           if echo "$brand_cc" | grep -qi 'max-age=3600' && ! echo "$brand_cc" | grep -qi 'immutable'; then

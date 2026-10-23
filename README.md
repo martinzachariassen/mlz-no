@@ -4,6 +4,10 @@
 
 Martin Zachariassen's personal homepage — live at [mlz.no](https://mlz.no).
 
+> **Looking for the brand (colours, fonts, logo)?** This repo is the mlz brand
+> baseline: start at [`public/brand/BRAND.md`](public/brand/BRAND.md), live at
+> [mlz.no/brand](https://mlz.no/brand/BRAND.md).
+
 A static site with no build step: plain HTML, CSS, and JS in `public/`,
 served as-is by Firebase Hosting.
 

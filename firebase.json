@@ -17,6 +17,20 @@
     // unknown path a genuine 404 rather than a redirect to a normalized form.
     "cleanUrls": false,
     "trailingSlash": false,
+    // The brand baseline's folder URLs are handed out to other projects, but a
+    // static host has no directory listing, so send them to the guide.
+    "redirects": [
+      {
+        "regex": "^/brand/?$",
+        "destination": "/brand/BRAND.md",
+        "type": 301
+      },
+      {
+        "regex": "^/brand/logo/?$",
+        "destination": "/brand/BRAND.md#logo",
+        "type": 301
+      }
+    ],
     // public/404.html is served with a real 404 status for unknown paths.
     // That is Hosting's built-in behaviour for a 404.html in the deploy root —
     // there is no config key for it, so the filename is the entire contract.
