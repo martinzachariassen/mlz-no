@@ -59,58 +59,24 @@ Apply is run by hand, not in CI. CI only runs `fmt` and `validate` (the
 `terraform` check). Running apply in CI would mean giving the deploy service
 account rights to change IAM, so it could grant itself anything.
 
-## First-time setup (once)
+## The state bucket
 
-Everything already existed before this folder did, so it's adopted with the
-one-off `import` blocks in `imports.tf` rather than created.
+Terraform can't keep state in a bucket that doesn't exist yet, so it was
+created by hand and `state.tf` took it over afterwards. Needed only to start
+over in an empty project:
 
-1. **Log in** (on any Mac with the repo checked out on this branch):
-   ```sh
-   mise install
-   gcloud auth login
-   gh auth status
-   ```
-2. **Create the state bucket.** Terraform can't keep state in a bucket that
-   doesn't exist yet. `state.tf` imports it and owns its settings afterwards.
-   ```sh
-   gcloud storage buckets create gs://mlz-no-tfstate \
-     --location=europe-west1 --uniform-bucket-level-access \
-     --public-access-prevention --project=mlz-no
-   ```
-3. **Init and plan:**
-   ```sh
-   export GOOGLE_OAUTH_ACCESS_TOKEN="$(gcloud auth print-access-token)"
-   export GITHUB_TOKEN="$(gh auth token)"
-   terraform -chdir=infra init
-   terraform -chdir=infra plan -out=first.tfplan
-   ```
-   The plan should contain **imports and in-place updates only**. Expected:
-   - `github` WIF provider: the condition switches to numeric IDs and two
-     attributes are added to the mapping.
-   - A new `deploy_wif` binding on `attribute.repository_id/1218667885`.
-   - Bucket: versioning and a lifecycle rule.
-   - The repo: `delete_branch_on_merge` becomes `true`.
-   - A new `preview` environment.
-   - Ruleset: required checks go from `build` to `build`, `terraform`,
-     `review dependencies` and `deploy-preview`.
+```sh
+gcloud storage buckets create gs://mlz-no-tfstate \
+  --location=europe-west1 --uniform-bucket-level-access \
+  --public-access-prevention --project=mlz-no
+```
 
-   **Stop if you see `destroy` or `must be replaced`** on the project, the
-   pool, the service account, the site or the repo.
-4. **Apply exactly that plan:**
-   ```sh
-   terraform -chdir=infra apply first.tfplan
-   rm infra/first.tfplan
-   ```
-5. **Prove deploys still work:** re-run `deploy-preview` on the Terraform PR,
-   or run `gh workflow run gcp-auth-check.yml`. Both log in through the new
-   condition.
-6. **Remove the old name-based login binding**, which Terraform doesn't
-   manage:
-   ```sh
-   gcloud iam service-accounts remove-iam-policy-binding \
-     gh-deploy@mlz-no.iam.gserviceaccount.com --project=mlz-no \
-     --role=roles/iam.workloadIdentityUser \
-     --member="principalSet://iam.googleapis.com/projects/214692307089/locations/global/workloadIdentityPools/github/attribute.repository/martinzachariassen/mlz-no"
-   ```
-7. **Delete `imports.tf`**, confirm `terraform -chdir=infra plan` says
-   *No changes*, and commit with `chore: drop one-off terraform imports`.
+## How this was adopted
+
+Everything existed before this folder did, so the first apply (2026-10-23)
+imported it with one-off `import` blocks instead of creating it. The blocks
+were deleted afterwards; they are in git history (`infra/imports.tf` in
+`0f2e841`). Two things were done by hand because Terraform doesn't manage
+them: creating the state bucket, and removing the old name-based
+`roles/iam.workloadIdentityUser` binding (it matched on the repo *name*, so a
+rename would have broken deploys; the managed one matches the numeric ID).
