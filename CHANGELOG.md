@@ -8,6 +8,24 @@ The brand baseline in `public/brand/` is versioned separately, with
 `brand-vX.Y.Z` tags (see [`BRAND.md`](public/brand/BRAND.md)). It is
 unchanged in this release and stays at `brand-v1.0.0`.
 
+## [1.1.1] - 2026-10-23
+
+### Changed
+
+- The deploy job no longer restores the mise cache, since the production
+  deploy shouldn't restore a cache a lower-trust workflow could have
+  written (#55).
+- README and docs are specific to this site: dropped the framing of this
+  repo as a baseline for other projects from the README, `infra/README.md`,
+  `CLAUDE.md` and a comment in `firebase.json` (#56).
+- Documented the release process in `CLAUDE.md` (#54).
+- Recorded in `infra/README.md` why Hosting content stays outside Terraform
+  rather than moving the deploy to `terraform apply` (#57).
+
+### Dependencies
+
+- Routine update of `jdx/mise-action` (#52).
+
 ## [1.1.0] - 2026-10-23
 
 ### Added
@@ -73,5 +91,6 @@ served via Firebase Hosting, with dark/light theming, a terminal easter egg
 on the 404 page, and security headers and cache policy declared in
 `firebase.json`.
 
+[1.1.1]: https://github.com/martinzachariassen/mlz-no/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/martinzachariassen/mlz-no/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/martinzachariassen/mlz-no/releases/tag/v1.0.0
