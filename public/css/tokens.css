@@ -43,11 +43,13 @@
   color-scheme: light;
 }
 
+/* Secondary/muted are set so fg reads ~1.7x / ~2.6x their contrast — about
+   the same steps as in light — while staying well above AA (9.0:1, 5.8:1). */
 [data-theme="dark"] {
   --bg: oklch(0.2 0.006 265);
   --fg: oklch(0.94 0.006 265);
-  --fg-secondary: oklch(0.86 0.006 265);
-  --fg-muted: oklch(0.7 0.01 265);
+  --fg-secondary: oklch(0.78 0.006 265);
+  --fg-muted: oklch(0.66 0.01 265);
   --border: oklch(0.31 0.008 265);
   --accent-deep: oklch(0.74 0.16 285);
   --glitch-2: oklch(0.68 0.17 40);
