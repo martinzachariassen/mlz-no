@@ -93,6 +93,34 @@
             "value": "public, max-age=86400"
           }
         ]
+      },
+      // The brand baseline (public/brand/BRAND.md) is linked live from other
+      // projects on other origins. Fonts and fetch() need CORS for that, and
+      // an hour of caching (not a day) lets a change reach every consumer the
+      // same day. Projects that want stability pin a tag via jsDelivr instead.
+      {
+        "source": "/brand/**",
+        "headers": [
+          {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
+          },
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=3600"
+          }
+        ]
+      },
+      // Markdown is otherwise served without a charset, so æøå, em dashes and
+      // the like would render as mojibake in a browser.
+      {
+        "source": "**/*.md",
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "text/markdown; charset=utf-8"
+          }
+        ]
       }
     ]
   },

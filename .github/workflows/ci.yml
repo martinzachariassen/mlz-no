@@ -35,6 +35,12 @@ jobs:
       - name: Lint & format check
         run: bun run lint
 
+      # public/brand/ is generated from tokens.json (scripts/brand.js) and
+      # committed, since there's no build step at deploy. Fails if someone
+      # edited tokens.json without regenerating, or edited an output by hand.
+      - name: Brand files in sync with tokens.json
+        run: bun run brand:check
+
       # Serves public/ through the Hosting emulator and asserts what
       # firebase.json can't check itself — notably that `headers` is
       # last-match-wins, so a reorder could silently let the catch-all
@@ -106,6 +112,36 @@ jobs:
             bad "favicon marked immutable"
           else
             ok "favicon is served and not immutable"
+          fi
+
+          # The brand baseline is linked live from other origins (BRAND.md).
+          for path in /brand/tokens.css /brand/tokens.json /brand/brand.json /brand/tailwind.css /brand/BRAND.md /brand/logo/mark.svg /llms.txt; do
+            status="$(curl -s -o /dev/null -w '%{http_code}' "$base$path")"
+            [ "$status" = "200" ] && ok "$path is served" || bad "$path returned $status"
+          done
+
+          # Cross-origin <link> + @font-face and fetch() need CORS; a reorder
+          # or a narrowed glob would break every consumer at once.
+          for path in /brand/tokens.css /brand/fonts/ibm-plex-mono-400.woff2; do
+            if headers "$base$path" | grep -qi '^access-control-allow-origin: \*'; then
+              ok "$path allows any origin"
+            else
+              bad "$path is missing access-control-allow-origin: *"
+            fi
+          done
+
+          # Stable URLs that change with the baseline: cached, never immutable.
+          brand_cc="$(headers "$base/brand/tokens.css" | grep -i '^cache-control:' || true)"
+          if echo "$brand_cc" | grep -qi 'max-age=3600' && ! echo "$brand_cc" | grep -qi 'immutable'; then
+            ok "brand files cached for an hour, not immutable"
+          else
+            bad "unexpected brand cache policy: $brand_cc"
+          fi
+
+          if headers "$base/brand/BRAND.md" | grep -qi '^content-type: text/markdown; charset=utf-8'; then
+            ok "markdown served as UTF-8"
+          else
+            bad "markdown is not served as text/markdown; charset=utf-8"
           fi
 
           if [ "$fail" -ne 0 ]; then
