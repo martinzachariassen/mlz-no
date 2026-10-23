@@ -7,6 +7,16 @@
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
     <meta name="color-scheme" content="light dark" />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: light)"
+      content="#ebeff2"
+    />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: dark)"
+      content="#151619"
+    />
     <script src="/theme-init.js"></script>
     <meta name="format-detection" content="telephone=no" />
     <title>Martin Zachariassen — Senior Software Developer</title>
@@ -36,16 +46,6 @@
       href="/assets/icons/apple-touch-icon.png"
     />
     <link rel="manifest" href="/assets/site.webmanifest" />
-    <meta
-      name="theme-color"
-      media="(prefers-color-scheme: light)"
-      content="#ebeff2"
-    />
-    <meta
-      name="theme-color"
-      media="(prefers-color-scheme: dark)"
-      content="#151619"
-    />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Martin Zachariassen" />
@@ -81,6 +81,13 @@
       }
     </script>
 
+    <link
+      rel="preload"
+      href="/assets/fonts/newsreader-italic-variable.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
     <link rel="stylesheet" href="/css/tokens.css" />
     <link rel="stylesheet" href="/css/base.css" />
     <link rel="stylesheet" href="/css/topbar.css" />

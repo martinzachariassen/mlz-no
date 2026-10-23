@@ -97,10 +97,11 @@
     ]
   },
   // Pin the emulator port rather than relying on the CLI default, so the smoke
-  // test in ci.yml has a fixed address to curl against.
+  // test in ci.yml has a fixed address to curl against. Not the CLI's 5000:
+  // macOS's AirPlay Receiver holds that port, so `bun run dev` failed there.
   "emulators": {
     "hosting": {
-      "port": 5000
+      "port": 5050
     },
     "singleProjectMode": true
   }
