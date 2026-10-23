@@ -35,3 +35,9 @@ Thumbs.db
 
 # Playwright MCP tool scratch output (console logs, page snapshots)
 .playwright-mcp/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
