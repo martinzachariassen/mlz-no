@@ -1,40 +1,14 @@
 <!doctype html>
 <!-- Source for public/assets/social/og.png (1200×630). Not deployed — it
-     lives outside public/. Uses the site's own fonts and light-theme
-     colours (public/css/tokens.css), so regenerate it when those change.
-     See README → "Social card". -->
+     lives outside public/. Uses the brand tokens and fonts
+     (public/brand/tokens.css, light theme), so regenerate it when those
+     change. See README → "Social card". -->
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <title>mlz.no social card</title>
+    <link rel="stylesheet" href="/public/brand/tokens.css" />
     <style>
-      @font-face {
-        font-family: "IBM Plex Mono";
-        font-weight: 400;
-        src: url("/public/assets/fonts/ibm-plex-mono-400.woff2") format("woff2");
-      }
-      @font-face {
-        font-family: "IBM Plex Mono";
-        font-weight: 700;
-        src: url("/public/assets/fonts/ibm-plex-mono-700.woff2") format("woff2");
-      }
-      @font-face {
-        font-family: "Newsreader";
-        font-style: italic;
-        font-weight: 200 800;
-        src: url("/public/assets/fonts/newsreader-italic-variable.woff2")
-          format("woff2");
-      }
-
-      :root {
-        --bg: oklch(0.95 0.006 250);
-        --fg: oklch(0.18 0.006 250);
-        --fg-secondary: oklch(0.36 0.006 250);
-        --border: oklch(0.85 0.008 250);
-        --accent-deep: oklch(0.44 0.12 285);
-        --mono: "IBM Plex Mono", monospace;
-      }
-
       * {
         box-sizing: border-box;
       }
@@ -47,7 +21,7 @@
         overflow: hidden;
         background: var(--bg);
         color: var(--fg);
-        font-family: var(--mono);
+        font-family: var(--font-mono);
       }
 
       .card {
@@ -89,7 +63,7 @@
 
       h1 {
         margin: 0;
-        font-family: "Newsreader", serif;
+        font-family: var(--font-display);
         font-style: italic;
         font-weight: 500;
         font-variation-settings: "opsz" 72;

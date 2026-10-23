@@ -15,7 +15,10 @@
     "prepare": "git config core.hooksPath .githooks || true",
     "dev": "firebase emulators:start --only hosting",
     "format": "biome check --write .",
-    "lint": "biome ci ."
+    "lint": "biome ci .",
+    "brand": "bun scripts/brand.js",
+    "brand:check": "bun scripts/brand.js --check",
+    "brand:png": "bun scripts/brand-png.js"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",

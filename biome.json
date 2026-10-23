@@ -6,7 +6,12 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["public/**/*.js", "public/css/*.css"]
+    "includes": [
+      "public/**/*.js",
+      "public/css/*.css",
+      "public/brand/*.css",
+      "scripts/**/*.js"
+    ]
   },
   "formatter": {
     "enabled": true,
@@ -18,6 +23,11 @@
     "enabled": true,
     "rules": {
       "preset": "recommended"
+    }
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
     }
   },
   "javascript": {

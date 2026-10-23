@@ -1,0 +1,65 @@
+{
+  "$comment": "GENERATED from tokens.json by scripts/brand.js — do not edit by hand.",
+  "name": "mlz",
+  "version": "1.0.0",
+  "guide": "https://mlz.no/brand/BRAND.md",
+  "live": "https://mlz.no/brand/",
+  "pinned": "https://cdn.jsdelivr.net/gh/martinzachariassen/mlz-no@brand-v1.0.0/public/brand/",
+  "tokens": {
+    "json": "https://mlz.no/brand/tokens.json",
+    "css": "https://mlz.no/brand/tokens.css",
+    "tailwind": "https://mlz.no/brand/tailwind.css"
+  },
+  "colors": {
+    "light": {
+      "bg": "#ebeff2",
+      "fg": "#101214",
+      "fg-secondary": "#3b3d40",
+      "fg-muted": "#5c6166",
+      "border": "#caced3",
+      "accent": "#968dfd",
+      "accent-deep": "#4d4691",
+      "glitch-2": "#c94c18"
+    },
+    "dark": {
+      "bg": "#151619",
+      "fg": "#e9ebef",
+      "fg-secondary": "#b5b7bb",
+      "fg-muted": "#8f9299",
+      "border": "#2e3034",
+      "accent": "#968dfd",
+      "accent-deep": "#a29aff",
+      "glitch-2": "#ec6d3d"
+    }
+  },
+  "fonts": {
+    "display": {
+      "family": "Newsreader",
+      "stack": "\"Newsreader\", Georgia, \"Times New Roman\", serif",
+      "files": ["https://mlz.no/brand/fonts/newsreader-italic-variable.woff2"]
+    },
+    "mono": {
+      "family": "IBM Plex Mono",
+      "stack": "\"IBM Plex Mono\", ui-monospace, \"SFMono-Regular\", Menlo, Consolas, monospace",
+      "files": [
+        "https://mlz.no/brand/fonts/ibm-plex-mono-400.woff2",
+        "https://mlz.no/brand/fonts/ibm-plex-mono-700.woff2"
+      ]
+    }
+  },
+  "logo": {
+    "mark-dark": "https://mlz.no/brand/logo/mark-dark.svg",
+    "mark-light": "https://mlz.no/brand/logo/mark-light.svg",
+    "mark": "https://mlz.no/brand/logo/mark.svg",
+    "png/lockup-dark@2x": "https://mlz.no/brand/logo/png/lockup-dark@2x.png",
+    "png/lockup-light@2x": "https://mlz.no/brand/logo/png/lockup-light@2x.png",
+    "png/mark-dark-1024": "https://mlz.no/brand/logo/png/mark-dark-1024.png",
+    "png/mark-dark-256": "https://mlz.no/brand/logo/png/mark-dark-256.png",
+    "png/mark-dark-512": "https://mlz.no/brand/logo/png/mark-dark-512.png",
+    "png/mark-dark-64": "https://mlz.no/brand/logo/png/mark-dark-64.png",
+    "png/mark-light-1024": "https://mlz.no/brand/logo/png/mark-light-1024.png",
+    "png/mark-light-256": "https://mlz.no/brand/logo/png/mark-light-256.png",
+    "png/mark-light-512": "https://mlz.no/brand/logo/png/mark-light-512.png",
+    "png/mark-light-64": "https://mlz.no/brand/logo/png/mark-light-64.png"
+  }
+}

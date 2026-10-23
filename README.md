@@ -4,6 +4,10 @@
 
 Martin Zachariassen's personal homepage — live at [mlz.no](https://mlz.no).
 
+> **Looking for the brand (colours, fonts, logo)?** This repo is the mlz brand
+> baseline: start at [`public/brand/BRAND.md`](public/brand/BRAND.md), live at
+> [mlz.no/brand](https://mlz.no/brand/BRAND.md).
+
 A static site with no build step: plain HTML, CSS, and JS in `public/`,
 served as-is by Firebase Hosting.
 
@@ -53,11 +57,30 @@ Deploys (`.github/workflows/deploy.yml`) run on every push to `main`,
 authenticating to Google Cloud via Workload Identity Federation — no
 long-lived secrets stored in the repo.
 
+## Brand baseline
+
+This repo is also the source of the mlz brand — colours, fonts, logo and
+rules — that other projects link to live at
+[mlz.no/brand](https://mlz.no/brand/BRAND.md). Everything lives in
+[`public/brand/`](public/brand/BRAND.md), and the site uses the same files.
+
+`public/brand/tokens.json` is the single source. Edit it, then:
+
+```sh
+bun run brand        # fill in hex, check contrast, regenerate the rest
+bun run brand:png    # re-render the logo PNGs (macOS + Chrome), if fg or the mark changed
+```
+
+The generated files (`tokens.css`, `tailwind.css`, `brand.json`, the logo
+SVGs, the colour table in `BRAND.md`) are committed, and CI runs
+`bun run brand:check` to catch drift. Tag `brand-vX.Y.Z` for projects that pin
+a version via jsDelivr.
+
 ## Social card
 
 `public/assets/social/og.png` (the 1200×630 Open Graph image) is rendered
-from [`tools/og/og.html`](tools/og/og.html), which uses the site's own fonts
-and light-theme colours. Regenerate it whenever those change:
+from [`tools/og/og.html`](tools/og/og.html), which uses the brand tokens and
+fonts (light theme). Regenerate it whenever those change:
 
 ```sh
 python3 -m http.server 8765 --bind 127.0.0.1 &   # serve the repo root

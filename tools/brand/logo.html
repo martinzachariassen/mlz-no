@@ -1,0 +1,66 @@
+<!doctype html>
+<!-- Source for the PNGs in public/brand/logo/png/. Not deployed — it lives
+     outside public/. Rendered by scripts/brand-png.js (`bun run brand:png`):
+       logo.html?kind=mark&variant=dark&size=256
+       logo.html?kind=lockup&variant=light
+     variant=dark is the dark logo for light backgrounds (light-theme tokens),
+     variant=light the light logo for dark backgrounds (dark-theme tokens).
+     The logo is centred in the viewport; the script crops to its box. -->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>mlz logo</title>
+    <link rel="stylesheet" href="/public/brand/tokens.css" />
+    <style>
+      /* Transparent canvas whatever the theme (color-scheme: dark would
+         otherwise paint it). */
+      html {
+        color-scheme: light;
+      }
+
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: transparent;
+      }
+
+      body {
+        display: grid;
+        place-items: center;
+      }
+
+      .mark {
+        display: block;
+      }
+
+      /* Same proportions as the social card: mark 40, gap 16, word 34. */
+      .lockup {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        color: var(--fg);
+      }
+
+      .lockup .mark {
+        width: 40px;
+        height: 40px;
+      }
+
+      .word {
+        font-family: var(--font-mono);
+        font-weight: 700;
+        font-size: 34px;
+        letter-spacing: -0.03em;
+        line-height: 1;
+      }
+
+      .word span {
+        color: var(--accent-deep);
+      }
+    </style>
+  </head>
+  <body>
+    <script src="logo.js"></script>
+  </body>
+</html>
