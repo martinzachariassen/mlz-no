@@ -47,6 +47,23 @@ Always use the template in `.github/pull_request_template.md` when opening a
 PR — don't write a free-form description. Tick what applies and mark the
 rest N/A.
 
+## Releases
+
+Versions follow [SemVer](https://semver.org/); `CHANGELOG.md` ([Keep a
+Changelog](https://keepachangelog.com/en/1.1.0/), in English) and `version`
+in `package.json` are the source. The brand baseline is versioned separately
+(`brand-vX.Y.Z`, see `public/brand/BRAND.md`).
+
+1. Branch `release/vX.Y.Z`. Write the new `CHANGELOG.md` section by hand from
+   `git log <last tag>..HEAD` (group as Added/Changed/Fixed/Removed, fold
+   Dependabot bumps into one "Dependencies" line, reference PR numbers),
+   bump `package.json`, add the compare link at the bottom.
+2. Commit as `release: vX.Y.Z` and open a PR from the template.
+3. After it is merged and the Deploy run on `main` is green, tag the merge
+   commit (`git tag -a vX.Y.Z`), push the tag, and run
+   `gh release create vX.Y.Z --verify-tag` with the new changelog section as
+   notes. Merging and tagging are outward-facing: only when the user asks.
+
 ## CI
 
 `scripts/verify.sh` (run by `ci.yml` and `deploy.yml`, or locally) boots
