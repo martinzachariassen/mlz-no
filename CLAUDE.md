@@ -44,9 +44,8 @@ Use [Conventional Commits](https://www.conventionalcommits.org/):
 ## Pull requests
 
 Always use the template in `.github/pull_request_template.md` when opening a
-PR — don't write a free-form description. Double-check the checklist items
-actually match this repo (e.g. it's `bun run lint`, not `npm run ...`, and
-there's no changesets/CONTRIBUTING.md flow here yet) before filling it in.
+PR — don't write a free-form description. Tick what applies and mark the
+rest N/A.
 
 ## CI
 
