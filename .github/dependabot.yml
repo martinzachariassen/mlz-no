@@ -19,3 +19,13 @@ updates:
     groups:
       actions:
         patterns: ["*"]
+
+  - package-ecosystem: "terraform"
+    directory: "/infra"
+    schedule:
+      interval: "weekly"
+    groups:
+      terraform:
+        patterns: ["*"]
+    commit-message:
+      prefix: "chore"

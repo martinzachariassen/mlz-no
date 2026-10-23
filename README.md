@@ -50,12 +50,24 @@ anything else. Because nothing executes per request, all hardening (CSP,
 HSTS, cache-control) is configured declaratively in `firebase.json` rather
 than in code.
 
-CI (`.github/workflows/ci.yml`) boots the Hosting emulator and asserts that
-those headers and cache rules actually take effect — `firebase.json`'s
-`headers` list is last-match-wins, so a reorder could silently break a rule.
-Deploys (`.github/workflows/deploy.yml`) run on every push to `main`,
-authenticating to Google Cloud via Workload Identity Federation — no
-long-lived secrets stored in the repo.
+`scripts/verify.sh` boots the Hosting emulator and asserts that those headers
+and cache rules actually take effect — `firebase.json`'s `headers` list is
+last-match-wins, so a reorder could silently break a rule. CI runs it on
+every PR, and `deploy.yml` runs it again before deploying.
+
+- Every same-repo PR gets a preview channel (`preview.yml`, expires after 7
+  days).
+- Deploys (`deploy.yml`) run on every push to `main`, authenticating to
+  Google Cloud via Workload Identity Federation — no long-lived secrets in
+  the repo.
+- A weekly job (`gcp-auth-check.yml`) catches a broken login before the next
+  deploy does.
+
+## Infrastructure
+
+The GCP project, Firebase Hosting, the deploy login and the GitHub repo
+settings are Terraform in [`infra/`](infra/README.md), applied by hand. CI
+only checks `fmt` and `validate`.
 
 ## Brand baseline
 

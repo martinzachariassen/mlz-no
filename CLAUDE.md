@@ -27,6 +27,14 @@ Personal homepage (mlz.no) — a static site with no build step. Everything in
 under `/brand/` are a public contract: don't rename or remove files there
 without a version bump.
 
+## Infrastructure
+
+GCP (project, APIs, Hosting site, custom domain, WIF, deploy service
+account) and the GitHub repo settings (variables, environments, ruleset)
+live in `infra/` as Terraform — see `infra/README.md`. Change them there,
+never in a console. `plan`/`apply` are run by hand by Martin, not in CI and
+not by an agent; CI only runs `fmt -check` and `validate`.
+
 ## Commits
 
 Use [Conventional Commits](https://www.conventionalcommits.org/):
@@ -36,13 +44,13 @@ Use [Conventional Commits](https://www.conventionalcommits.org/):
 ## Pull requests
 
 Always use the template in `.github/pull_request_template.md` when opening a
-PR — don't write a free-form description. Double-check the checklist items
-actually match this repo (e.g. it's `bun run lint`, not `npm run ...`, and
-there's no changesets/CONTRIBUTING.md flow here yet) before filling it in.
+PR — don't write a free-form description. Tick what applies and mark the
+rest N/A.
 
 ## CI
 
-`ci.yml` boots the Hosting emulator and verifies that security headers,
+`scripts/verify.sh` (run by `ci.yml` and `deploy.yml`, or locally) boots
+the Hosting emulator and verifies that security headers,
 cache policy, and the custom 404 page actually work in practice — not just
 that `firebase.json` is syntactically valid. Test changes to `firebase.json`
-or `public/404.html` against this CI job.
+or `public/404.html` against it.

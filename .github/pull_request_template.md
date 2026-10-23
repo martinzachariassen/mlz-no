@@ -10,11 +10,14 @@
 
 ## Checklist
 
-- [ ] `npm run typecheck`, `npm run lint`, and `npm test` pass locally
-- [ ] Tests added or updated for the change, if applicable
-- [ ] README updated, if this changes setup, configuration, or the tool list
-- [ ] A changeset was added via `npx changeset`, if this is user-facing (see [CONTRIBUTING.md](../CONTRIBUTING.md#changelog-entries))
+<!-- Tick what applies; write N/A after the rest. -->
+
+- [ ] `bun run lint` passes locally
+- [ ] `bun run brand:check` passes, if `public/brand/` or `tokens.json` changed
+- [ ] `./scripts/verify.sh` passes, if `firebase.json` or `public/404.html` changed
+- [ ] `terraform fmt -check` and `terraform validate` pass in `infra/`, and the plan was reviewed, if `infra/` changed
+- [ ] README or CLAUDE.md updated, if this changes setup, configuration or workflow
 
 ## How was this tested?
 
-<!-- Commands run, an MCP client used for manual verification, etc. -->
+<!-- Commands run, the preview URL checked, etc. -->
