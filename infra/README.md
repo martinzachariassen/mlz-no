@@ -10,8 +10,6 @@ down as Terraform:
 If it's in this folder, change it here and not in a console. A click in the
 console shows up as drift in the next `terraform plan`.
 
-The same layout is used in ip.mlz.no (`ip-mlz-no/infra/`).
-
 ## What is *not* here, and why
 
 The rule: Terraform owns what describes the setup and changes rarely.
@@ -23,6 +21,17 @@ The rule: Terraform owns what describes the setup and changes rarely.
 | Google-managed service agents, `firebase-adminsdk-*`, the APIs GCP enables by default | Owned by Google; managing them adds noise and no control |
 | Billing account link | Set in the console, so the account ID stays out of the public repo |
 | DNS records for `mlz.no` | Managed outside GCP. `terraform output dns_records` shows what Hosting expects |
+
+Revisited 2026-10-23: moving hosting content into Terraform too isn't just a
+style choice, it doesn't fit. Firebase Hosting's upload flow (hash every
+file, ask `populateFiles` which ones are missing, gzip and PUT each to a
+short-lived URL) has no idempotent Terraform resource behind it —
+`google_firebase_hosting_version`/`_release` only manage the serving config
+and a release pointer, never file content. Doing it anyway would mean either
+scripting that upload flow in a provisioner (worse than just calling
+`firebase-tools`), or giving the deploy service account enough IAM to run
+`apply` in CI, which defeats the reason `apply` stays manual in the first
+place. Kept as is.
 
 ## Reading the files
 
