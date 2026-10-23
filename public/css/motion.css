@@ -13,14 +13,8 @@
 .delay-450 {
   animation-delay: 0.45s;
 }
-.delay-550 {
-  animation-delay: 0.55s;
-}
 .delay-600 {
   animation-delay: 0.6s;
-}
-.delay-700 {
-  animation-delay: 0.7s;
 }
 .delay-750 {
   animation-delay: 0.75s;
@@ -38,4 +32,18 @@
     opacity: 1;
     transform: translate3d(0, 0, 0);
   }
+}
+
+/* Theme switch (js/theme-toggle.js): the new theme is revealed as a circle
+   clipped by a Web Animation, so the default cross-fade and blending are
+   switched off. body's colour transition is paused too, so the revealed
+   view already has the final colours rather than starting mid-fade. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+.theme-switching body {
+  transition: none;
 }
