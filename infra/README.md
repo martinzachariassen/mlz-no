@@ -10,8 +10,6 @@ down as Terraform:
 If it's in this folder, change it here and not in a console. A click in the
 console shows up as drift in the next `terraform plan`.
 
-The same layout is used in ip.mlz.no (`ip-mlz-no/infra/`).
-
 ## What is *not* here, and why
 
 The rule: Terraform owns what describes the setup and changes rarely.
