@@ -28,6 +28,7 @@ resource "google_iam_workload_identity_pool_provider" "github" {
 resource "google_service_account" "deploy" {
   account_id   = "gh-deploy"
   display_name = "GitHub Actions deployer"
+  description  = "Deploys mlz.no to Firebase Hosting from GitHub Actions via WIF"
 }
 
 locals {
