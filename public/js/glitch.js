@@ -26,12 +26,26 @@
   };
 
   zones.forEach((zone) => {
+    const text = zone.textContent.replace(/\s+/g, " ").trim();
+    if (!text) return;
+
     const walker = document.createTreeWalker(zone, NodeFilter.SHOW_TEXT);
     const textNodes = [];
     for (let node = walker.nextNode(); node; node = walker.nextNode()) {
       textNodes.push(node);
     }
     textNodes.forEach(splitTextNode);
+
+    // One span per letter can make screen readers spell words out
+    // ("G-i-t-H-u-b"), so the split letters are hidden from assistive tech
+    // and an intact, visually hidden copy of the text stands in for them.
+    const visual = document.createElement("span");
+    visual.setAttribute("aria-hidden", "true");
+    visual.append(...zone.childNodes);
+    const spoken = document.createElement("span");
+    spoken.className = "sr-only";
+    spoken.textContent = text;
+    zone.append(visual, spoken);
   });
 
   if (!chars.length) return;
@@ -58,7 +72,8 @@
 
   const scheduleBurst = () => {
     const delay =
-      MIN_BURST_DELAY_MS + Math.random() * (MAX_BURST_DELAY_MS - MIN_BURST_DELAY_MS);
+      MIN_BURST_DELAY_MS +
+      Math.random() * (MAX_BURST_DELAY_MS - MIN_BURST_DELAY_MS);
     setTimeout(() => {
       if (!document.hidden) burst();
       scheduleBurst();

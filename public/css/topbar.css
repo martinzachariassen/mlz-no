@@ -65,10 +65,17 @@
   inset: -6px;
 }
 
-.theme-toggle:hover,
 .theme-toggle:focus-visible {
   color: var(--fg);
   background: color-mix(in oklch, var(--fg) 9%, transparent);
+}
+
+/* Gated so the tint doesn't stick after a tap on touch screens. */
+@media (hover: hover) {
+  .theme-toggle:hover {
+    color: var(--fg);
+    background: color-mix(in oklch, var(--fg) 9%, transparent);
+  }
 }
 
 .theme-toggle:active {

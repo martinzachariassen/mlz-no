@@ -71,14 +71,36 @@
   }
 }
 
-.btn:hover,
+/* The lift is gated to devices that can really hover: on touch, :hover
+   sticks after a tap and left the button floating. Keyboard focus gets the
+   same state everywhere. */
 .btn:focus-visible {
   border-color: var(--accent-deep);
   transform: translate(-2px, -2px);
   box-shadow: 5px 5px 0 0 var(--accent-deep);
 }
 
-.btn:hover svg,
 .btn:focus-visible svg {
   transform: translate(-1px, 0) rotate(-4deg);
+}
+
+@media (hover: hover) {
+  .btn:hover {
+    border-color: var(--accent-deep);
+    transform: translate(-2px, -2px);
+    box-shadow: 5px 5px 0 0 var(--accent-deep);
+  }
+
+  .btn:hover svg {
+    transform: translate(-1px, 0) rotate(-4deg);
+  }
+}
+
+/* Pressed: the button drops back onto its shadow. Short duration so it
+   reads as a click, not an animation. */
+.btn:active {
+  border-color: var(--accent-deep);
+  transform: translate(0, 0);
+  box-shadow: 0 0 0 0 var(--accent-deep);
+  transition-duration: 0.08s;
 }
