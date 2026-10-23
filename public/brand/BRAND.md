@@ -1,8 +1,7 @@
 # mlz brand
 
-The baseline for everything Martin Zachariassen builds: colours, type, logo,
-shape and motion. [mlz.no](https://mlz.no) uses these exact files, so the site
-is the reference rendering.
+The colours, type, logo, shape and motion of [mlz.no](https://mlz.no). The
+site uses these exact files, so it is the reference rendering.
 
 - Guide (this file): <https://mlz.no/brand/BRAND.md>
 - Manifest of every file and URL: <https://mlz.no/brand/brand.json>
@@ -11,11 +10,11 @@ is the reference rendering.
   in `martinzachariassen/mlz-no`
 
 **Don't invent colours, fonts or logo variants.** If something is missing, add
-it to `tokens.json` in the source repo rather than to a single project.
+it to `tokens.json` in the source repo.
 
-## For AI agents and other repos
+## Pointing tools and agents at the brand
 
-Paste this into a project's `CLAUDE.md`, `AGENTS.md` or README:
+Paste this into `CLAUDE.md`, `AGENTS.md` or a README:
 
 ```md
 ## Brand
@@ -55,12 +54,12 @@ body {
 }
 ```
 
-Files under `/brand/` are cached for an hour, so a change to the baseline
-reaches every live consumer the same day.
+Files under `/brand/` are cached for an hour, so a change is picked up within
+the hour.
 
 ### Pin a version
 
-Live is the default. To freeze a project on a known version, use the git tag
+Live is the default. To freeze on a known version, use the git tag
 through jsDelivr (it also sends CORS headers, so the fonts work):
 
 ```html

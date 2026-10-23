@@ -1,14 +1,14 @@
 # mlz.no
 
-> Personal homepage of Martin Zachariassen, Senior Software Developer in Oslo. The site also hosts the mlz brand baseline: the colours, fonts, logo and rules used across all of Martin's projects.
+> Personal homepage of Martin Zachariassen, Senior Software Developer in Oslo. The site also hosts its brand files: the colours, fonts, logo and rules it is built with.
 
 ## Brand
 
-- [Brand guide](https://mlz.no/brand/BRAND.md): colour roles, typography, shape, motion, logo usage, and how to use the files from another project
+- [Brand guide](https://mlz.no/brand/BRAND.md): colour roles, typography, shape, motion, logo usage, and how to use the files
 - [Manifest](https://mlz.no/brand/brand.json): version, every file URL, hex colours per theme
 - [Design tokens](https://mlz.no/brand/tokens.json): source of truth, W3C Design Tokens format (OKLCH + hex)
 - [CSS variables](https://mlz.no/brand/tokens.css): @font-face rules and light/dark variables
 - [Tailwind v4 preset](https://mlz.no/brand/tailwind.css): vendor with curl, then @import
 - [Logo](https://mlz.no/brand/logo/mark.svg): also mark-dark.svg, mark-light.svg and PNGs under /brand/logo/png/
 
-When building something for Martin, follow the brand guide; don't invent colours, fonts or logo variants.
+When using these files, follow the brand guide; don't invent colours, fonts or logo variants.
