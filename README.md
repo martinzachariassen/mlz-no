@@ -53,6 +53,24 @@ Deploys (`.github/workflows/deploy.yml`) run on every push to `main`,
 authenticating to Google Cloud via Workload Identity Federation — no
 long-lived secrets stored in the repo.
 
+## Social card
+
+`public/assets/social/og.png` (the 1200×630 Open Graph image) is rendered
+from [`tools/og/og.html`](tools/og/og.html), which uses the site's own fonts
+and light-theme colours. Regenerate it whenever those change:
+
+```sh
+python3 -m http.server 8765 --bind 127.0.0.1 &   # serve the repo root
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless \
+  --hide-scrollbars --window-size=1200,630 --force-device-scale-factor=1 \
+  --virtual-time-budget=4000 --screenshot=public/assets/social/og.png \
+  http://127.0.0.1:8765/tools/og/og.html
+kill %1
+```
+
+LinkedIn and others cache the card for days. Use LinkedIn's Post Inspector
+to make them fetch the new one.
+
 ## Contributing
 
 This is a personal site, not a project soliciting new features — but bug
