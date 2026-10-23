@@ -44,7 +44,7 @@ jobs:
       - name: Check firebase.json headers and cache policy
         env:
           # Matches firebase.json -> emulators.hosting.port.
-          PORT: "5000"
+          PORT: "5050"
         run: |
           set -euo pipefail
           base="http://127.0.0.1:$PORT"
