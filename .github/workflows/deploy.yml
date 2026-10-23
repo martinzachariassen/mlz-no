@@ -64,10 +64,14 @@ jobs:
         with:
           persist-credentials: false
 
+      # No cache restore in the job that publishes: a lower-trust workflow
+      # that can write default-branch caches must not be able to alter what
+      # ships (see "Release workflows" in the mise-action README).
       - name: Set up tools from mise.toml
         uses: jdx/mise-action@08ae2a091c038e1e05ec6f5115dc5c69d5a2a6b8 # v5.1.2
         with:
           install_args: bun
+          cache: false
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
