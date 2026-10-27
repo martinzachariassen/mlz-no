@@ -65,8 +65,8 @@ Browser ──► Firebase Hosting ──► static files from public/
 ## Development
 
 Requires [Bun](https://bun.sh). It is pinned in [`mise.toml`](mise.toml)
-alongside Terraform (for `infra/`), so `mise install` sets both up. The Firebase CLI is a devDependency and needs no
-separate install.
+alongside Terraform (for `infra/`), so `mise install` sets both up. The
+Firebase CLI is a devDependency and needs no separate install.
 
 ```sh
 bun install
