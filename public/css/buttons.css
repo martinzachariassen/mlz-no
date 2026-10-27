@@ -1,27 +1,26 @@
+/* Phones: a two-column grid of full-size buttons, since three in a row only
+   fit when squeezed. An odd last button (Email here, the lone "Back home" on
+   the 404 page) spans the full width. From 640px they sit in one row. */
 .links {
   margin-top: 6px;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
   width: 100%;
-  max-width: 380px;
+  max-width: 340px;
   margin-inline: auto;
 }
 
-/* Too narrow for the three buttons in a row (an iPhone SE is 320px): stack
-   them full width rather than wrapping two and one. */
-@media (max-width: 359px) {
-  .links {
-    flex-direction: column;
-    align-items: stretch;
-    max-width: 280px;
-  }
+.links > .btn:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
 }
 
 @media (min-width: 640px) {
   .links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
     gap: 14px;
     max-width: none;
   }
@@ -37,18 +36,18 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 10px;
   width: auto;
-  /* 44px is the minimum comfortable touch target. Tighter side padding keeps
-     all three buttons on one row on a 360px-wide phone (310px of 320px). */
-  height: 44px;
-  padding-inline: 10px;
+  /* Taller on phones than the 44px touch minimum, so the grid reads as
+     buttons with room to breathe rather than chips. */
+  height: 52px;
+  padding-inline: 12px;
   border: 1.5px solid var(--fg);
   border-radius: var(--radius);
   background: transparent;
   color: var(--fg);
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.14em;
@@ -66,7 +65,6 @@
     gap: 8px;
     height: 44px;
     padding-inline: 22px;
-    font-size: 13px;
   }
 }
 
@@ -77,17 +75,10 @@
 }
 
 .btn svg {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   flex-shrink: 0;
   transition: transform 0.26s var(--ease);
-}
-
-@media (min-width: 640px) {
-  .btn svg {
-    width: 16px;
-    height: 16px;
-  }
 }
 
 /* The lift is gated to devices that can really hover: on touch, :hover
