@@ -10,14 +10,31 @@ footer {
   padding-top: 20px;
   padding-bottom: max(20px, env(safe-area-inset-bottom));
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--fg-secondary);
 }
 
+/* Each half stays on one line. letter-spacing also trails the last letter,
+   which would leave the right half short of the gutter and a centred line
+   off centre, so that trailing space is taken back. */
+.footer-row > * {
+  margin-right: -0.2em;
+  white-space: nowrap;
+}
+
+/* Phones stack the two halves, centred: side by side they only fit on the
+   widest ones, and wrapped they broke mid-name. */
+@media (max-width: 639px) {
+  .footer-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
 @media (min-width: 640px) {
   .footer-row {
-    font-size: 11px;
+    font-size: 12px;
   }
 }

@@ -1,8 +1,10 @@
 <!doctype html>
-<!-- Source for the PNGs in public/brand/logo/png/. Not deployed — it lives
+<!-- Source for the PNGs in public/brand/logo/png/ and the app icons in
+     public/assets/icons/icon-*.png. Not deployed — it lives
      outside public/. Rendered by scripts/brand-png.js (`bun run brand:png`):
        logo.html?kind=mark&variant=dark&size=256
        logo.html?kind=lockup&variant=light
+       logo.html?kind=icon&size=512&inset=0.56
      variant=dark is the dark logo for light backgrounds (light-theme tokens),
      variant=light the light logo for dark backgrounds (dark-theme tokens).
      The logo is centred in the viewport; the script crops to its box. -->
@@ -45,6 +47,12 @@
       .lockup .mark {
         width: 40px;
         height: 40px;
+      }
+
+      .icon {
+        display: grid;
+        place-items: center;
+        background: var(--bg);
       }
 
       .word {

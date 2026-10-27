@@ -40,9 +40,13 @@ bad() { echo "FAIL $1"; fail=1; }
 # Response headers for a URL, one per line.
 headers() { curl -s -D - -o /dev/null "$1"; }
 
+# Responses are captured before grepping: piping curl into `grep -q` lets grep
+# exit early, curl then fails on SIGPIPE and pipefail flips the result.
+
 # Catches a deleted/mistyped header, otherwise invisible until someone scans the site.
+root_headers="$(headers "$base/")"
 for header in content-security-policy strict-transport-security x-content-type-options x-frame-options referrer-policy permissions-policy; do
-  if headers "$base/" | grep -qi "^$header:"; then
+  if grep -qi "^$header:" <<< "$root_headers"; then
     ok "header $header present"
   else
     bad "header $header missing"
@@ -51,7 +55,8 @@ done
 
 # 404.html's filename is the whole contract with Hosting; a rename degrades silently.
 status="$(curl -s -o /dev/null -w '%{http_code}' "$base/nope")"
-if [ "$status" = "404" ] && curl -s "$base/nope" | grep -q 'notfound-home'; then
+body="$(curl -s "$base/nope")"
+if [ "$status" = "404" ] && grep -q 'notfound-home' <<< "$body"; then
   ok "unknown path serves the custom 404 page"
 else
   bad "unknown path did not serve the custom 404 page (status $status)"
@@ -65,7 +70,7 @@ else
 fi
 
 # Without revalidation, a deploy could stay invisible for Hosting's default hour of caching.
-if headers "$base/" | grep -qi '^cache-control:.*must-revalidate'; then
+if grep -qi '^cache-control:.*must-revalidate' <<< "$root_headers"; then
   ok "HTML is revalidated"
 else
   bad "HTML is not revalidated"
@@ -76,7 +81,7 @@ fi
 favicon="$base/assets/icons/favicon.svg"
 if [ "$(curl -s -o /dev/null -w '%{http_code}' "$favicon")" != "200" ]; then
   bad "favicon is not served (cannot check its cache policy)"
-elif headers "$favicon" | grep -qi '^cache-control:.*immutable'; then
+elif grep -qi '^cache-control:.*immutable' <<< "$(headers "$favicon")"; then
   bad "favicon marked immutable"
 else
   ok "favicon is served and not immutable"
@@ -91,7 +96,7 @@ done
 # Cross-origin <link> + @font-face and fetch() need CORS; a reorder or a
 # narrowed glob would break every consumer at once.
 for path in /brand/tokens.css /brand/fonts/ibm-plex-mono-400.woff2; do
-  if headers "$base$path" | grep -qi '^access-control-allow-origin: \*'; then
+  if grep -qi '^access-control-allow-origin: \*' <<< "$(headers "$base$path")"; then
     ok "$path allows any origin"
   else
     bad "$path is missing access-control-allow-origin: *"
@@ -116,7 +121,7 @@ else
   bad "unexpected brand cache policy: $brand_cc"
 fi
 
-if headers "$base/brand/BRAND.md" | grep -qi '^content-type: text/markdown; charset=utf-8'; then
+if grep -qi '^content-type: text/markdown; charset=utf-8' <<< "$(headers "$base/brand/BRAND.md")"; then
   ok "markdown served as UTF-8"
 else
   bad "markdown is not served as text/markdown; charset=utf-8"

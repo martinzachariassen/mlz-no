@@ -12,7 +12,18 @@ mark.className = "mark";
 mark.alt = "";
 mark.src = `/public/brand/logo/mark-${variant}.svg`;
 
-if (kind === "lockup") {
+if (kind === "icon") {
+  // App icon for site.webmanifest: the mark on a full-bleed --bg square, so
+  // the M's cut-out isn't transparent. inset < 1 shrinks the mark into the
+  // maskable safe zone (a circle 80% of the icon wide).
+  const inset = Number(params.get("inset") ?? 1);
+  const icon = document.createElement("div");
+  icon.className = "icon";
+  icon.style.width = icon.style.height = `${size}px`;
+  mark.width = mark.height = Math.round(size * inset);
+  icon.append(mark);
+  document.body.append(icon);
+} else if (kind === "lockup") {
   const lockup = document.createElement("div");
   lockup.className = "lockup";
   const word = document.createElement("span");
