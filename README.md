@@ -50,10 +50,11 @@ Browser ──► Firebase Hosting ──► static files from public/
 ```
 
 - `public/index.html` is the page. Its styles are split by section in
-  `public/css/` (base, topbar, hero, buttons, footer, motion).
-- Three small scripts in `public/js/` add the colour-theme toggle, the glitch
-  effect (occasional character flicker, off for reduced-motion) and the year
-  in the footer. `public/theme-init.js` runs first and applies the saved theme
+  `public/css/` (base, topbar, hero, buttons, toast, footer, motion).
+- Four small scripts in `public/js/` add the colour-theme toggle, the glitch
+  effect on the wordmark and footer (occasional character flicker, off for
+  reduced-motion), the year in the footer, and the Email button, which copies
+  the address and confirms it in a toast. `public/theme-init.js` runs first and applies the saved theme
   before first paint.
 - `index.html` links `public/brand/tokens.css` directly, so the site uses the
   same tokens it publishes.
