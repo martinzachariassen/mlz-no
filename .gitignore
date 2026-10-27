@@ -29,6 +29,10 @@ logs/
 # OS
 .DS_Store
 Thumbs.db
+# macOS-wide ignore files often carry `Icon?` (for Finder's Icon\r files),
+# which on a case-insensitive filesystem also matches icons/ and silently
+# drops new favicons and app icons from commits.
+!public/assets/icons/
 
 # Claude Code
 .claude/
