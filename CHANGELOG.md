@@ -8,6 +8,42 @@ The brand baseline in `public/brand/` is versioned separately, with
 `brand-vX.Y.Z` tags (see [`BRAND.md`](public/brand/BRAND.md)). It is
 unchanged in this release and stays at `brand-v1.0.0`.
 
+## [1.2.0] - 2026-10-27
+
+### Added
+
+- A one-line intro under the hero title saying what the work is. The
+  JSON-LD gains `homeLocation` and `knowsAbout` (#63).
+- The Email button copies `hi@mlz.no` and confirms it in a toast that is
+  also announced to screen readers. `mailto:` stays as the fallback without
+  JavaScript or clipboard access (#63).
+- 512px and maskable app icons in the web manifest, rendered by
+  `bun run brand:png` (#63).
+
+### Changed
+
+- Reworked type scale and spacing on the homepage: the hero is grouped into
+  name and label, intro and buttons; the name grows past 112px on large
+  screens; button and footer labels are larger (#63).
+- On phones the contact buttons are a 2+1 grid of 52px buttons and the
+  footer stacks centred (#63).
+- Optical alignment: trailing letter-spacing no longer pushes labels off
+  centre, and the theme-toggle icon sits on the gutter (#63).
+- The glitch effect is limited to the `mlz.` wordmark and the footer, on
+  both the home and 404 pages (#63).
+- Lint is clean: Biome config moved to the 2.6.3 schema, `tools/` is
+  linted, and the reduced-motion `!important` override is documented with a
+  suppression (#64).
+- `.gitignore` re-includes `public/assets/icons/`, so a global macOS `Icon?`
+  pattern can no longer drop files there (#64).
+- README restructured with a light/dark site-screenshot banner, a CI/CD
+  overview and collapsible reference sections (#59).
+
+### Dependencies
+
+- Routine updates of Biome, firebase-tools, `jdx/mise-action` and the
+  Google Terraform providers (#60, #61, #62, #64).
+
 ## [1.1.1] - 2026-10-23
 
 ### Changed
@@ -91,6 +127,7 @@ served via Firebase Hosting, with dark/light theming, a terminal easter egg
 on the 404 page, and security headers and cache policy declared in
 `firebase.json`.
 
+[1.2.0]: https://github.com/martinzachariassen/mlz-no/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/martinzachariassen/mlz-no/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/martinzachariassen/mlz-no/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/martinzachariassen/mlz-no/releases/tag/v1.0.0
