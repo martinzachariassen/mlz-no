@@ -10,7 +10,8 @@
       "public/**/*.js",
       "public/css/*.css",
       "public/brand/*.css",
-      "scripts/**/*.js"
+      "scripts/**/*.js",
+      "tools/**/*.js"
     ]
   },
   "formatter": {
