@@ -46,7 +46,9 @@
   place-items: center;
   width: 28px;
   height: 28px;
-  margin-right: -4px;
+  /* Pulls the icon's drawn edge (not its 28px box) onto the right gutter,
+     level with the footer text below and mirroring the logo on the left. */
+  margin-right: -7px;
   padding: 0;
   border: 0;
   border-radius: 999px;

@@ -4,14 +4,25 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 14px;
+  gap: 10px;
   width: 100%;
   max-width: 380px;
   margin-inline: auto;
 }
 
+/* Too narrow for the three buttons in a row (an iPhone SE is 320px): stack
+   them full width rather than wrapping two and one. */
+@media (max-width: 359px) {
+  .links {
+    flex-direction: column;
+    align-items: stretch;
+    max-width: 280px;
+  }
+}
+
 @media (min-width: 640px) {
   .links {
+    gap: 14px;
     max-width: none;
   }
 }
@@ -28,14 +39,16 @@
   justify-content: center;
   gap: 6px;
   width: auto;
-  height: 38px;
-  padding-inline: 16px;
+  /* 44px is the minimum comfortable touch target. Tighter side padding keeps
+     all three buttons on one row on a 360px-wide phone (310px of 320px). */
+  height: 44px;
+  padding-inline: 10px;
   border: 1.5px solid var(--fg);
   border-radius: var(--radius);
   background: transparent;
   color: var(--fg);
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.14em;
@@ -53,8 +66,14 @@
     gap: 8px;
     height: 44px;
     padding-inline: 22px;
-    font-size: 12px;
+    font-size: 13px;
   }
+}
+
+/* letter-spacing also trails the last letter, which pushed icon and label
+   left of the button's centre; the label gives that space back. */
+.btn > span {
+  margin-right: -0.14em;
 }
 
 .btn svg {
