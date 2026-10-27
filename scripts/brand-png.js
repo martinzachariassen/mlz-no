@@ -19,6 +19,15 @@ const MARK_SIZES = [64, 256, 512, 1024];
 const VARIANTS = ["dark", "light"];
 const LOCKUP_SCALE = 2;
 
+// App icons for site.webmanifest, outside the brand baseline. The maskable
+// one keeps the mark inside the safe zone: 56% wide, so its corners stay
+// within the 80% circle Android may crop to.
+const ICONS = join(ROOT, "public/assets/icons");
+const APP_ICONS = [
+  { file: "icon-512.png", inset: 1 },
+  { file: "icon-maskable-512.png", inset: 0.56 },
+];
+
 // Serve the repo root, like the social-card recipe in the README.
 const server = Bun.serve({
   hostname: "127.0.0.1",
@@ -112,6 +121,14 @@ try {
         viewport: 600,
       },
       join(OUT, `lockup-${variant}@${LOCKUP_SCALE}x.png`),
+    );
+  }
+
+  for (const { file, inset } of APP_ICONS) {
+    await render(
+      { kind: "icon", variant: "dark", size: 512, inset },
+      { width: 512, height: 512, scale: 1, viewport: 600 },
+      join(ICONS, file),
     );
   }
 } finally {
