@@ -2,7 +2,7 @@
   <a href="https://mlz.no">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset=".github/assets/banner-dark.png" />
-      <img src=".github/assets/banner-light.png" alt="The mlz.no homepage: &quot;Martin Zachariassen&quot; in large italic serif type, the line &quot;Senior Software Developer / Oslo, Norway&quot; beneath it, and GitHub, LinkedIn and Email buttons" width="100%" />
+      <img src=".github/assets/banner-light.png" alt="The mlz.no homepage: &quot;Martin Zachariassen&quot; in large italic serif type, the line &quot;Senior Software Developer / Oslo, Norway&quot; beneath it, a short intro about building backend systems, and GitHub, LinkedIn and Email buttons" width="100%" />
     </picture>
   </a>
 </p>
@@ -134,7 +134,7 @@ visible change to the page:
 python3 -m http.server 8766 --bind 127.0.0.1 --directory public &
 for theme in light:1 dark:0; do
   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless \
-    --hide-scrollbars --window-size=1280,640 --force-device-scale-factor=2 \
+    --hide-scrollbars --window-size=1280,720 --force-device-scale-factor=2 \
     --force-prefers-reduced-motion \
     --blink-settings=preferredColorScheme=${theme#*:} \
     --virtual-time-budget=4000 \
