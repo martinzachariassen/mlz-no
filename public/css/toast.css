@@ -3,7 +3,11 @@
    only faded out, so the live region inside is never removed and re-added. */
 .toast {
   position: fixed;
-  left: 50%;
+  /* Centred with margins rather than translate(-50%), so translate and scale
+     are free for the motion below. */
+  inset-inline: 0;
+  width: fit-content;
+  margin-inline: auto;
   /* Clear of the footer: its row (footer.css) is ~56px tall above the same
      safe-area padding. */
   bottom: calc(max(20px, env(safe-area-inset-bottom)) + 64px);
@@ -22,15 +26,41 @@
   white-space: nowrap;
   opacity: 0;
   pointer-events: none;
-  transform: translate(-50%, 12px);
+  /* Leaving: quick, slightly accelerating, and only a short way down, so it
+     gets out of the way rather than performing. */
+  translate: 0 8px;
+  scale: 0.97;
+  filter: blur(2px);
   transition:
-    opacity 0.26s var(--ease),
-    transform 0.26s var(--ease);
+    opacity 0.2s var(--ease-in),
+    translate 0.2s var(--ease-in),
+    scale 0.2s var(--ease-in),
+    filter 0.2s var(--ease-in);
 }
 
+/* Arriving: from further down, on the spring, so it lands with some give. */
 .toast.is-visible {
   opacity: 1;
-  transform: translate(-50%, 0);
+  translate: 0 0;
+  scale: 1;
+  filter: none;
+  transition:
+    opacity 0.25s var(--ease-out),
+    translate 0.6s var(--spring),
+    scale 0.6s var(--spring),
+    filter 0.3s var(--ease-out);
+}
+
+/* A repeat copy while the toast is up: a small pulse, so the click is
+   still acknowledged. Uses transform, which composes with the scale above. */
+.toast.is-bumped {
+  animation: toast-bump 0.4s var(--ease-out);
+}
+
+@keyframes toast-bump {
+  30% {
+    transform: scale(1.04);
+  }
 }
 
 .toast svg {

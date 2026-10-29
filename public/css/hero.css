@@ -162,3 +162,7 @@
       -1px 0 var(--glitch-2);
   }
 }
+
+.hero h1 .line {
+  display: block;
+}

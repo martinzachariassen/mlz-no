@@ -1,5 +1,64 @@
+/* Motion curves for interactions. Kept here rather than in brand/tokens.json:
+   they tune how this site feels, they're not part of the public brand.
+   --ease-out decelerates hard (expo-out), for anything arriving or settling.
+   --ease-in is for leaving: things exit faster than they arrive.
+   --spring settles with a ~4% overshoot, for small things that move under
+   the pointer; without linear() support it falls back to --ease-out. */
+:root {
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.5, 0, 0.75, 0);
+  --spring: var(--ease-out);
+}
+
+@supports (transition-timing-function: linear(0, 1)) {
+  :root {
+    --spring: linear(
+      0,
+      0.02,
+      0.073,
+      0.148,
+      0.236,
+      0.33,
+      0.425,
+      0.518,
+      0.604,
+      0.684,
+      0.754,
+      0.816,
+      0.868,
+      0.912,
+      0.947,
+      0.976,
+      0.997,
+      1.014,
+      1.025,
+      1.032,
+      1.037,
+      1.038,
+      1.038,
+      1.036,
+      1.034,
+      1.031,
+      1.027,
+      1.023,
+      1.02,
+      1.016,
+      1.013,
+      1.01,
+      1.008,
+      1.006,
+      1.004,
+      1.002,
+      1.001,
+      1
+    );
+  }
+}
+
+/* Entrance: each group drifts up out of a slight blur, so it comes into
+   focus rather than just fading in. */
 .rise {
-  animation: rise 0.9s var(--ease) backwards;
+  animation: rise 1.1s var(--ease-out) backwards;
 }
 
 /* staggered entrance delays — classes rather than inline styles, since the
@@ -9,6 +68,9 @@
 }
 .delay-150 {
   animation-delay: 0.15s;
+}
+.delay-250 {
+  animation-delay: 0.25s;
 }
 .delay-450 {
   animation-delay: 0.45s;
@@ -29,10 +91,12 @@
 @keyframes rise {
   from {
     opacity: 0;
-    transform: translate3d(0, 8px, 0);
+    filter: blur(6px);
+    transform: translate3d(0, 14px, 0);
   }
   to {
     opacity: 1;
+    filter: blur(0);
     transform: translate3d(0, 0, 0);
   }
 }
