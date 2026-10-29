@@ -1,6 +1,6 @@
 {
   "name": "mlz-no",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "private": true,
   "description": "Personal homepage for Martin Zachariassen: a static site served from Firebase Hosting, no build step.",
   "homepage": "https://mlz.no",

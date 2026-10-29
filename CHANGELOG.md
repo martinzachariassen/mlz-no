@@ -8,6 +8,24 @@ The brand baseline in `public/brand/` is versioned separately, with
 `brand-vX.Y.Z` tags (see [`BRAND.md`](public/brand/BRAND.md)). It is
 unchanged in this release and stays at `brand-v1.0.0`.
 
+## [1.2.1] - 2026-10-29
+
+### Changed
+
+- Springier interactions on the homepage: buttons lift and press on a
+  spring, the logo tilts on hover, and the theme toggle and logo shrink a
+  little when pressed (#67).
+- The hero name rises in one line at a time, out of a slight blur (#67).
+- The Email button swaps its envelope for a check while the address is
+  copied, and copying again while the toast is up pulses it instead of
+  doing nothing. The toast leaves faster than it arrives (#67).
+
+### Fixed
+
+- Pressed states now show on iOS Safari, which only applies `:active` once
+  a touch listener is registered (#67).
+- The README banner is retaken to match the live page (#66).
+
 ## [1.2.0] - 2026-10-27
 
 ### Added
@@ -127,6 +145,7 @@ served via Firebase Hosting, with dark/light theming, a terminal easter egg
 on the 404 page, and security headers and cache policy declared in
 `firebase.json`.
 
+[1.2.1]: https://github.com/martinzachariassen/mlz-no/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/martinzachariassen/mlz-no/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/martinzachariassen/mlz-no/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/martinzachariassen/mlz-no/compare/v1.0.0...v1.1.0
