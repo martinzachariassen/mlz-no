@@ -1,7 +1,8 @@
 // The Email button copies the address instead of opening a mail client: many
 // readers have none set up, and then a mailto: click silently does nothing.
-// A toast confirms the copy. The mailto: href stays as the fallback — it is
-// what runs without JavaScript, and when the clipboard can't be written.
+// The button's envelope turns into a check and a toast confirms the copy.
+// The mailto: href stays as the fallback — it is what runs without
+// JavaScript, and when the clipboard can't be written.
 (() => {
   const button = document.querySelector("[data-copy-email]");
   const toast = document.querySelector("[data-toast]");
@@ -9,7 +10,7 @@
   if (!button || !text || !navigator.clipboard) return;
 
   const VISIBLE_MS = 3000;
-  const FADE_MS = 300;
+  const FADE_MS = 250; // a little over the toast's exit in toast.css
   const address = button.dataset.copyEmail;
   let timer;
 
@@ -22,11 +23,21 @@
     value.className = "toast-address";
     value.textContent = address;
     text.replaceChildren(label, " · ", value);
+
+    // Copied again while the toast is still up: pulse it instead, since
+    // showing an already visible toast would look like nothing happened.
+    if (toast.classList.contains("is-visible")) {
+      toast.classList.remove("is-bumped");
+      void toast.offsetWidth; // restart the CSS animation
+      toast.classList.add("is-bumped");
+    }
     toast.classList.add("is-visible");
+    button.classList.add("is-done");
 
     clearTimeout(timer);
     timer = setTimeout(() => {
-      toast.classList.remove("is-visible");
+      toast.classList.remove("is-visible", "is-bumped");
+      button.classList.remove("is-done");
       // Emptied once faded out (toast.css), so it doesn't shrink mid-fade.
       timer = setTimeout(() => text.replaceChildren(), FADE_MS);
     }, VISIBLE_MS);

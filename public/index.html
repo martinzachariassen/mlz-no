@@ -154,9 +154,10 @@
     </header>
 
     <main class="wrap hero">
-      <h1 class="rise delay-150">
-        Martin<br />
-        Zachariassen
+      <!-- One line per span, each rising on its own beat. -->
+      <h1>
+        <span class="line rise delay-150">Martin</span>
+        <span class="line rise delay-250">Zachariassen</span>
       </h1>
 
       <p class="eyebrow rise delay-450">
@@ -180,7 +181,10 @@
           <span>LinkedIn</span>
         </a>
         <a class="btn" href="mailto:hi@mlz.no" data-copy-email="hi@mlz.no">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" /><path d="M2.5 6l9.5 7 9.5-7" /></svg>
+          <span class="btn-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2.5" y="5" width="19" height="14" /><path d="M2.5 6l9.5 7 9.5-7" /></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+          </span>
           <span>Email</span>
         </a>
       </nav>
@@ -201,6 +205,7 @@
     </footer>
 
     <script src="/js/theme-toggle.js" defer></script>
+    <script src="/js/press.js" defer></script>
     <script src="/js/year.js" defer></script>
     <script src="/js/glitch.js" defer></script>
     <script src="/js/copy-email.js" defer></script>

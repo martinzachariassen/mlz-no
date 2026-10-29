@@ -54,10 +54,14 @@
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  /* Moves on the spring, so the lift lands with a little give; colours just
+     ease, since an overshoot means nothing for a colour. */
   transition:
-    transform 0.26s var(--ease),
-    box-shadow 0.26s var(--ease),
-    border-color 0.26s var(--ease);
+    transform 0.5s var(--spring),
+    box-shadow 0.5s var(--spring),
+    border-color 0.3s var(--ease-out),
+    background-color 0.3s var(--ease-out);
 }
 
 @media (min-width: 640px) {
@@ -70,7 +74,7 @@
 
 /* letter-spacing also trails the last letter, which pushed icon and label
    left of the button's centre; the label gives that space back. */
-.btn > span {
+.btn > span:not(.btn-icon) {
   margin-right: -0.14em;
 }
 
@@ -78,7 +82,36 @@
   width: 16px;
   height: 16px;
   flex-shrink: 0;
-  transition: transform 0.26s var(--ease);
+  transition:
+    transform 0.5s var(--spring),
+    opacity 0.2s var(--ease-out);
+}
+
+/* Two icons in one cell, for a button that changes state (the Email button
+   swaps its envelope for a check once the address is copied). */
+.btn-icon {
+  display: grid;
+  flex-shrink: 0;
+}
+
+.btn-icon > svg {
+  grid-area: 1 / 1;
+}
+
+.btn-icon > svg + svg {
+  opacity: 0;
+  transform: scale(0.4) rotate(-30deg);
+}
+
+.btn.is-done .btn-icon > svg:first-child {
+  opacity: 0;
+  transform: scale(0.4) rotate(30deg);
+}
+
+.btn.is-done .btn-icon > svg + svg {
+  opacity: 1;
+  transform: none;
+  color: var(--accent-deep);
 }
 
 /* The lift is gated to devices that can really hover: on touch, :hover
@@ -86,31 +119,34 @@
    same state everywhere. */
 .btn:focus-visible {
   border-color: var(--accent-deep);
+  background-color: color-mix(in oklch, var(--accent) 6%, transparent);
   transform: translate(-2px, -2px);
   box-shadow: 5px 5px 0 0 var(--accent-deep);
 }
 
-.btn:focus-visible svg {
+.btn:focus-visible:not(.is-done) svg:first-child {
   transform: translate(-1px, 0) rotate(-4deg);
 }
 
 @media (hover: hover) {
   .btn:hover {
     border-color: var(--accent-deep);
+    background-color: color-mix(in oklch, var(--accent) 6%, transparent);
     transform: translate(-2px, -2px);
     box-shadow: 5px 5px 0 0 var(--accent-deep);
   }
 
-  .btn:hover svg {
+  .btn:hover:not(.is-done) svg:first-child {
     transform: translate(-1px, 0) rotate(-4deg);
   }
 }
 
-/* Pressed: the button drops back onto its shadow. Short duration so it
-   reads as a click, not an animation. */
+/* Pressed: the button drops back onto its shadow and a pixel past it. Short
+   so it reads as a click, not an animation; letting go springs it back up. */
 .btn:active {
   border-color: var(--accent-deep);
-  transform: translate(0, 0);
+  transform: translate(1px, 1px);
   box-shadow: 0 0 0 0 var(--accent-deep);
   transition-duration: 0.08s;
+  transition-timing-function: var(--ease-out);
 }
