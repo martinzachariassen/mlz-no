@@ -8,8 +8,10 @@
   const chars = [];
 
   // split every text node in a zone into one <span class="glitch"> per
-  // letter, so bursts can land on any single character, not the whole box
-  const splitTextNode = (node) => {
+  // letter, so bursts can land on any single character, not the whole box.
+  // Only text nodes are replaced: existing elements stay where they are, since
+  // moving them would restart their CSS animations (e.g. the logo intro).
+  const splitTextNode = (node, zoneChars) => {
     const frag = document.createDocumentFragment();
     for (const ch of node.textContent) {
       if (ch.trim() === "") {
@@ -18,9 +20,13 @@
       }
       const span = document.createElement("span");
       span.className = "glitch";
+      // One span per letter can make screen readers spell words out
+      // ("G-i-t-H-u-b"), so the split letters are hidden from assistive tech
+      // and an intact, visually hidden copy of the text stands in for them.
+      span.setAttribute("aria-hidden", "true");
       span.textContent = ch;
       frag.appendChild(span);
-      chars.push(span);
+      zoneChars.push(span);
     }
     node.replaceWith(frag);
   };
@@ -34,21 +40,30 @@
     for (let node = walker.nextNode(); node; node = walker.nextNode()) {
       textNodes.push(node);
     }
-    textNodes.forEach(splitTextNode);
+    const zoneChars = [];
+    for (const node of textNodes) splitTextNode(node, zoneChars);
 
-    // One span per letter can make screen readers spell words out
-    // ("G-i-t-H-u-b"), so the split letters are hidden from assistive tech
-    // and an intact, visually hidden copy of the text stands in for them.
-    const visual = document.createElement("span");
-    visual.setAttribute("aria-hidden", "true");
-    visual.append(...zone.childNodes);
     const spoken = document.createElement("span");
     spoken.className = "sr-only";
     spoken.textContent = text;
-    zone.append(visual, spoken);
+    zone.append(spoken);
+
+    // Letters in a zone that is still animating in (the logo intro) only join
+    // the pool once that animation is done, so bursts don't scramble it.
+    const running =
+      typeof zone.getAnimations === "function"
+        ? zone.getAnimations({ subtree: true })
+        : [];
+    if (running.length) {
+      Promise.allSettled(running.map((a) => a.finished)).then(() =>
+        chars.push(...zoneChars),
+      );
+    } else {
+      chars.push(...zoneChars);
+    }
   });
 
-  if (!chars.length) return;
+  if (!zones.length) return;
 
   const MIN_BURST_CHARS = 2;
   const MAX_BURST_CHARS = 6;

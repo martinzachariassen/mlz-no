@@ -34,6 +34,7 @@
 }
 
 .brand-word {
+  position: relative;
   font-family: var(--font-mono);
   font-weight: 700;
   font-size: 15px;
@@ -43,6 +44,241 @@
 
 .brand-word .period {
   color: var(--accent-deep);
+}
+
+/* Logo intro, the first half of the animated banner on the GitHub profile
+   (github.com/martinzachariassen): the M is traced and cut out of the square,
+   a block caret types "mlz", then shrinks into the period. Plays once, on
+   load.
+
+   Every animation shares one 3s clock (keyframe % = seconds / 3), so the
+   timings line up with the banner's and are easy to retune together. Fill is
+   `both` and each 100% keyframe equals the resting style, so with reduced
+   motion (or no animation support) the finished logo is simply shown.
+
+   Caret geometry is in em of the 15px wordmark and taken from the banner's
+   SVG (same font, same letter-spacing): a 0.5em x 0.74em block, 0.05em into
+   its cell, resting on the baseline; one cell is 0.57em. */
+.brand-mark-in {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: brand-mark-in 3s both;
+}
+
+.brand-trace {
+  fill: none;
+  stroke: #000;
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  stroke-dasharray: 100;
+  opacity: 0;
+  animation: brand-trace 3s both;
+}
+
+.brand-cut {
+  animation: brand-cut 3s both;
+}
+
+.brand-caret {
+  position: absolute;
+  left: 0.05em;
+  /* Line-height 1 puts the baseline 0.125em above the box bottom for Plex
+     Mono (ascent 1.025, descent 0.275). */
+  bottom: 0.125em;
+  width: 0.5em;
+  height: 0.74em;
+  background: var(--accent-deep);
+  transform-origin: 0 0;
+  opacity: 0;
+  pointer-events: none;
+  animation:
+    brand-caret-blink 3s both,
+    brand-caret-move 3s both;
+}
+
+.brand-word .ch0 {
+  animation: brand-ch0 3s both;
+}
+
+.brand-word .ch1 {
+  animation: brand-ch1 3s both;
+}
+
+.brand-word .ch2 {
+  animation: brand-ch2 3s both;
+}
+
+.brand-word .period {
+  animation: brand-period 3s both;
+}
+
+/* 0.1s–1.0s: the mark settles in. */
+@keyframes brand-mark-in {
+  0%,
+  3.333% {
+    opacity: 0;
+    transform: translateY(0.8px) scale(0.96);
+    animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  33.333%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* 0.45s–1.25s: a line traces the M; gone by 1.5s. */
+@keyframes brand-trace {
+  0% {
+    opacity: 0;
+    stroke-dashoffset: 100;
+    animation-timing-function: step-end;
+  }
+  15% {
+    opacity: 1;
+    stroke-dashoffset: 100;
+    animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  41.667% {
+    opacity: 1;
+    stroke-dashoffset: 0;
+    animation-timing-function: ease-out;
+  }
+  50%,
+  100% {
+    opacity: 0;
+    stroke-dashoffset: 0;
+  }
+}
+
+/* 0.95s–1.35s: the M is cut out of the square. */
+@keyframes brand-cut {
+  0%,
+  31.667% {
+    opacity: 0;
+    animation-timing-function: ease-out;
+  }
+  45%,
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Blinks in at 0.9s, out at 1.25s, back at 1.5s, then stays solid until it
+   becomes the period (2.67s–2.85s). */
+@keyframes brand-caret-blink {
+  0%,
+  30% {
+    opacity: 0;
+    animation-timing-function: ease-in-out;
+  }
+  34%,
+  41.667% {
+    opacity: 1;
+    animation-timing-function: ease-in-out;
+  }
+  45.667%,
+  50% {
+    opacity: 0;
+    animation-timing-function: ease-in-out;
+  }
+  54%,
+  89% {
+    opacity: 1;
+    animation-timing-function: linear;
+  }
+  95%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* One cell per letter at 1.7s, 1.84s and 2.03s; at 2.4s it shrinks onto the
+   period's dot (2.85s). */
+@keyframes brand-caret-move {
+  0%,
+  56.667% {
+    transform: none;
+    animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  59%,
+  61.333% {
+    transform: translateX(0.57em);
+    animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  63.667%,
+  67.667% {
+    transform: translateX(1.14em);
+    animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  70%,
+  80% {
+    transform: translateX(1.71em);
+    animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  95%,
+  100% {
+    transform: translate(1.855em, 0.551em) scale(0.42, 0.2716);
+  }
+}
+
+/* Each letter appears as the caret leaves its cell. */
+@keyframes brand-ch0 {
+  0% {
+    opacity: 0;
+    animation-timing-function: step-end;
+  }
+  56.667%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes brand-ch1 {
+  0% {
+    opacity: 0;
+    animation-timing-function: step-end;
+  }
+  61.333%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes brand-ch2 {
+  0% {
+    opacity: 0;
+    animation-timing-function: step-end;
+  }
+  67.667%,
+  100% {
+    opacity: 1;
+  }
+}
+
+/* The period fades in under the shrinking caret, 2.67s–2.85s. */
+@keyframes brand-period {
+  0%,
+  89% {
+    opacity: 0;
+    animation-timing-function: linear;
+  }
+  95%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-mark-in,
+  .brand-trace,
+  .brand-cut,
+  .brand-caret,
+  .brand-word .ch,
+  .brand-word .period {
+    animation: none;
+  }
 }
 
 .topbar-right {

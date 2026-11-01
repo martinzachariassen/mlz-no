@@ -99,6 +99,13 @@
       type="font/woff2"
       crossorigin
     />
+    <link
+      rel="preload"
+      href="/brand/fonts/ibm-plex-mono-700.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
     <link rel="stylesheet" href="/brand/tokens.css" />
     <link rel="stylesheet" href="/css/base.css" />
     <link rel="stylesheet" href="/css/topbar.css" />
@@ -126,13 +133,34 @@
           role="img"
           aria-label="MLZ"
         >
-          <rect x="1" y="1" width="30" height="30" rx="6" fill="var(--fg)" />
-          <polygon
-            points="7,25 7,7 11.5,7 16,18.5 20.5,7 25,7 25,25"
-            fill="var(--bg)"
-          />
+          <defs>
+            <mask id="brand-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="32" height="32">
+              <rect x="1" y="1" width="30" height="30" rx="6" fill="#fff" />
+              <polygon
+                class="brand-cut"
+                points="7,25 7,7 11.5,7 16,18.5 20.5,7 25,7 25,25"
+                fill="#000"
+              />
+              <polygon
+                class="brand-trace"
+                points="7,25 7,7 11.5,7 16,18.5 20.5,7 25,7 25,25"
+                pathLength="100"
+              />
+            </mask>
+          </defs>
+          <g class="brand-mark-in">
+            <rect
+              x="1"
+              y="1"
+              width="30"
+              height="30"
+              rx="6"
+              fill="var(--fg)"
+              mask="url(#brand-cut)"
+            />
+          </g>
         </svg>
-        <span class="brand-word" data-glitch>mlz<span class="period">.</span></span>
+        <span class="brand-word" data-glitch><span class="brand-caret" aria-hidden="true"></span><span class="ch ch0">m</span><span class="ch ch1">l</span><span class="ch ch2">z</span><span class="period">.</span></span>
       </a>
 
       <div class="topbar-right">
@@ -167,8 +195,8 @@
       </p>
 
       <p class="intro rise delay-500">
-        I build backend systems that stay boring under load&nbsp;— APIs, data
-        pipelines, distributed services and the infrastructure under them.
+        I build backend systems: APIs, data pipelines, distributed services
+        and the infrastructure under them.
       </p>
 
       <nav class="links rise delay-600" aria-label="Contact links">
