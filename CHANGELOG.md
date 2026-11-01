@@ -8,6 +8,24 @@ The brand baseline in `public/brand/` is versioned separately, with
 `brand-vX.Y.Z` tags (see [`BRAND.md`](public/brand/BRAND.md)). It is
 unchanged in this release and stays at `brand-v1.0.0`.
 
+## [1.2.2] - 2026-11-01
+
+### Changed
+
+- The topbar logo plays the opening of the GitHub profile banner once on
+  load: the M is traced and cut out of the square, a block caret types
+  "mlz", then shrinks into the period. With reduced motion the finished
+  logo is shown as before (#69).
+- The homepage intro drops "that stay boring under load" (#69).
+- The bold IBM Plex Mono weight is preloaded, so the logo doesn't start in
+  a fallback font (#69).
+
+### Fixed
+
+- The ambient glitch no longer restarts or scrambles the logo intro: it
+  splits letters in place and waits for the animation to finish before
+  touching them (#69).
+
 ## [1.2.1] - 2026-10-29
 
 ### Changed
@@ -145,6 +163,7 @@ served via Firebase Hosting, with dark/light theming, a terminal easter egg
 on the 404 page, and security headers and cache policy declared in
 `firebase.json`.
 
+[1.2.2]: https://github.com/martinzachariassen/mlz-no/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/martinzachariassen/mlz-no/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/martinzachariassen/mlz-no/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/martinzachariassen/mlz-no/compare/v1.1.0...v1.1.1
