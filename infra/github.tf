@@ -4,12 +4,13 @@ data "github_user" "owner" {
 
 resource "github_repository" "this" {
   name         = var.github_repo
-  description  = "Personal homepage for Martin Zachariassen — a static site with no build step, served by Firebase Hosting."
+  description  = "Source for mlz.no, Martin Zachariassen's personal homepage. One static page, no build step, served by Firebase Hosting with hardened headers and infra in Terraform."
   homepage_url = "https://${var.domain}"
   visibility   = "public"
   topics = [
-    "biome", "css", "firebase-hosting", "html", "javascript", "no-build",
-    "personal-website", "portfolio", "static-site",
+    "biome", "bun", "content-security-policy", "design-tokens",
+    "firebase-hosting", "github-actions", "no-build", "personal-website",
+    "security-headers", "static-site", "terraform", "workload-identity-federation",
   ]
 
   has_issues      = true
