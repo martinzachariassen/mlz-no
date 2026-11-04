@@ -15,6 +15,10 @@ unchanged in this release and stays at `brand-v1.0.0`.
 - Cookie-free, self-hosted analytics from `t.mlz.no` on the front page and
   the 404 page (#78). Page views and clicks on the GitHub, LinkedIn and
   e-mail buttons are counted; no cookies are set and no IP address is stored.
+- More events: the logo click (`brand-home`), the theme chosen
+  (`theme-toggle`), whether the e-mail button copied the address or fell back
+  to `mailto:` (`contact-email`), and the missing path on the 404 page
+  (`not-found`) (#82).
 
 ### Changed
 
