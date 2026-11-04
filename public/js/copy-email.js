@@ -45,9 +45,9 @@
 
   button.addEventListener("click", (event) => {
     event.preventDefault();
-    // Tracked here, not with data-umami-event: Umami follows a tracked link's
-    // href itself once the event is sent, which would open the mail client.
-    window.umami?.track("contact-email");
+    // Tracked here, not with data-track: the click is intercepted to copy the
+    // address instead of opening the mail client.
+    window.mlz?.track("contact-email");
     navigator.clipboard.writeText(address).then(show, () => {
       window.location.href = button.href;
     });
