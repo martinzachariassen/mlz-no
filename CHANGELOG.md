@@ -8,6 +8,29 @@ The brand baseline in `public/brand/` is versioned separately, with
 `brand-vX.Y.Z` tags (see [`BRAND.md`](public/brand/BRAND.md)). It is
 unchanged in this release and stays at `brand-v1.0.0`.
 
+## [1.3.0] - 2026-11-04
+
+### Added
+
+- Cookie-free, self-hosted analytics from `t.mlz.no` on the front page and
+  the 404 page (#78). Page views and clicks on the GitHub, LinkedIn and
+  e-mail buttons are counted; no cookies are set and no IP address is stored.
+- More events: the logo click (`brand-home`), the theme chosen
+  (`theme-toggle`), whether the e-mail button copied the address or fell back
+  to `mailto:` (`contact-email`), and the missing path on the 404 page
+  (`not-found`) (#82).
+
+### Changed
+
+- The click events use the namespaced `data-mlz-event` attribute, so they
+  cannot collide with other tools (#80).
+
+### Removed
+
+- Umami: the script, the `data-umami-event` attributes and the
+  `cloud.umami.is` and `gateway.umami.is` entries in the Content Security
+  Policy. The page no longer contacts any third-party analytics host (#79).
+
 ## [1.2.3] - 2026-11-04
 
 ### Changed
@@ -175,6 +198,7 @@ served via Firebase Hosting, with dark/light theming, a terminal easter egg
 on the 404 page, and security headers and cache policy declared in
 `firebase.json`.
 
+[1.3.0]: https://github.com/martinzachariassen/mlz-no/compare/v1.2.3...v1.3.0
 [1.2.3]: https://github.com/martinzachariassen/mlz-no/compare/v1.2.2...v1.2.3
 [1.2.2]: https://github.com/martinzachariassen/mlz-no/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/martinzachariassen/mlz-no/compare/v1.2.0...v1.2.1
