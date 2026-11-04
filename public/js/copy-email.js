@@ -45,11 +45,18 @@
 
   button.addEventListener("click", (event) => {
     event.preventDefault();
-    // Tracked here, not with data-mlz-event: the click is intercepted to copy the
-    // address instead of opening the mail client.
-    window.mlz?.track("contact-email");
-    navigator.clipboard.writeText(address).then(show, () => {
-      window.location.href = button.href;
-    });
+    // Tracked here, not with data-mlz-event: the click is intercepted to copy
+    // the address instead of opening the mail client. "result" tells whether
+    // the copy worked or the mailto: fallback took over.
+    navigator.clipboard.writeText(address).then(
+      () => {
+        window.mlz?.track("contact-email", { result: "copied" });
+        show();
+      },
+      () => {
+        window.mlz?.track("contact-email", { result: "mailto" });
+        window.location.href = button.href;
+      },
+    );
   });
 })();

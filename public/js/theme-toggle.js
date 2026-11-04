@@ -88,6 +88,8 @@
     const next = current() === "dark" ? "light" : "dark";
     remember(next);
     switchTo(next);
+    // The theme chosen, not the one left: tells which one readers prefer.
+    window.mlz?.track("theme-toggle", { theme: next });
   });
 
   // Follow the OS live (e.g. automatic dark mode at sunset) as long as the
