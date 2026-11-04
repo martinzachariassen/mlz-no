@@ -45,7 +45,7 @@
 
   button.addEventListener("click", (event) => {
     event.preventDefault();
-    // Tracked here, not with data-track: the click is intercepted to copy the
+    // Tracked here, not with data-mlz-event: the click is intercepted to copy the
     // address instead of opening the mail client.
     window.mlz?.track("contact-email");
     navigator.clipboard.writeText(address).then(show, () => {
