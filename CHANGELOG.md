@@ -8,6 +8,13 @@ The brand baseline in `public/brand/` is versioned separately, with
 `brand-vX.Y.Z` tags (see [`BRAND.md`](public/brand/BRAND.md)). It is
 unchanged in this release and stays at `brand-v1.0.0`.
 
+## [1.3.1] - 2026-11-10
+
+### Dependencies
+
+- Routine updates of Biome, firebase-tools, `jdx/mise-action` and the
+  Google Terraform providers (#83, #84, #85).
+
 ## [1.3.0] - 2026-11-04
 
 ### Added
@@ -198,6 +205,7 @@ served via Firebase Hosting, with dark/light theming, a terminal easter egg
 on the 404 page, and security headers and cache policy declared in
 `firebase.json`.
 
+[1.3.1]: https://github.com/martinzachariassen/mlz-no/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/martinzachariassen/mlz-no/compare/v1.2.3...v1.3.0
 [1.2.3]: https://github.com/martinzachariassen/mlz-no/compare/v1.2.2...v1.2.3
 [1.2.2]: https://github.com/martinzachariassen/mlz-no/compare/v1.2.1...v1.2.2
