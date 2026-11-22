@@ -21,7 +21,7 @@
     "brand:png": "bun scripts/brand-png.js"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.6.7",
-    "firebase-tools": "^15.36.0"
+    "@biomejs/biome": "^2.6.8",
+    "firebase-tools": "^15.37.0"
   }
 }
