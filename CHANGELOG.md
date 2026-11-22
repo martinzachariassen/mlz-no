@@ -8,6 +8,26 @@ The brand baseline in `public/brand/` is versioned separately, with
 `brand-vX.Y.Z` tags (see [`BRAND.md`](public/brand/BRAND.md)). It is
 unchanged in this release and stays at `brand-v1.0.0`.
 
+## [1.3.2] - 2026-11-22
+
+### Changed
+
+- Tooling pinned to latest/LTS in `mise.toml` (bun 1.4.5, Node 26, Terraform
+  1.17.2) and mise tasks added that wrap the existing scripts (#90).
+- GitHub repo settings tightened: only `main` may deploy to production, merge
+  commits are off, "Update branch" is on, projects are off (#90).
+
+### Fixed
+
+- The Terraform provider lock file now has checksums for all platforms, so CI
+  on Linux accepts the cached providers (#90).
+
+### Dependencies
+
+- Routine updates of Biome, firebase-tools, `jdx/mise-action`,
+  `dependency-review-action` and the Google Terraform providers (#87, #88,
+  #89, #90).
+
 ## [1.3.1] - 2026-11-10
 
 ### Dependencies
@@ -205,6 +225,7 @@ served via Firebase Hosting, with dark/light theming, a terminal easter egg
 on the 404 page, and security headers and cache policy declared in
 `firebase.json`.
 
+[1.3.2]: https://github.com/martinzachariassen/mlz-no/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/martinzachariassen/mlz-no/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/martinzachariassen/mlz-no/compare/v1.2.3...v1.3.0
 [1.2.3]: https://github.com/martinzachariassen/mlz-no/compare/v1.2.2...v1.2.3
