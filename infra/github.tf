@@ -14,21 +14,20 @@ resource "github_repository" "this" {
   ]
 
   has_issues      = true
-  has_projects    = true
+  has_projects    = false
   has_wiki        = false
   has_discussions = false
 
-  allow_merge_commit     = true
+  # Matches the ruleset below: linear history, squash or rebase only.
+  allow_merge_commit     = false
   allow_squash_merge     = true
   allow_rebase_merge     = true
   allow_auto_merge       = false
-  allow_update_branch    = false
+  allow_update_branch    = true # "Update branch" button; checks must be up to date
   delete_branch_on_merge = true
 
   squash_merge_commit_title   = "COMMIT_OR_PR_TITLE"
   squash_merge_commit_message = "COMMIT_MESSAGES"
-  merge_commit_title          = "MERGE_MESSAGE"
-  merge_commit_message        = "PR_TITLE"
 
   security_and_analysis {
     secret_scanning {
@@ -63,11 +62,36 @@ resource "github_actions_variable" "deploy_sa" {
   value         = google_service_account.deploy.email
 }
 
-resource "github_repository_environment" "this" {
-  for_each = toset(["preview", "production"])
-
+resource "github_repository_environment" "preview" {
   repository  = github_repository.this.name
-  environment = each.value
+  environment = "preview"
+}
+
+# Only main may deploy to production, even from a workflow on another branch.
+resource "github_repository_environment" "production" {
+  repository  = github_repository.this.name
+  environment = "production"
+
+  deployment_branch_policy {
+    protected_branches     = false
+    custom_branch_policies = true
+  }
+}
+
+resource "github_repository_environment_deployment_policy" "production_main" {
+  repository     = github_repository.this.name
+  environment    = github_repository_environment.production.environment
+  branch_pattern = "main"
+}
+
+moved {
+  from = github_repository_environment.this["preview"]
+  to   = github_repository_environment.preview
+}
+
+moved {
+  from = github_repository_environment.this["production"]
+  to   = github_repository_environment.production
 }
 
 resource "github_repository_ruleset" "main" {

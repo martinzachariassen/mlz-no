@@ -23,8 +23,9 @@ the Hosting emulator to prove it actually takes effect.
 
 ## Getting started
 
-**1. Install the tools.** [Bun](https://bun.sh) and Terraform are pinned in
-[`mise.toml`](mise.toml), so one command sets up both:
+**1. Install the tools.** Bun, Node (the active LTS, which the Firebase CLI
+runs on) and Terraform are pinned in [`mise.toml`](mise.toml), so one command
+sets up all three:
 
 ```sh
 mise install
@@ -46,6 +47,9 @@ bun run dev
 ```
 
 > [!TIP]
+> `mise run` lists the shortcuts; `mise run check` runs everything CI runs
+> for the site, and `mise run infra:check` does the same for `infra/`.
+>
 > Changed `firebase.json` or `public/404.html`? Run `./scripts/verify.sh`
 > before you push. It is the same quality gate CI and the deploy job run.
 

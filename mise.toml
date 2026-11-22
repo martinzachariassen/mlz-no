@@ -1,3 +1,58 @@
+# Single source of truth for tool versions (CI reads this file too).
+# Pins follow the newest stable release; Node follows the active LTS line.
+# `mise run` lists the tasks.
+min_version = "2026.1.0"
+
 [tools]
-bun = "1.4.2"
-terraform = "1.16.3"
+bun = "1.4.5"
+# firebase-tools runs on Node; bun is only the package manager here.
+node = "26.13.1" # Active LTS ("Lithium"), 2026-11-10
+terraform = "1.17.2"
+
+[tasks.dev]
+description = "Serve public/ in the Hosting emulator on :5050"
+run = "bun run dev"
+
+[tasks.lint]
+description = "Biome lint and format check (same as the pre-commit hook)"
+run = "bun run lint"
+
+[tasks.format]
+description = "Fix what Biome can fix"
+run = "bun run format"
+
+[tasks.brand]
+description = "Regenerate files derived from public/brand/tokens.json"
+run = "bun run brand"
+
+[tasks.verify]
+description = "Check headers, cache policy and the 404 page in the emulator"
+run = "./scripts/verify.sh"
+
+[tasks.check]
+description = "Everything CI runs for the site"
+depends = ["lint", "brand:check", "verify"]
+
+[tasks."brand:check"]
+description = "Fail if generated brand files drifted from tokens.json"
+run = "bun run brand:check"
+
+[tasks."infra:check"]
+description = "terraform fmt -check and validate (what CI runs)"
+dir = "infra"
+run = [
+  "terraform fmt -check -recursive -diff",
+  "terraform init -backend=false -input=false -lockfile=readonly",
+  "terraform validate",
+]
+
+# plan/apply are run by hand, never by CI or an agent (infra/README.md).
+[tasks."infra:plan"]
+description = "terraform plan with credentials from gcloud and gh (read-only)"
+dir = "infra"
+run = """
+export GOOGLE_OAUTH_ACCESS_TOKEN="$(gcloud auth print-access-token)"
+export GITHUB_TOKEN="$(gh auth token)"
+terraform init -input=false
+terraform plan
+"""
